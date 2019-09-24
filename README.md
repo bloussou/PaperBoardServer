@@ -1,4 +1,4 @@
-# PaperBoard
+# PaperBoardServer
 Interactive paperBoard
 
 ## Route HTTP
