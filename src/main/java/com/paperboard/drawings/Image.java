@@ -1,3 +1,14 @@
 package com.paperboard.drawings;
 
-public class Image extends Drawing {}
+import com.paperboard.server.User;
+
+public class Image extends Drawing {
+    public Image(User user) {
+        super(user);
+    }
+
+    @Override
+    public void resize() {
+
+    }
+}
