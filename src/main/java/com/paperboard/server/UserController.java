@@ -11,8 +11,6 @@ public class UserController {
         User user = new User(pseudo);
         ServerApplication.getInstance().addUser(user);
         System.out.println(user);
-        ;
-        ;
     }
 
     @ExceptionHandler({UserAlreadyExistException.class})

@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class User {
     private static AtomicLong idCounter = new AtomicLong(0);
     private final String id;
+    private String pseudo;
 
     public String getPseudo() {
         return pseudo;
@@ -13,8 +14,6 @@ public class User {
     public void setPseudo(String pseudo) {
         this.pseudo = pseudo;
     }
-
-    private String pseudo;
 
     public User(String pseudo) {
         this.id = String.valueOf(idCounter.getAndIncrement());
