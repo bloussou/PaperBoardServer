@@ -6,6 +6,8 @@
         <option value="activate" />
         <option value="organizeImports" />
         <option value="reformat" />
+        <option value="localCanBeFinal" />
+        <option value="missingOverrideAnnotation" />
       </set>
     </option>
     <option name="configurationPath" value="" />
