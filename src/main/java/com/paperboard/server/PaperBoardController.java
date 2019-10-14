@@ -2,10 +2,7 @@ package com.paperboard.server;
 
 import com.paperboard.Error.PaperBoardAlreadyExistException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -13,6 +10,7 @@ import java.util.Optional;
 /**
  * Controller to manage httpRequests about PaperBoard
  */
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:4200"})
 @RestController("/paperboard")
 public class PaperBoardController {
 
