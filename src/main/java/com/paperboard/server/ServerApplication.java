@@ -5,7 +5,9 @@ import com.paperboard.Error.UserAlreadyExistException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 @SpringBootApplication
@@ -14,6 +16,12 @@ public class ServerApplication {
     private static ServerApplication instance = null;
     private final HashSet<User> connectedUsers = new HashSet<>();
     private final HashSet<PaperBoard> paperBoards = new HashSet<>();
+
+    public HashMap<String, MultipartFile> getBackgroundImage() {
+        return backgroundImage;
+    }
+
+    private final HashMap<String, MultipartFile> backgroundImage = new HashMap<>();
 
     public ServerApplication() {
 
@@ -70,6 +78,28 @@ public class ServerApplication {
         }
     }
 
+    public static PaperBoard getPaperBoard(final String title) throws UserAlreadyExistException {
+        final PaperBoard paperboard = new PaperBoard(title);
+        final ServerApplication server = ServerApplication.getInstance();
+        if (server.getPaperBoards().contains(paperboard)) {
+            for (final PaperBoard obj : server.getPaperBoards()) {
+                if (obj.equals(paperboard))
+                    return obj;
+            }
+        }
+        // TODO throw error
+        throw new PaperBoardAlreadyExistException(paperboard);
+    }
+
+    public static MultipartFile getBackgroundImage(final String boardName) {
+        final ServerApplication server = ServerApplication.getInstance();
+        return server.getBackgroundImage().get(boardName);
+    }
+
+    public static void addBackgroundImage(final String boardName, final MultipartFile backgroundImage) {
+        final ServerApplication server = ServerApplication.getInstance();
+        server.getBackgroundImage().put(boardName, backgroundImage);
+    }
 
     public HashSet<User> getConnectedUsers() {
         return connectedUsers;

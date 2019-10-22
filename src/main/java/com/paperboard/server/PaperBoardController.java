@@ -2,15 +2,25 @@ package com.paperboard.server;
 
 import com.paperboard.Error.PaperBoardAlreadyExistException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Optional;
 
 /**
  * Controller to manage httpRequests about PaperBoard
  */
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:4200"})
+//@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:4200"})
+@CrossOrigin("*")
 @RestController("/paperboard")
 public class PaperBoardController {
 
@@ -22,9 +32,21 @@ public class PaperBoardController {
     /**
      * @return the set of paperboards
      */
+    @RequestMapping(value = "/paperboards", method = RequestMethod.GET)
+    public HashSet<PaperBoard.PaperBoardInfo> getAllPaperBoard() {
+        final HashSet<PaperBoard.PaperBoardInfo> paperBoardsInfo = new HashSet<>();
+        final Iterator<PaperBoard> paperboards = ServerApplication.getInstance().getPaperBoards().iterator();
+        while (paperboards.hasNext()) {
+            final PaperBoard paperBoard = paperboards.next();
+            paperBoardsInfo.add(paperBoard.getInfo());
+        }
+        return paperBoardsInfo;
+    }
+
+    // TODO documentation
     @RequestMapping(value = "/paperboard", method = RequestMethod.GET)
-    public HashSet<PaperBoard> getAllPaperBoard() {
-        return ServerApplication.getInstance().getPaperBoards();
+    public PaperBoard getPaperBoard(@RequestParam(value = "title") final String title) throws PaperBoardAlreadyExistException {
+        return ServerApplication.getPaperBoard(title);
     }
 
     /**
@@ -40,17 +62,39 @@ public class PaperBoardController {
     @RequestMapping(value = "/paperboard", method = RequestMethod.POST)
     public PaperBoard postPaperBoard(@RequestParam(value = "title") final String title,
                                      @RequestParam(value = "backgroundColor") final Optional<String> backgroundColor,
-                                     @RequestParam(value = "backgroundImage") final Optional<byte[]> backgroundImage) throws PaperBoardAlreadyExistException {
+                                     @RequestParam(value = "backgroundImage") final Optional<String> backgroundImage) throws PaperBoardAlreadyExistException {
         final PaperBoard paperBoard;
-        if (!backgroundColor.isEmpty()) {
-            paperBoard = new PaperBoard(title, backgroundColor.get());
-        } else if (!backgroundImage.isEmpty()) {
-            paperBoard = new PaperBoard(title, backgroundImage.get());
+        if (!backgroundColor.isEmpty() || !backgroundImage.isEmpty()) {
+            paperBoard = new PaperBoard(title, backgroundColor, backgroundImage);
         } else {
             paperBoard = new PaperBoard(title);
         }
 
         ServerApplication.addPaperBoard(paperBoard);
         return paperBoard;
+    }
+
+    @PostMapping(value = "/paperboard/upload/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity uploadFile(@RequestParam final String paperboardName, @RequestParam final MultipartFile file) {
+        System.out.println(file.getOriginalFilename());
+        System.out.println(paperboardName);
+        ServerApplication.addBackgroundImage(paperboardName, file);
+        System.out.println(ServerApplication.getInstance().getBackgroundImage().isEmpty());
+        return ResponseEntity.ok().build();
+
+    }
+
+    @RequestMapping("/paperboard/download/image")
+    public ResponseEntity downloadImage(@RequestParam final String paperboardName) throws IOException {
+        final MultipartFile multipartfile = ServerApplication.getBackgroundImage(paperboardName);
+        final File file = new File(System.getProperty("java.io.tmpdir") + "/" + multipartfile.getName());
+        multipartfile.transferTo(file);
+        final InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + file.getName())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(file.length())
+                .body(resource);
     }
 }
