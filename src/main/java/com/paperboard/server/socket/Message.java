@@ -16,15 +16,12 @@ public class Message {
     public Message(final String type, final String from, final String to, final JsonObject payload) throws IncorrectMessageException {
 
         if (!MessageType.contains(type)) {
-            System.out.println("MARK1");
             throw new IncorrectMessageException("Message type [" + type + "] is not allowed.");
         }
         if (from == null || from == "") {
-            System.out.println("MARK2");
             throw new IncorrectMessageException("You must give the sender name");
         }
         if (to == null || to == "") {
-            System.out.println("MARK3");
             throw new IncorrectMessageException("You must give the receiver name (server='server' and broadcast='broadcast'");
         }
 

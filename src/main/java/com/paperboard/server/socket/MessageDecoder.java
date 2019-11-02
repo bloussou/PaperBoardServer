@@ -39,7 +39,7 @@ public class MessageDecoder implements Decoder.Text<Message> {
      */
     @Override
     public boolean willDecode(final String string) {
-        System.out.println("Decoder willDecode [" + string + "]?");
+        System.out.println("Decoder willDecode [" + string + "] ?");
         try {
             Json.createReader(new StringReader(string)).read();
             System.out.println("Yes it will !");

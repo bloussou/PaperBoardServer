@@ -32,7 +32,37 @@ public class SocketServerEndPoint {
         System.out.println("[" + board + "] Received something from " + session.getId());
         System.out.println("Message from " + session.getId() + ": " + message.toString());
 
-        /*
+        switch (MessageType.getEnum(message.getType())) {
+            case JOIN_BOARD:
+                System.out.println("Should call handleJoinBoardMsg(message, session)");
+                break;
+            case LEAVE_BOARD:
+                System.out.println("Should call handleLeaveBoard(message, session)");
+                break;
+            case CREATE_OBJECT:
+                System.out.println("Should call handleCreateObject(message, session)");
+                break;
+            case EDIT_OBJECT:
+                System.out.println("Should call handleEditObject(message, session)");
+                break;
+            case LOCK_OBJECT:
+                System.out.println("Should call handleLockObject(message, session)");
+                break;
+            case UNLOCK_OBJECT:
+                System.out.println("Should call handleUnlockObject(message, session)");
+                break;
+            case ASK_DELETION:
+                System.out.println("Should call handleAskDeletion(message, session)");
+                break;
+            case CHAT_MESSAGE:
+                System.out.println("Should call handleChatMessage(message, session)");
+                break;
+            default:
+                System.out.println("Message Type Not Recognized !!");
+                break;
+        }
+
+        /* A garder pour l'inspi pour un broadcast
         try {
             for (Session s : session.getOpenSessions()) {
                 if (s.isOpen()
@@ -49,5 +79,14 @@ public class SocketServerEndPoint {
     @OnClose
     public void onClose(final Session session, final CloseReason closeReason) {
         log.info(String.format("Session %s closed because of %s", session.getId(), closeReason));
+    }
+
+    // TODO
+    public void sendMessageToUser(final String username) {
+
+    }
+
+    // TODO
+    public void sendMessageToBoard(final String board) {
     }
 }

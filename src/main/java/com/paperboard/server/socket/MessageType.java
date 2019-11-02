@@ -21,19 +21,27 @@ public enum MessageType {
     DRAWER_CONNECTED("New Drawer Connected"),
     DRAWER_DISCONNECTED("Drawer Disconnected");
 
-    private final String type;
+    public final String str;
 
-    MessageType(final String type) {
-        this.type = type;
+    MessageType(final String str) {
+        this.str = str;
     }
 
     public static boolean contains(final String test) {
         for (final MessageType msgType : MessageType.values()) {
-            if (msgType.type.equals(test)) {
+            if (msgType.str.equals(test)) {
                 return true;
             }
         }
         return false;
     }
 
+    public static MessageType getEnum(final String str) {
+        for (final MessageType msgType : MessageType.values()) {
+            if (msgType.str.equals(str)) {
+                return msgType;
+            }
+        }
+        return null;
+    }
 }
