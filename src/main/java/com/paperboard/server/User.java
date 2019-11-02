@@ -11,9 +11,6 @@ public class User {
     private final String id;
     private String pseudo;
 
-
-    private String pseudo;
-
     public User(final String pseudo) {
         this.id = "user" + String.valueOf(idCounter.getAndIncrement());
         this.pseudo = pseudo;
