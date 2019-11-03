@@ -5,7 +5,6 @@ import com.paperboard.Error.UserAlreadyExistException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,11 +16,11 @@ public class ServerApplication {
     private final HashSet<User> connectedUsers = new HashSet<>();
     private final HashSet<PaperBoard> paperBoards = new HashSet<>();
 
-    public HashMap<String, MultipartFile> getBackgroundImage() {
+    public HashMap<String, String> getBackgroundImage() {
         return backgroundImage;
     }
 
-    private final HashMap<String, MultipartFile> backgroundImage = new HashMap<>();
+    private final HashMap<String, String> backgroundImage = new HashMap<>();
 
     public ServerApplication() {
 
@@ -91,14 +90,14 @@ public class ServerApplication {
         throw new PaperBoardAlreadyExistException(paperboard);
     }
 
-    public static MultipartFile getBackgroundImage(final String boardName) {
+    public static String getBackgroundImagePath(final String boardName) {
         final ServerApplication server = ServerApplication.getInstance();
         return server.getBackgroundImage().get(boardName);
     }
 
-    public static void addBackgroundImage(final String boardName, final MultipartFile backgroundImage) {
+    public static void addBackgroundImage(final String boardName, final String storePath) {
         final ServerApplication server = ServerApplication.getInstance();
-        server.getBackgroundImage().put(boardName, backgroundImage);
+        server.getBackgroundImage().put(boardName, storePath);
     }
 
     public HashSet<User> getConnectedUsers() {

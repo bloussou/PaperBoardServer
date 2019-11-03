@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -23,6 +24,9 @@ import java.util.Optional;
 @CrossOrigin("*")
 @RestController("/paperboard")
 public class PaperBoardController {
+
+    @Autowired
+    private HttpServletRequest request;
 
     @Autowired
     public PaperBoardController() {
@@ -76,19 +80,32 @@ public class PaperBoardController {
 
     @PostMapping(value = "/paperboard/upload/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity uploadFile(@RequestParam final String paperboardName, @RequestParam final MultipartFile file) {
-        System.out.println(file.getOriginalFilename());
-        System.out.println(paperboardName);
-        ServerApplication.addBackgroundImage(paperboardName, file);
-        System.out.println(ServerApplication.getInstance().getBackgroundImage().isEmpty());
+        if (!file.isEmpty()) {
+            try {
+                final String uploadsDir = "/uploads/";
+                final String realPathtoUploads = request.getServletContext().getRealPath(uploadsDir);
+                if (!new File(realPathtoUploads).exists()) {
+                    new File(realPathtoUploads).mkdir();
+                }
+
+                final String orgName = file.getOriginalFilename();
+                final String newName = paperboardName.concat(orgName.substring(orgName.lastIndexOf("."), orgName.length()));
+                final String filePath = realPathtoUploads + newName;
+                final File dest = new File(filePath);
+                file.transferTo(dest);
+                ServerApplication.addBackgroundImage(paperboardName, filePath);
+            } catch (final IOException e) {
+                e.printStackTrace();
+            }
+        }
         return ResponseEntity.ok().build();
 
     }
 
     @RequestMapping("/paperboard/download/image")
     public ResponseEntity downloadImage(@RequestParam final String paperboardName) throws IOException {
-        final MultipartFile multipartfile = ServerApplication.getBackgroundImage(paperboardName);
-        final File file = new File(System.getProperty("java.io.tmpdir") + "/" + multipartfile.getName());
-        multipartfile.transferTo(file);
+        final String imagePath = ServerApplication.getBackgroundImagePath(paperboardName);
+        final File file = new File(imagePath);
         final InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
 
         return ResponseEntity.ok()
