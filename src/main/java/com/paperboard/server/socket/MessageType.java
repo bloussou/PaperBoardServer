@@ -11,7 +11,7 @@ public enum MessageType {
     UNLOCK_OBJECT("Unlock Object"),
 
     // ---- SYMMETRIC MESSAGES
-    CHAT_MESSAGE("Chat message"),
+    CHAT_MESSAGE("Chat Message"),
     ASK_DELETION("Ask to Delete"),
 
     // ---- SENT TO CLIENTS

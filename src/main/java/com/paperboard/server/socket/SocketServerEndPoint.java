@@ -8,6 +8,7 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,14 +19,17 @@ import java.util.logging.Logger;
         decoders = MessageDecoder.class,
         configurator = WebSocketServerConfigurator.class)
 public class SocketServerEndPoint {
-    private static HashSet<Session> sessions = new HashSet<Session>();
+    private static HashMap<String, HashSet<Session>> sessionsMap = new HashMap<String, HashSet<Session>>();
     private Logger log = Logger.getLogger(getClass().getName());
 
     @OnOpen
     public void open(final Session session, @PathParam("board") final String board) {
-        log.info("New user connected to board [" + board + "] !! userId:" + session.getId());
         session.getUserProperties().put("board", board);
-        this.sessions.add(session);
+        if (!this.sessionsMap.containsKey(board)) {
+            this.sessionsMap.put(board, new HashSet<Session>());
+        }
+        this.sessionsMap.get(board).add(session);
+        log.info("New user connected to board [" + board + "] !! userId:" + session.getId());
     }
 
     /**
@@ -67,7 +71,7 @@ public class SocketServerEndPoint {
                 break;
             case CHAT_MESSAGE:
                 System.out.println("Should call handleChatMessage");
-                this.handleChatMessage(message);
+                this.handleChatMessage(session, message);
                 break;
             default:
                 System.out.println("Message Type Not Recognized !!");
@@ -77,18 +81,46 @@ public class SocketServerEndPoint {
 
     @OnClose
     public void onClose(final Session session, final CloseReason closeReason) {
+        final String oldUser = (String) session.getUserProperties().get("username");
+        final String board = (String) session.getUserProperties().get("board");
+
+        if (oldUser != null) {
+            final JsonBuilderFactory factory = Json.createBuilderFactory(null);
+            final JsonArrayBuilder users = factory.createArrayBuilder();
+            for (final Session s : this.sessionsMap.get(board)) {
+                final String username = (String) s.getUserProperties().get("username");
+                if (s.isOpen() && username != null && username != oldUser) {
+                    users.add(username);
+                }
+            }
+
+            final JsonObject payload = Json.createBuilderFactory(null).createObjectBuilder()
+                    .add("username", oldUser)
+                    .add("userlist", users)
+                    .build();
+            final Message msg = new Message(MessageType.DRAWER_DISCONNECTED.str, "server", "all-board", payload);
+            this.sendMessageToBoard(board, msg);
+        }
+
+        this.sessionsMap.get(board).remove(session);
+        if (this.sessionsMap.get(board).size() == 0) {
+            this.sessionsMap.remove(board);
+        }
         log.info(String.format("Session %s closed because of %s", session.getId(), closeReason));
     }
 
-    public void sendMessageToUser(final String username, final Message message) {
+    public void sendMessageToUser(final Session session, final Message msg) {
+        final String username = msg.getTo();
+        final String board = (String) session.getUserProperties().get("board");
         try {
-            for (final Session s : this.sessions) {
+            for (final Session s : this.sessionsMap.get(board)) {
                 if (s.isOpen()
                         && username.equals(s.getUserProperties().get("username"))) {
-                    s.getBasicRemote().sendObject(message);
+                    s.getBasicRemote().sendObject(msg);
                     break;
                 }
             }
+            System.out.println("Sent [" + msg.getType() + "] to User {" + username + "}");
         } catch (final IOException | EncodeException e) {
             log.log(Level.WARNING, "sendMessageToUser [" + username + "] failed", e);
         }
@@ -96,12 +128,13 @@ public class SocketServerEndPoint {
 
     public void sendMessageToBoard(final String board, final Message msg) {
         try {
-            for (final Session s : this.sessions) {
+            for (final Session s : this.sessionsMap.get(board)) {
                 if (s.isOpen()
                         && board.equals(s.getUserProperties().get("board"))) {
                     s.getBasicRemote().sendObject(msg);
                 }
             }
+            System.out.println("Sent [" + msg.getType() + "] to Board {" + board + "}");
         } catch (final IOException | EncodeException e) {
             log.log(Level.WARNING, "sendMessageToBoard [" + board + "] failed", e);
         }
@@ -112,17 +145,17 @@ public class SocketServerEndPoint {
         final String board = (String) session.getUserProperties().get("board");
 
         final JsonBuilderFactory factory = Json.createBuilderFactory(null);
-        final JsonArrayBuilder users = factory.createArrayBuilder();
-        for (final Session s : this.sessions) {
+        final JsonArrayBuilder boardUsers = factory.createArrayBuilder();
+        for (final Session s : this.sessionsMap.get(board)) {
             final String username = (String) s.getUserProperties().get("username");
             if (s.isOpen() && username != null) {
-                users.add(username);
+                boardUsers.add(username);
             }
         }
 
         final JsonObject payload = Json.createBuilderFactory(null).createObjectBuilder()
                 .add("username", newUser)
-                .add("userlist", users)
+                .add("userlist", boardUsers)
                 .build();
 
         final Message answer = new Message(MessageType.DRAWER_CONNECTED.str, "server", "all-board", payload);
@@ -133,30 +166,15 @@ public class SocketServerEndPoint {
         session.getUserProperties().put("username", oldUser);
         final String board = (String) session.getUserProperties().get("board");
 
-        final JsonBuilderFactory factory = Json.createBuilderFactory(null);
-        final JsonArrayBuilder users = factory.createArrayBuilder();
-        for (final Session s : this.sessions) {
-            final String username = (String) s.getUserProperties().get("username");
-            if (s.isOpen() && username != null && username != oldUser) {
-                users.add(username);
-            }
-        }
-
-        final JsonObject payload = Json.createBuilderFactory(null).createObjectBuilder()
-                .add("username", oldUser)
-                .add("userlist", users)
-                .build();
 
         try {
             session.close();
         } catch (final IOException ex) {
             System.err.println("Could not close session properly with user " + oldUser);
         }
-        final Message answer = new Message(MessageType.DRAWER_DISCONNECTED.str, "server", "all-board", payload);
-        this.sendMessageToBoard(board, answer);
     }
 
-    public void handleChatMessage(final Message msg) {
-        this.sendMessageToUser(msg.getTo(), msg);
+    public void handleChatMessage(final Session session, final Message msg) {
+        this.sendMessageToUser(session, msg);
     }
 }
