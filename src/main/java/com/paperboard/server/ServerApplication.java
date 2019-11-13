@@ -2,23 +2,27 @@ package com.paperboard.server;
 
 import com.paperboard.Error.PaperBoardAlreadyExistException;
 import com.paperboard.Error.UserAlreadyExistException;
+import com.paperboard.server.events.EventType;
+import com.paperboard.server.socket.WebSocketServer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.HashSet;
 
 @SpringBootApplication
 @ComponentScan(basePackages = "com.paperboard")
 public class ServerApplication {
     private static ServerApplication instance = null;
+    private static ConfigurableApplicationContext ctx;
     private final HashSet<User> connectedUsers = new HashSet<>();
     private final HashSet<PaperBoard> paperBoards = new HashSet<>();
 
     public ServerApplication() {
-
     }
-
 
     public static ServerApplication getInstance() {
         if (instance == null) {
@@ -27,8 +31,35 @@ public class ServerApplication {
         return instance;
     }
 
+    public static void runServer() {
+        System.out.println("---> Starting Http Server !");
+        ctx = SpringApplication.run(ServerApplication.class);
+    }
+
+    public static void stopServer() {
+        final int exitCode = SpringApplication.exit(ctx, () -> {
+            // no errors
+            return 0;
+        });
+        System.exit(exitCode);
+        System.out.println("---> Http Server stopped");
+    }
+
     public static void main(final String[] args) {
-        SpringApplication.run(ServerApplication.class, args);
+        final PaperBoard pb = new PaperBoard("tableau de papier", "rouge");
+        ServerApplication.runServer();
+        WebSocketServer.runServer();
+        pb.registerToEvent(EventType.JOIN_BOARD);
+        try {
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            System.out.print("Please press a key to stop the server.");
+            reader.readLine();
+        } catch (final Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            ServerApplication.stopServer();
+            WebSocketServer.stopServer();
+        }
     }
 
     /**

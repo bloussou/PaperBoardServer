@@ -1,0 +1,23 @@
+package com.paperboard.server.events;
+
+public enum EventType {
+
+    // ---- MSG RECEIVED FROM CLIENTS
+    JOIN_BOARD,
+    LEAVE_BOARD,
+    CREATE_OBJECT,
+    EDIT_OBJECT,
+    LOCK_OBJECT,
+    UNLOCK_OBJECT,
+    CHAT_MESSAGE,
+    DELETE_OBJECT,
+
+    // ---- INTERNAL DECISIONS
+    OBJECT_CREATED,
+    OBJECT_EDITED,
+    OBJECT_DELETED,
+    OBJECT_LOCKED,
+    OBJECT_UNLOCKED,
+    DRAWER_CONNECTED,
+    DRAWER_DISCONNECTED;
+}

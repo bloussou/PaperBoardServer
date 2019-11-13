@@ -1,13 +1,16 @@
 package com.paperboard.server;
 
 import com.paperboard.drawings.Drawing;
+import com.paperboard.server.events.Event;
+import com.paperboard.server.events.Subscriber;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class PaperBoard {
+public class PaperBoard implements Subscriber {
+
     private static AtomicLong idCounter = new AtomicLong(0);
     final private String id;
     final private String title;
@@ -16,6 +19,7 @@ public class PaperBoard {
     private java.util.concurrent.CopyOnWriteArrayList<com.paperboard.drawings.Drawing> drawings =
             new CopyOnWriteArrayList<Drawing>();
     private byte[] backgroundImage;
+
 
     public PaperBoard(final String title) {
         this.id = String.valueOf(idCounter.getAndIncrement());
@@ -33,7 +37,6 @@ public class PaperBoard {
         this.title = title;
         this.setBackgroundImage(image);
     }
-
 
     public String getTitle() {
         return title;
@@ -65,7 +68,6 @@ public class PaperBoard {
         this.backgroundImage = backgroundImage;
     }
 
-
     @Override
     public String toString() {
         return this.title;
@@ -86,5 +88,11 @@ public class PaperBoard {
     @Override
     public int hashCode() {
         return this.getTitle().length();
+    }
+
+    @Override
+    public void updateFromEvent(final Event e) {
+        System.out.println("Heyyy !!! l'evenement e est fired !");
+        final Event evenement = e;
     }
 }

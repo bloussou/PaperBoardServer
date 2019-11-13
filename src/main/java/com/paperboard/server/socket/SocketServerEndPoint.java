@@ -1,5 +1,9 @@
 package com.paperboard.server.socket;
 
+import com.paperboard.server.events.Event;
+import com.paperboard.server.events.EventManager;
+import com.paperboard.server.events.EventType;
+
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonBuilderFactory;
@@ -19,6 +23,7 @@ import java.util.logging.Logger;
         decoders = MessageDecoder.class,
         configurator = WebSocketServerConfigurator.class)
 public class SocketServerEndPoint {
+
     private static HashMap<String, HashSet<Session>> sessionsMap = new HashMap<String, HashSet<Session>>();
     private Logger log = Logger.getLogger(getClass().getName());
 
@@ -49,6 +54,7 @@ public class SocketServerEndPoint {
             case JOIN_BOARD:
                 System.out.println("Should call handleJoinBoardMsg");
                 this.handleJoinBoard(session, message.getFrom());
+                EventManager.getInstance().fireEvent(EventType.JOIN_BOARD, new Event(EventType.JOIN_BOARD), null);
                 break;
             case LEAVE_BOARD:
                 System.out.println("Should call handleLeaveBoard");
@@ -60,14 +66,14 @@ public class SocketServerEndPoint {
             case EDIT_OBJECT:
                 System.out.println("Should call handleEditObject");
                 break;
+            case DELETE_OBJECT:
+                System.out.println("Should call handleAskDeletion");
+                break;
             case LOCK_OBJECT:
                 System.out.println("Should call handleLockObject");
                 break;
             case UNLOCK_OBJECT:
                 System.out.println("Should call handleUnlockObject");
-                break;
-            case ASK_DELETION:
-                System.out.println("Should call handleAskDeletion");
                 break;
             case CHAT_MESSAGE:
                 System.out.println("Should call handleChatMessage");
@@ -77,6 +83,11 @@ public class SocketServerEndPoint {
                 System.out.println("Message Type Not Recognized !!");
                 break;
         }
+    }
+
+    @OnError
+    public void onError(final Session session, final Throwable t) {
+        System.out.println("On error: " + t.getMessage());
     }
 
     @OnClose

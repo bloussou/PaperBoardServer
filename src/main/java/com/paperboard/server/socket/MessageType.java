@@ -12,12 +12,14 @@ public enum MessageType {
 
     // ---- SYMMETRIC MESSAGES
     CHAT_MESSAGE("Chat Message"),
-    ASK_DELETION("Ask to Delete"),
+    DELETE_OBJECT("Delete Object"),
 
     // ---- SENT TO CLIENTS
     OBJECT_CREATED("Object Created"),
     OBJECT_EDITED("Object Edited"),
     OBJECT_DELETED("Object Deleted"),
+    OBJECT_LOCKED("Object Locked"),
+    OBJECT_UNLOCKED("Object Unlocked"),
     DRAWER_CONNECTED("New Drawer Connected"),
     DRAWER_DISCONNECTED("Drawer Disconnected");
 
