@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Logger;
 
 public class PaperBoard implements Subscriber {
 
@@ -19,6 +20,7 @@ public class PaperBoard implements Subscriber {
     private java.util.concurrent.CopyOnWriteArrayList<com.paperboard.drawings.Drawing> drawings =
             new CopyOnWriteArrayList<Drawing>();
     private byte[] backgroundImage;
+    private static final Logger LOGGER = Logger.getLogger(PaperBoard.class.getName());
 
 
     public PaperBoard(final String title) {
@@ -92,7 +94,7 @@ public class PaperBoard implements Subscriber {
 
     @Override
     public void updateFromEvent(final Event e) {
-        System.out.println("Heyyy !!! l'evenement e est fired !");
-        final Event evenement = e;
+        LOGGER.info("Detected Event " + e.type.toString() + " firing. Ready to react.");
+        final Event eventWithData = e;
     }
 }

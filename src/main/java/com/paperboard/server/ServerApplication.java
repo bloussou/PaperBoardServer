@@ -12,6 +12,7 @@ import org.springframework.context.annotation.ComponentScan;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.HashSet;
+import java.util.logging.Logger;
 
 @SpringBootApplication
 @ComponentScan(basePackages = "com.paperboard")
@@ -20,6 +21,7 @@ public class ServerApplication {
     private static ConfigurableApplicationContext ctx;
     private final HashSet<User> connectedUsers = new HashSet<>();
     private final HashSet<PaperBoard> paperBoards = new HashSet<>();
+    private static Logger LOGGER = Logger.getLogger(ServerApplication.class.getName());
 
     public ServerApplication() {
     }
@@ -32,7 +34,7 @@ public class ServerApplication {
     }
 
     public static void runServer() {
-        System.out.println("---> Starting Http Server !");
+        LOGGER.info("---> Starting Http Server !");
         ctx = SpringApplication.run(ServerApplication.class);
     }
 
@@ -42,23 +44,34 @@ public class ServerApplication {
             return 0;
         });
         System.exit(exitCode);
-        System.out.println("---> Http Server stopped");
+        LOGGER.info("---> Http Server stopped");
     }
 
     public static void main(final String[] args) {
-        final PaperBoard pb = new PaperBoard("tableau de papier", "rouge");
         ServerApplication.runServer();
         WebSocketServer.runServer();
-        pb.registerToEvent(EventType.JOIN_BOARD);
+
+        /**
+         * EXAMPLE OF SUBSCRIPTION (SUBSCRIBER/PUBLISHER PATTERN)
+         * Here the object 'pb' subscribes to the event JOIN_BOARD (a user joins a board).
+         * 1) It has to implement the Suscriber interface with a specific 'updateFromEvent(Event e)' method
+         * which is triggered anytime such event is fired.
+         * 2) The JOIN_BOARD event is fired by the SocketEndPoint component when it receives a message from any client
+         * with type MSG_JOIN_BOARD.
+         * 3) The event fired contains the Msg with all the needed information for the subscribers
+         * to process there updateFromEvent
+         */
+        final PaperBoard pb = new PaperBoard("tableau de papier", "rouge");
+        pb.registerToEvent(EventType.JOIN_BOARD, pb.getTitle());
         try {
             final BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            System.out.print("Please press a key to stop the server.");
+            LOGGER.info("[IMPORTANT INFO] To stop the Http server and the WebSocket server properly press any key.");
             reader.readLine();
         } catch (final Exception e) {
             throw new RuntimeException(e);
         } finally {
-            ServerApplication.stopServer();
             WebSocketServer.stopServer();
+            ServerApplication.stopServer();
         }
     }
 

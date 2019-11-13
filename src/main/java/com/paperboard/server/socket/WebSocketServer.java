@@ -6,16 +6,21 @@ import org.glassfish.tyrus.server.Server;
 import javax.websocket.DeploymentException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.logging.Logger;
 
 public class WebSocketServer {
 
+    private static String HOSTNAME = "localhost";
+    private static int SOCKET_PORT = 8025;
+    private static String SOCKET_API = "/websocket/v1/paperboard";
     private static Server server;
+    private static final Logger LOGGER = Logger.getLogger(WebSocketServer.class.getName());
 
     public static void main(final String[] args) {
         runServer();
         try {
             final BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            System.out.print("Please press a key to stop the server.");
+            LOGGER.info("[IMPORTANT INFO] To stop the server properly press any key.");
             reader.readLine();
         } catch (final Exception e) {
             throw new RuntimeException(e);
@@ -25,8 +30,8 @@ public class WebSocketServer {
     }
 
     public static void runServer() {
-        System.out.println("---> Starting WebSocket Server !");
-        server = new Server("localhost", 8025, "/websockets", SocketServerEndPoint.class);
+        LOGGER.info("---> Starting WebSocket Server !");
+        server = new Server(HOSTNAME, SOCKET_PORT, SOCKET_API, WebSocketServerEndPoint.class);
         try {
             server.start();
         } catch (final DeploymentException e) {
@@ -36,6 +41,6 @@ public class WebSocketServer {
 
     public static void stopServer() {
         server.stop();
-        System.out.println("---> WebSocket Server stopped");
+        LOGGER.info("---> WebSocket Server stopped");
     }
 }

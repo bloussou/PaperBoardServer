@@ -7,16 +7,16 @@ import java.util.Arrays;
 import java.util.Collections;
 
 public class WebSocketServerConfigurator extends ServerEndpointConfig.Configurator {
+
+    private static final String[] ALLOWED_METHODS = {"GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"};
     private static final String[] ALLOWED_ORIGINS = {
             "http://localhost:3000",
             "chrome-extension://fgponpodhbmadfljofbimhhlengambbn",
     };
-    private static final String[] ALLOWED_METHODS = {"GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"};
 
     @Override
     public boolean checkOrigin(final String originHeaderValue) {
         boolean allowed = false;
-        System.out.println("Checking if origin " + originHeaderValue + " is allowed.");
         for (int i = 0; i < ALLOWED_ORIGINS.length; i++) {
             if (originHeaderValue.equals(ALLOWED_ORIGINS[i])) {
                 allowed = true;

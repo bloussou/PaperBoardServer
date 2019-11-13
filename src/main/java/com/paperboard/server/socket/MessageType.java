@@ -3,25 +3,25 @@ package com.paperboard.server.socket;
 public enum MessageType {
 
     // ---- RECEIVED FROM CLIENTS
-    JOIN_BOARD("Join Board"),
-    LEAVE_BOARD("Leave Board"),
-    CREATE_OBJECT("Create Object"),
-    EDIT_OBJECT("Edit Object"),
-    LOCK_OBJECT("Lock Object"),
-    UNLOCK_OBJECT("Unlock Object"),
+    MSG_JOIN_BOARD("Join Board"),
+    MSG_LEAVE_BOARD("Leave Board"),
+    MSG_CREATE_OBJECT("Create Object"),
+    MSG_EDIT_OBJECT("Edit Object"),
+    MSG_LOCK_OBJECT("Lock Object"),
+    MSG_UNLOCK_OBJECT("Unlock Object"),
 
     // ---- SYMMETRIC MESSAGES
-    CHAT_MESSAGE("Chat Message"),
-    DELETE_OBJECT("Delete Object"),
+    MSG_DELETE_OBJECT("Delete Object"),
+    MSG_CHAT_MESSAGE("Chat Message"),
 
     // ---- SENT TO CLIENTS
-    OBJECT_CREATED("Object Created"),
-    OBJECT_EDITED("Object Edited"),
-    OBJECT_DELETED("Object Deleted"),
-    OBJECT_LOCKED("Object Locked"),
-    OBJECT_UNLOCKED("Object Unlocked"),
-    DRAWER_CONNECTED("New Drawer Connected"),
-    DRAWER_DISCONNECTED("Drawer Disconnected");
+    MSG_OBJECT_CREATED("Object Created"),
+    MSG_OBJECT_EDITED("Object Edited"),
+    MSG_OBJECT_DELETED("Object Deleted"),
+    MSG_OBJECT_LOCKED("Object Locked"),
+    MSG_OBJECT_UNLOCKED("Object Unlocked"),
+    MSG_DRAWER_CONNECTED("New Drawer Connected"),
+    MSG_DRAWER_DISCONNECTED("Drawer Disconnected");
 
     public final String str;
 

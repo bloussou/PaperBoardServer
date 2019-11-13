@@ -6,12 +6,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.logging.Logger;
 
 public class EventManager {
 
     private static EventManager instance = null;
     private HashMap<Subscriber, ArrayList<Subscription>> subscribers = new HashMap<>();
-    private static String ALL_BOARDS = "--all board--";
+    private static String ALL_BOARDS = "--all boards--";
+    private static Logger LOGGER = Logger.getLogger(EventManager.class.getName());
 
     //SINGLETON PATTERN
     private EventManager() {
@@ -26,13 +28,12 @@ public class EventManager {
     }
 
     public void addSubscriber(final Subscriber s, final EventType type, @Nullable final String specificBoard) {
-        System.out.println("Added Subscriber !");
         if (!subscribers.containsKey(s)) {
             subscribers.put(s, new ArrayList<Subscription>());
         }
         final String board = specificBoard != null ? specificBoard : ALL_BOARDS;
         subscribers.get(s).add(new Subscription(type, board));
-        System.out.println("Now we have " + subscribers.size() + " subscribers");
+        LOGGER.info("Added new subscription for a subscriber.");
     }
 
     public void removeSubscriber(final Subscriber s) {
@@ -48,7 +49,7 @@ public class EventManager {
             final String board = specificBoard != null ? specificBoard : ALL_BOARDS;
             int index = 0;
             while (index < subscribers.get(s).size()) {
-                if ((e == null || subscribers.get(s).get(index).eventType == e) && subscribers.get(s).get(index).board == board) {
+                if ((e == null || subscribers.get(s).get(index).eventType.equals(e)) && subscribers.get(s).get(index).board.equals(board)) {
                     subscribers.get(s).remove(index);
                 } else {
                     index += 1;
@@ -57,17 +58,22 @@ public class EventManager {
         }
     }
 
-    public void fireEvent(final EventType type, final Event event, @Nullable final String specificBoard) {
-        System.out.println("Firing Event !" + type.toString());
+    public void fireEvent(final Event event, @Nullable final String specificBoard) {
+        LOGGER.info("Firing Event " + event.type.toString() + specificBoard == null ? " " : " [Board-" + specificBoard + "] !");
         final String board = specificBoard != null ? specificBoard : ALL_BOARDS;
         for (final Subscriber s : subscribers.keySet()) {
             final Iterator<Subscription> iter = this.subscribers.get(s).iterator();
             boolean fired = false;
             while (!fired && iter.hasNext()) {
                 final Subscription sub = iter.next();
-                if (sub.eventType == type && sub.board == board) {
+                if (sub.eventType.equals(event.type) && sub.board.equals(board)) {
                     event.firedAt = new Date();
-                    s.updateFromEvent(event);
+                    try {
+                        s.updateFromEvent(event);
+                    } catch (final NullPointerException e) {
+                        LOGGER.warning("Subscriber object is now null. It should have unsubscribed before being destroyed !");
+                        LOGGER.warning(e.getStackTrace().toString());
+                    }
                     fired = true;
                 }
             }

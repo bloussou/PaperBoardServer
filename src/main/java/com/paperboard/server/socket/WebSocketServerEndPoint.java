@@ -14,18 +14,17 @@ import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @ServerEndpoint(
-        value = "/v1/paperboard/{board}",
+        value = "/{board}",
         encoders = MessageEncoder.class,
         decoders = MessageDecoder.class,
         configurator = WebSocketServerConfigurator.class)
-public class SocketServerEndPoint {
+public class WebSocketServerEndPoint {
 
     private static HashMap<String, HashSet<Session>> sessionsMap = new HashMap<String, HashSet<Session>>();
-    private Logger log = Logger.getLogger(getClass().getName());
+    private static final Logger LOGGER = Logger.getLogger(WebSocketServerEndPoint.class.getName());
 
     @OnOpen
     public void open(final Session session, @PathParam("board") final String board) {
@@ -34,7 +33,7 @@ public class SocketServerEndPoint {
             this.sessionsMap.put(board, new HashSet<Session>());
         }
         this.sessionsMap.get(board).add(session);
-        log.info("New user connected to board [" + board + "] !! userId:" + session.getId());
+        LOGGER.info("[Board-" + board + "] New user connected !! (id:" + session.getId() + ").");
     }
 
     /**
@@ -47,51 +46,51 @@ public class SocketServerEndPoint {
     @OnMessage
     public void onMessage(final Message message, final Session session) {
         final String board = (String) session.getUserProperties().get("board");
-        System.out.println("[" + board + "] Received something from " + session.getId());
-        System.out.println("Message from " + session.getId() + ": " + message.toString());
+        final String user = (String) session.getUserProperties().get("username");
+        LOGGER.info("[" + board + "] Received [" + message.getType() + "] from [" + user + "].");
 
         switch (MessageType.getEnum(message.getType())) {
-            case JOIN_BOARD:
-                System.out.println("Should call handleJoinBoardMsg");
+            case MSG_JOIN_BOARD:
                 this.handleJoinBoard(session, message.getFrom());
-                EventManager.getInstance().fireEvent(EventType.JOIN_BOARD, new Event(EventType.JOIN_BOARD), null);
+                EventManager.getInstance().fireEvent(new Event(EventType.JOIN_BOARD, message), board);
                 break;
-            case LEAVE_BOARD:
-                System.out.println("Should call handleLeaveBoard");
+            case MSG_LEAVE_BOARD:
                 this.handleLeaveBoard(session, message.getFrom());
+                EventManager.getInstance().fireEvent(new Event(EventType.LEAVE_BOARD, message), board);
                 break;
-            case CREATE_OBJECT:
-                System.out.println("Should call handleCreateObject");
+            case MSG_CREATE_OBJECT:
+                EventManager.getInstance().fireEvent(new Event(EventType.CREATE_OBJECT, message), board);
                 break;
-            case EDIT_OBJECT:
-                System.out.println("Should call handleEditObject");
+            case MSG_EDIT_OBJECT:
+                EventManager.getInstance().fireEvent(new Event(EventType.EDIT_OBJECT, message), board);
                 break;
-            case DELETE_OBJECT:
-                System.out.println("Should call handleAskDeletion");
+            case MSG_LOCK_OBJECT:
+                EventManager.getInstance().fireEvent(new Event(EventType.LOCK_OBJECT, message), board);
                 break;
-            case LOCK_OBJECT:
-                System.out.println("Should call handleLockObject");
+            case MSG_UNLOCK_OBJECT:
+                EventManager.getInstance().fireEvent(new Event(EventType.UNLOCK_OBJECT, message), board);
                 break;
-            case UNLOCK_OBJECT:
-                System.out.println("Should call handleUnlockObject");
+            case MSG_DELETE_OBJECT:
+                EventManager.getInstance().fireEvent(new Event(EventType.DELETE_OBJECT, message), board);
                 break;
-            case CHAT_MESSAGE:
-                System.out.println("Should call handleChatMessage");
+            case MSG_CHAT_MESSAGE:
+                EventManager.getInstance().fireEvent(new Event(EventType.CHAT_MESSAGE, message), board);
                 this.handleChatMessage(session, message);
                 break;
             default:
-                System.out.println("Message Type Not Recognized !!");
+                LOGGER.info("Message Type Unhandled: " + message.getType() + "!!");
                 break;
         }
     }
 
     @OnError
     public void onError(final Session session, final Throwable t) {
-        System.out.println("On error: " + t.getMessage());
+        LOGGER.warning("SocketEndPointError: " + t.getMessage());
     }
 
     @OnClose
     public void onClose(final Session session, final CloseReason closeReason) {
+
         final String oldUser = (String) session.getUserProperties().get("username");
         final String board = (String) session.getUserProperties().get("board");
 
@@ -109,7 +108,7 @@ public class SocketServerEndPoint {
                     .add("username", oldUser)
                     .add("userlist", users)
                     .build();
-            final Message msg = new Message(MessageType.DRAWER_DISCONNECTED.str, "server", "all-board", payload);
+            final Message msg = new Message(MessageType.MSG_DRAWER_DISCONNECTED.str, oldUser, "board members", payload);
             this.sendMessageToBoard(board, msg);
         }
 
@@ -117,7 +116,8 @@ public class SocketServerEndPoint {
         if (this.sessionsMap.get(board).size() == 0) {
             this.sessionsMap.remove(board);
         }
-        log.info(String.format("Session %s closed because of %s", session.getId(), closeReason));
+        EventManager.getInstance().fireEvent(new Event(EventType.DRAWER_DISCONNECTED), board);
+        LOGGER.info("[Board-" + board + "] user [" + oldUser + "] disconnected.");
     }
 
     public void sendMessageToUser(final Session session, final Message msg) {
@@ -131,9 +131,11 @@ public class SocketServerEndPoint {
                     break;
                 }
             }
-            System.out.println("Sent [" + msg.getType() + "] to User {" + username + "}");
+            LOGGER.info("Server sent [" + msg.getType() + "] to User [" + username + "].");
         } catch (final IOException | EncodeException e) {
-            log.log(Level.WARNING, "sendMessageToUser [" + username + "] failed", e);
+            LOGGER.warning("SendMessageToUser [" + username + "] failed");
+            LOGGER.warning(e.getMessage());
+            LOGGER.warning(e.getStackTrace().toString());
         }
     }
 
@@ -145,9 +147,11 @@ public class SocketServerEndPoint {
                     s.getBasicRemote().sendObject(msg);
                 }
             }
-            System.out.println("Sent [" + msg.getType() + "] to Board {" + board + "}");
+            LOGGER.info("Server sent [" + msg.getType() + "] to Board [" + board + "].");
         } catch (final IOException | EncodeException e) {
-            log.log(Level.WARNING, "sendMessageToBoard [" + board + "] failed", e);
+            LOGGER.warning("SendMessageToBoard [" + board + "] failed");
+            LOGGER.warning(e.getMessage());
+            LOGGER.warning(e.getStackTrace().toString());
         }
     }
 
@@ -169,7 +173,8 @@ public class SocketServerEndPoint {
                 .add("userlist", boardUsers)
                 .build();
 
-        final Message answer = new Message(MessageType.DRAWER_CONNECTED.str, "server", "all-board", payload);
+        LOGGER.info("[" + board + "] User [" + session.getUserProperties().get("username") + "] identified.");
+        final Message answer = new Message(MessageType.MSG_DRAWER_CONNECTED.str, "server", "all board members", payload);
         this.sendMessageToBoard(board, answer);
     }
 
@@ -177,11 +182,10 @@ public class SocketServerEndPoint {
         session.getUserProperties().put("username", oldUser);
         final String board = (String) session.getUserProperties().get("board");
 
-
         try {
             session.close();
         } catch (final IOException ex) {
-            System.err.println("Could not close session properly with user " + oldUser);
+            LOGGER.warning("Could not close session properly with user " + oldUser);
         }
     }
 

@@ -6,15 +6,17 @@ import javax.websocket.DecodeException;
 import javax.websocket.Decoder;
 import javax.websocket.EndpointConfig;
 import java.io.StringReader;
+import java.util.logging.Logger;
 
 public class MessageDecoder implements Decoder.Text<Message> {
+
+    private static final Logger LOGGER = Logger.getLogger(MessageDecoder.class.getName());
 
     /**
      * Transform the input string into a Message
      */
     @Override
     public Message decode(final String string) throws DecodeException {
-        System.out.println("Trying to decode " + string);
         try {
             final JsonObject json = Json.createReader(new StringReader(string)).readObject();
             final String type = json.getString("type");
@@ -25,10 +27,10 @@ public class MessageDecoder implements Decoder.Text<Message> {
             final Message msg = new Message(type, from, to, payload);
             return msg;
         } catch (final IncorrectMessageException e) {
-            System.err.println(e.getMessage());
+            LOGGER.warning(e.getMessage());
             return null;
         } catch (final Exception e) {
-            System.err.println("SocketMessage parsing error : " + string + " is not a valid JSON object (It should not contain other embedding than payload:{}).");
+            LOGGER.warning("SocketMessage parsing error : " + string + " is not a valid JSON object (It should not contain other embedding than payload:{}).");
             return null;
         }
     }
@@ -39,14 +41,11 @@ public class MessageDecoder implements Decoder.Text<Message> {
      */
     @Override
     public boolean willDecode(final String string) {
-        System.out.println("Decoder willDecode [" + string + "] ?");
         try {
             Json.createReader(new StringReader(string)).read();
-            System.out.println("Yes it will !");
             return true;
         } catch (final Exception ex) {
-            System.out.println("No it won't !");
-            System.err.println("SocketMessage cannot be decoded : " + string + " is not a valid JSON object (It should respect JSON format with double quotes and it should not contain other embedding than payload:{}.");
+            LOGGER.warning("SocketMessage cannot be decoded : " + string + " is not a valid JSON object (It should respect JSON format with double quotes and it should not contain other embedding than payload:{}.");
             return false;
         }
     }
@@ -57,11 +56,9 @@ public class MessageDecoder implements Decoder.Text<Message> {
      */
     @Override
     public void init(final EndpointConfig config) {
-        System.out.println("Decoder init");
     }
 
     @Override
     public void destroy() {
-        System.out.println("Decoder destroy");
     }
 }
