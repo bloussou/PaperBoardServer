@@ -12,6 +12,7 @@ import org.springframework.context.annotation.ComponentScan;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 @SpringBootApplication
@@ -24,7 +25,9 @@ public class ServerApplication {
     private static Logger LOGGER = Logger.getLogger(ServerApplication.class.getName());
 
     public ServerApplication() {
+
     }
+
 
     public static ServerApplication getInstance() {
         if (instance == null) {
@@ -61,7 +64,7 @@ public class ServerApplication {
          * 3) The event fired contains the Msg with all the needed information for the subscribers
          * to process there updateFromEvent
          */
-        final PaperBoard pb = new PaperBoard("tableau de papier", "rouge");
+        final PaperBoard pb = new PaperBoard("tableau de papier", Optional.of("rouge"), Optional.empty());
         pb.registerToEvent(EventType.JOIN_BOARD, pb.getTitle());
         try {
             final BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -114,6 +117,29 @@ public class ServerApplication {
         }
     }
 
+    public static PaperBoard getPaperBoard(final String title) throws UserAlreadyExistException {
+        final PaperBoard paperboard = new PaperBoard(title);
+        final ServerApplication server = ServerApplication.getInstance();
+        if (server.getPaperBoards().contains(paperboard)) {
+            for (final PaperBoard obj : server.getPaperBoards()) {
+                if (obj.equals(paperboard))
+                    return obj;
+            }
+        }
+        // TODO throw error
+        throw new PaperBoardAlreadyExistException(paperboard);
+    }
+
+    public static String getBackgroundImagePath(final String boardName) {
+        final ServerApplication server = ServerApplication.getInstance();
+        return "todo";
+//        return server.getBackgroundImage().get(boardName);
+    }
+
+    public static void addBackgroundImage(final String boardName, final String storePath) {
+        final ServerApplication server = ServerApplication.getInstance();
+//        server.getBackgroundImage().put(boardName, storePath);
+    }
 
     public HashSet<User> getConnectedUsers() {
         return connectedUsers;

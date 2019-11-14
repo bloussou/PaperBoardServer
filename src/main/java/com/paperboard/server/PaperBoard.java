@@ -4,6 +4,8 @@ import com.paperboard.drawings.Drawing;
 import com.paperboard.server.events.Event;
 import com.paperboard.server.events.Subscriber;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -19,25 +21,64 @@ public class PaperBoard implements Subscriber {
     private java.util.Set<User> drawers = new ConcurrentSkipListSet<User>();
     private java.util.concurrent.CopyOnWriteArrayList<com.paperboard.drawings.Drawing> drawings =
             new CopyOnWriteArrayList<Drawing>();
-    private byte[] backgroundImage;
+    private String backgroundImageName;
     private static final Logger LOGGER = Logger.getLogger(PaperBoard.class.getName());
 
+
+    private LocalDateTime creationDate;
+
+
+    public class PaperBoardInfo {
+        private int numberOfConnectedUser;
+        private String title;
+
+
+        private LocalDateTime creationDate;
+
+        public PaperBoardInfo(final String title, final int connectedUser, final LocalDateTime creationDate) {
+            this.numberOfConnectedUser = connectedUser;
+            this.title = title;
+            this.creationDate = creationDate;
+        }
+
+        public int getNumberOfConnectedUser() {
+            return numberOfConnectedUser;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public LocalDateTime getCreationDate() {
+            return creationDate;
+        }
+
+    }
 
     public PaperBoard(final String title) {
         this.id = String.valueOf(idCounter.getAndIncrement());
         this.title = title;
+        this.creationDate = LocalDateTime.now();
     }
 
-    public PaperBoard(final String title, final String backgroundColor) {
+    public PaperBoard(final String title, final Optional<String> backgroundColor, final Optional<String> imageName) {
         this.id = String.valueOf(idCounter.getAndIncrement());
         this.title = title;
-        this.setBackgroundColor(backgroundColor);
+        this.creationDate = LocalDateTime.now();
+        if (!imageName.isEmpty()) {
+            this.setBackgroundImageName(imageName.get());
+        } else if (!backgroundColor.isEmpty()) {
+            this.setBackgroundColor(backgroundColor.get());
+        }
     }
 
-    public PaperBoard(final String title, final byte[] image) {
-        this.id = String.valueOf(idCounter.getAndIncrement());
-        this.title = title;
-        this.setBackgroundImage(image);
+    public PaperBoardInfo getInfo() {
+        return new PaperBoardInfo(this.getTitle(), this.getDrawers().size(), this.getCreationDate());
+    }
+
+
+    public LocalDateTime getCreationDate() {
+        return creationDate;
     }
 
     public String getTitle() {
@@ -62,13 +103,14 @@ public class PaperBoard implements Subscriber {
     }
 
 
-    public byte[] getBackgroundImage() {
-        return backgroundImage;
+    public String getBackgroundImageName() {
+        return backgroundImageName;
     }
 
-    public void setBackgroundImage(final byte[] backgroundImage) {
-        this.backgroundImage = backgroundImage;
+    public void setBackgroundImageName(final String backgroundImageName) {
+        this.backgroundImageName = backgroundImageName;
     }
+
 
     @Override
     public String toString() {
