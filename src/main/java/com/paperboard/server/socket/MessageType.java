@@ -3,6 +3,7 @@ package com.paperboard.server.socket;
 public enum MessageType {
 
     // ---- RECEIVED FROM CLIENTS
+    MSG_IDENTIFY("Ask Pseudo"),
     MSG_JOIN_BOARD("Join Board"),
     MSG_LEAVE_BOARD("Leave Board"),
     MSG_CREATE_OBJECT("Create Object"),
@@ -15,13 +16,14 @@ public enum MessageType {
     MSG_CHAT_MESSAGE("Chat Message"),
 
     // ---- SENT TO CLIENTS
+    MSG_IDENTITY_ANSWER("Pseudo Request Answer"),
+    MSG_DRAWER_JOINED_BOARD("New Drawer Joined Board"),
+    MSG_DRAWER_LEFT_BOARD("Drawer Left Board"),
     MSG_OBJECT_CREATED("Object Created"),
     MSG_OBJECT_EDITED("Object Edited"),
     MSG_OBJECT_DELETED("Object Deleted"),
     MSG_OBJECT_LOCKED("Object Locked"),
-    MSG_OBJECT_UNLOCKED("Object Unlocked"),
-    MSG_DRAWER_CONNECTED("New Drawer Connected"),
-    MSG_DRAWER_DISCONNECTED("Drawer Disconnected");
+    MSG_OBJECT_UNLOCKED("Object Unlocked");
 
     public final String str;
 

@@ -12,7 +12,7 @@ public class WebSocketServer {
 
     private static String HOSTNAME = "localhost";
     private static int SOCKET_PORT = 8025;
-    private static String SOCKET_API = "/websocket/v1/paperboard";
+    private static String SOCKET_API = "/websocket";
     private static Server server;
     private static final Logger LOGGER = Logger.getLogger(WebSocketServer.class.getName());
 
