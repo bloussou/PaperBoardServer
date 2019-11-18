@@ -236,9 +236,9 @@ public class WebSocketServerEndPoint {
 
 
     public static void handleEventDrawerJoinedBoard(final Event event) {
-        final String user = event.payload.getString("joiner");
+        final String user = event.payload.getString("pseudo");
         final String board = event.payload.getString("board");
-        final JsonArray userlist = event.payload.getJsonArray("userList");
+        final JsonArray userlist = event.payload.getJsonArray("userlist");
 
         // find the session of user
         boolean found = false;
@@ -282,9 +282,10 @@ public class WebSocketServerEndPoint {
 
     }
 
-    public void handleMsgLeaveBoard(final Session session) {
-        final String user = (String) session.getUserProperties().get("username");
-        final String board = (String) session.getUserProperties().get("board");
+    public static void handleEventDrawerLeftBoard(final Event event) {
+        final String user = event.payload.getString("pseudo");
+        final String board = event.payload.getString("board");
+        final JsonArray userlist = event.payload.getJsonArray("userlist");
 
         if (!board.equals(NOT_IN_A_BOARD) && this.sessionsMap.containsKey(board)) {
             this.sessionsMap.get(board).remove(session);
