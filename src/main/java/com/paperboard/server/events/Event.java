@@ -4,9 +4,11 @@ import reactor.util.annotation.Nullable;
 
 import javax.json.JsonObject;
 import java.util.Date;
+import java.util.logging.Logger;
 
 public class Event {
 
+    private static final Logger LOGGER = Logger.getLogger(Event.class.getName());
     public Date firedAt;
     public EventType type;
     public JsonObject payload;
@@ -16,7 +18,8 @@ public class Event {
         this.type = type;
         this.source = new Throwable().getStackTrace()[1];
         if (!this.checkPayload(payload)) {
-            throw new IncorrectEventException("Event [" + this.type + "] creation error: Payload does not suit the event requirements.");
+            final IncorrectEventException e = new IncorrectEventException("Event [" + this.type + "] creation error: Payload does not suit the event requirements.");
+            LOGGER.warning("ERROR : " + e.getMessage());
         }
         this.payload = payload;
     }
@@ -57,50 +60,52 @@ public class Event {
     }
 
     public boolean checkPayload_DRAWER_CONNECTED(final JsonObject payload) {
-        if (payload.getString("sessionId").equals(null)) {
+        if (payload.getString("sessionId").equals(null) || payload.getString("sessionId").equals("")) {
             return false;
         }
         return true;
     }
 
     public boolean checkPayload_DRAWER_DISCONNECTED(final JsonObject payload) {
-        if (payload.getString("pseudo").equals(null)) {
+        if (payload.getString("pseudo").equals(null) || payload.getString("pseudo").equals("")) {
             return false;
-        } else if (payload.getString("sessionId").equals(null)) {
+        } else if (payload.getString("sessionId").equals(null) || payload.getString("sessionId").equals("")) {
             return false;
-        } else if (payload.getString("board").equals(null)) {
+        } else if (payload.getString("board").equals(null) || payload.getString("board").equals("")) {
             return false;
         }
         return true;
     }
 
     public boolean checkPayload_ASK_IDENTITY(final JsonObject payload) {
-        if (payload.getString("pseudo").equals(null)) {
+        if (payload.getString("pseudo").equals(null) || payload.getString("pseudo").equals("")) {
+            return false;
+        } else if (payload.getString("sessionId").equals(null) || payload.getString("sessionId").equals("")) {
             return false;
         }
         return true;
     }
 
     public boolean checkPayload_DRAWER_IDENTIFIED(final JsonObject payload) {
-        if (payload.getString("pseudo").equals(null)) {
+        if (payload.getString("pseudo").equals(null) || payload.getString("pseudo").equals("")) {
             return false;
         }
         return true;
     }
 
     public boolean checkPayload_ASK_JOIN_BOARD(final JsonObject payload) {
-        if (payload.getString("pseudo").equals(null)) {
+        if (payload.getString("pseudo").equals(null) || payload.getString("pseudo").equals("")) {
             return false;
-        } else if (payload.getString("board").equals(null)) {
+        } else if (payload.getString("board").equals(null) || payload.getString("board").equals("")) {
             return false;
         }
         return true;
     }
 
     public boolean checkPayload_DRAWER_JOINED_BOARD(final JsonObject payload) {
-        if (payload.getString("pseudo").equals(null)) {
+        if (payload.getString("pseudo").equals(null) || payload.getString("pseudo").equals("")) {
             return false;
-        } else if (payload.getString("board").equals(null)) {
+        } else if (payload.getString("board").equals(null) || payload.getString("board").equals("")) {
             return false;
         } else if (payload.getString("userlist").equals(null)) {
             return false;
@@ -109,18 +114,18 @@ public class Event {
     }
 
     public boolean checkPayload_ASK_LEAVE_BOARD(final JsonObject payload) {
-        if (payload.getString("pseudo").equals(null)) {
+        if (payload.getString("pseudo").equals(null) || payload.getString("pseudo").equals("")) {
             return false;
-        } else if (payload.getString("board").equals(null)) {
+        } else if (payload.getString("board").equals(null) || payload.getString("board").equals("")) {
             return false;
         }
         return true;
     }
 
     public boolean checkPayload_DRAWER_LEFT_BOARD(final JsonObject payload) {
-        if (payload.getString("pseudo").equals(null)) {
+        if (payload.getString("pseudo").equals(null) || payload.getString("pseudo").equals("")) {
             return false;
-        } else if (payload.getString("board").equals(null)) {
+        } else if (payload.getString("board").equals(null) || payload.getString("board").equals("")) {
             return false;
         } else if (payload.getString("userlist").equals(null)) {
             return false;

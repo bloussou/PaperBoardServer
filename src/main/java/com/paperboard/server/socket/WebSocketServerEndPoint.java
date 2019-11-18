@@ -23,7 +23,7 @@ import java.util.logging.Logger;
         configurator = WebSocketServerConfigurator.class)
 public class WebSocketServerEndPoint {
 
-    private static String NOT_IN_A_BOARD = "@@Not in a Board@@";
+    public static String NOT_IN_A_BOARD = "-Not In a Board-";
     private static ConcurrentReferenceHashMap<String, HashSet<Session>> sessionsMap = new ConcurrentReferenceHashMap<>();
     private static final Logger LOGGER = Logger.getLogger(WebSocketServerEndPoint.class.getName());
 
@@ -34,8 +34,13 @@ public class WebSocketServerEndPoint {
             this.sessionsMap.put(NOT_IN_A_BOARD, new HashSet<Session>());
         }
         this.sessionsMap.get(NOT_IN_A_BOARD).add(session);
+
+        // Generate event DRAWER_CONNECTED
         LOGGER.info("[" + NOT_IN_A_BOARD + "] New user connected to socket server !! (id:" + session.getId() + ").");
-        EventManager.getInstance().fireEvent(new Event(EventType.DRAWER_CONNECTED), null);
+        final JsonObject payload = Json.createBuilderFactory(null).createObjectBuilder()
+                .add("sessionId", session.getId())
+                .build();
+        EventManager.getInstance().fireEvent(new Event(EventType.DRAWER_CONNECTED, payload), null);
     }
 
     /**
@@ -47,40 +52,65 @@ public class WebSocketServerEndPoint {
      */
     @OnMessage
     public void onMessage(final Message message, final Session session) {
-        final String board = (String) session.getUserProperties().get("board");
         final String user = (String) session.getUserProperties().get("username");
+        final String board = (String) session.getUserProperties().get("board");
         LOGGER.info("[" + board + "] Received [" + message.getType() + "] from [" + user + "].");
 
+        final JsonObject payload;
         switch (MessageType.getEnum(message.getType())) {
             case MSG_IDENTIFY:
-                EventManager.getInstance().fireEvent(new Event(EventType.IDENTIFY, message), null);
-                this.handleMsgIdentify(session, message);
+                // Generate event DRAWER_CONNECTED
+                payload = Json.createBuilderFactory(null).createObjectBuilder()
+                        .add("pseudo", message.getPayload().getString("pseudo"))
+                        .add("sessionId", session.getId())
+                        .build();
+                EventManager.getInstance().fireEvent(new Event(EventType.ASK_IDENTITY, payload), null);
                 break;
             case MSG_JOIN_BOARD:
-                EventManager.getInstance().fireEvent(new Event(EventType.JOIN_BOARD, message), message.getPayload().getString("board"));
+                // Generate event ASK_JOIN_BOARD
+                payload = Json.createBuilderFactory(null).createObjectBuilder()
+                        .add("pseudo", (String) session.getUserProperties().get("username"))
+                        .add("board", message.getPayload().getString("board"))
+                        .build();
+                EventManager.getInstance().fireEvent(new Event(EventType.ASK_JOIN_BOARD, payload), message.getPayload().getString("board"));
                 break;
             case MSG_LEAVE_BOARD:
-                EventManager.getInstance().fireEvent(new Event(EventType.LEAVE_BOARD, message), board);
-                this.handleMsgLeaveBoard(session);
+                // Generate event ASK_LEAVE_BOARD
+                payload = Json.createBuilderFactory(null).createObjectBuilder()
+                        .add("pseudo", (String) session.getUserProperties().get("username"))
+                        .add("board", message.getPayload().getString("board"))
+                        .build();
+                EventManager.getInstance().fireEvent(new Event(EventType.ASK_LEAVE_BOARD, payload), message.getPayload().getString("board"));
                 break;
             case MSG_CREATE_OBJECT:
-                EventManager.getInstance().fireEvent(new Event(EventType.CREATE_OBJECT, message), board);
+                // Generate event ASK_CREATE_OBJECT
+                payload = Json.createBuilderFactory(null).createObjectBuilder().build();
+                EventManager.getInstance().fireEvent(new Event(EventType.ASK_CREATE_OBJECT, payload), board);
                 break;
             case MSG_EDIT_OBJECT:
-                EventManager.getInstance().fireEvent(new Event(EventType.EDIT_OBJECT, message), board);
+                // Generate event ASK_EDIT_OBJECT
+                payload = Json.createBuilderFactory(null).createObjectBuilder().build();
+                EventManager.getInstance().fireEvent(new Event(EventType.ASK_EDIT_OBJECT, payload), board);
                 break;
             case MSG_LOCK_OBJECT:
-                EventManager.getInstance().fireEvent(new Event(EventType.LOCK_OBJECT, message), board);
+                // Generate event ASK_LOCK_OBJECT
+                payload = Json.createBuilderFactory(null).createObjectBuilder().build();
+                EventManager.getInstance().fireEvent(new Event(EventType.ASK_LOCK_OBJECT, payload), board);
                 break;
             case MSG_UNLOCK_OBJECT:
-                EventManager.getInstance().fireEvent(new Event(EventType.UNLOCK_OBJECT, message), board);
+                // Generate event ASK_UNLOCK_OBJECT
+                payload = Json.createBuilderFactory(null).createObjectBuilder().build();
+                EventManager.getInstance().fireEvent(new Event(EventType.ASK_UNLOCK_OBJECT, payload), board);
                 break;
             case MSG_DELETE_OBJECT:
-                EventManager.getInstance().fireEvent(new Event(EventType.DELETE_OBJECT, message), board);
+                // Generate event ASK_DELETE_OBJECT
+                payload = Json.createBuilderFactory(null).createObjectBuilder().build();
+                EventManager.getInstance().fireEvent(new Event(EventType.ASK_DELETE_OBJECT, payload), board);
                 break;
             case MSG_CHAT_MESSAGE:
-                EventManager.getInstance().fireEvent(new Event(EventType.CHAT_MESSAGE, message), board);
-                this.handleChatMessage(session, message);
+                // Generate event CHAT_MESSAGE
+                payload = Json.createBuilderFactory(null).createObjectBuilder().build();
+                EventManager.getInstance().fireEvent(new Event(EventType.CHAT_MESSAGE, payload), board);
                 break;
             default:
                 LOGGER.info("Message Type Unhandled : " + message.getType() + "!!");
