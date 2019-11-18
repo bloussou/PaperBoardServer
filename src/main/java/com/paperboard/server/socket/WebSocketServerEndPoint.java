@@ -34,8 +34,8 @@ public class WebSocketServerEndPoint {
             this.sessionsMap.put(NOT_IN_A_BOARD, new HashSet<Session>());
         }
         this.sessionsMap.get(NOT_IN_A_BOARD).add(session);
-        EventManager.getInstance().fireEvent(new Event(EventType.DRAWER_CONNECTED), null);
         LOGGER.info("[" + NOT_IN_A_BOARD + "] New user connected to socket server !! (id:" + session.getId() + ").");
+        EventManager.getInstance().fireEvent(new Event(EventType.DRAWER_CONNECTED), null);
     }
 
     /**
@@ -53,12 +53,11 @@ public class WebSocketServerEndPoint {
 
         switch (MessageType.getEnum(message.getType())) {
             case MSG_IDENTIFY:
-                EventManager.getInstance().fireEvent(new Event(EventType.IDENTIFY, message), board);
+                EventManager.getInstance().fireEvent(new Event(EventType.IDENTIFY, message), null);
                 this.handleMsgIdentify(session, message);
                 break;
             case MSG_JOIN_BOARD:
-                EventManager.getInstance().fireEvent(new Event(EventType.JOIN_BOARD, message), board);
-                this.handleMsgJoinBoard(session, message);
+                EventManager.getInstance().fireEvent(new Event(EventType.JOIN_BOARD, message), message.getPayload().getString("board"));
                 break;
             case MSG_LEAVE_BOARD:
                 EventManager.getInstance().fireEvent(new Event(EventType.LEAVE_BOARD, message), board);
@@ -112,20 +111,22 @@ public class WebSocketServerEndPoint {
             }
         }
         this.sessionsMap.get(NOT_IN_A_BOARD).remove(session);
-
-        EventManager.getInstance().fireEvent(new Event(EventType.DRAWER_DISCONNECTED), null);
+        final JsonObject payload = Json.createBuilderFactory(null).createObjectBuilder()
+                .add("pseudo", oldUser)
+                .build();
         LOGGER.info("[" + NOT_IN_A_BOARD + "] user [" + oldUser + "] disconnected.");
+        EventManager.getInstance().fireEvent(new Event(EventType.DRAWER_DISCONNECTED, payload), null);
     }
 
-    public void sendMessageToUser(final Message msg) {
+    public static void sendMessageToUser(final Message msg) {
         final String recipient = msg.getTo();
 
         // find recipient's session
         try {
             boolean recipientFound = false;
-            final Iterator<String> keys = this.sessionsMap.keySet().iterator();
+            final Iterator<String> keys = sessionsMap.keySet().iterator();
             while (!recipientFound && keys.hasNext()) {
-                final Iterator<Session> sessions = this.sessionsMap.get(keys.next()).iterator();
+                final Iterator<Session> sessions = sessionsMap.get(keys.next()).iterator();
                 while (!recipientFound && sessions.hasNext()) {
                     final Session s = sessions.next();
                     if (s.isOpen() && s.getUserProperties().get("username").equals(recipient)) {
@@ -146,10 +147,10 @@ public class WebSocketServerEndPoint {
         }
     }
 
-    public void sendMessageToBoard(final String board, final Message msg) {
+    public static void sendMessageToBoard(final String board, final Message msg) {
         try {
-            if (this.sessionsMap.containsKey(board)) {
-                for (final Session s : this.sessionsMap.get(board)) {
+            if (sessionsMap.containsKey(board)) {
+                for (final Session s : sessionsMap.get(board)) {
                     if (s.isOpen()
                             && board.equals(s.getUserProperties().get("board"))) {
                         s.getBasicRemote().sendObject(msg);
@@ -197,38 +198,42 @@ public class WebSocketServerEndPoint {
         }
     }
 
-    public void handleMsgJoinBoard(final Session session, final Message msg) {
-        final String user = (String) session.getUserProperties().get("username");
-        final String board = msg.getPayload().getString("board");
+    public static void handleEventJoinedBoard(final Event event) {
+        final String user = event.message.getPayload().getString("joiner");
+        final String board = event.message.getPayload().getString("board");
 
-        // Add the corresponding session to the set associated with it
-        this.sessionsMap.get(NOT_IN_A_BOARD).remove(session);
-        if (!this.sessionsMap.containsKey(board)) {
-            this.sessionsMap.put(board, new HashSet<Session>());
-        }
-        if (!this.sessionsMap.get(board).contains(session)) {
-            this.sessionsMap.get(board).add(session);
-            session.getUserProperties().put("board", board);
-        }
-
-        // Broadcast a message with the updated list of users connected to the board
-        final JsonBuilderFactory factory = Json.createBuilderFactory(null);
-        final JsonArrayBuilder boardConnectedUsers = factory.createArrayBuilder();
-        for (final Session s : this.sessionsMap.get(board)) {
-            final String username = (String) s.getUserProperties().get("username");
-            if (s.isOpen() && username != null) {
-                boardConnectedUsers.add(username);
+        // find the session of user
+        boolean found = false;
+        Session session = null;
+        final Iterator<String> keys = sessionsMap.keySet().iterator();
+        while (keys.hasNext()) {
+            final Iterator<Session> sessions = sessionsMap.get(keys.next()).iterator();
+            while (!found && sessions.hasNext()) {
+                final Session s = sessions.next();
+                if (s.isOpen() && user.equals((String) s.getUserProperties().get("username"))) {
+                    session = s;
+                    found = true;
+                }
             }
         }
-        final JsonObject payload = Json.createBuilderFactory(null).createObjectBuilder()
-                .add("joiner", user)
-                .add("userlist", boardConnectedUsers)
-                .build();
 
-        LOGGER.info("[Board-" + board + "] " + user + " joined the board (" + boardConnectedUsers.toString() + ".");
-        final Message broadcast = new Message(MessageType.MSG_DRAWER_JOINED_BOARD.str, "server", "all board members", payload);
-        EventManager.getInstance().fireEvent(new Event(EventType.DRAWER_JOINED_BOARD, broadcast), board);
-        this.sendMessageToBoard(board, broadcast);
+        if (!session.equals(null)) {
+            // Add the corresponding session to the set associated with it
+            sessionsMap.get(NOT_IN_A_BOARD).remove(session);
+            if (!sessionsMap.containsKey(board)) {
+                sessionsMap.put(board, new HashSet<Session>());
+            }
+            if (!sessionsMap.get(board).contains(session)) {
+                sessionsMap.get(board).add(session);
+                session.getUserProperties().put("board", board);
+            }
+
+            final Message broadcast = new Message(MessageType.MSG_DRAWER_JOINED_BOARD.str, "server", "all board members", event.message.getPayload());
+            sendMessageToBoard(board, broadcast);
+        } else {
+            LOGGER.warning("Drawer joined the board" + board + " but no corresponding socket session was found...");
+        }
+
     }
 
     public void handleMsgLeaveBoard(final Session session) {
