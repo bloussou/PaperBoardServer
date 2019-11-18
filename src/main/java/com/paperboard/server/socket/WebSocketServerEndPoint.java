@@ -5,10 +5,7 @@ import com.paperboard.server.events.EventManager;
 import com.paperboard.server.events.EventType;
 import org.springframework.util.ConcurrentReferenceHashMap;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonBuilderFactory;
-import javax.json.JsonObject;
+import javax.json.*;
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
@@ -144,7 +141,7 @@ public class WebSocketServerEndPoint {
         final JsonObject payload = Json.createBuilderFactory(null).createObjectBuilder()
                 .add("pseudo", oldUser)
                 .build();
-        LOGGER.info("[" + NOT_IN_A_BOARD + "] user [" + oldUser + "] disconnected.");
+        LOGGER.info("[" + NOT_IN_A_BOARD + "] user [" + oldUser + "] disconnected. (Close reason: " + closeReason.getReasonPhrase() + ")");
         EventManager.getInstance().fireEvent(new Event(EventType.DRAWER_DISCONNECTED, payload), null);
     }
 
@@ -196,47 +193,58 @@ public class WebSocketServerEndPoint {
     }
 
 
-    public void handleMsgIdentify(final Session session, final Message msg) {
-        final String pseudo = msg.getPayload().getString("pseudo");
+    public static void handleEventAskIdentity(final Event e) {
+        final String sessionId = e.payload.getString("sessionId");
+        final String pseudo = e.payload.getString("pseudo");
+
+        Session session = null;
         boolean pseudoAlreadyInUse = false;
-        final Iterator<String> iter1 = this.sessionsMap.keySet().iterator();
-        while (!pseudoAlreadyInUse && iter1.hasNext()) {
-            final Iterator<Session> iter2 = this.sessionsMap.get(iter1.next()).iterator();
-            while (!pseudoAlreadyInUse && iter2.hasNext()) {
+        final Iterator<String> iter1 = sessionsMap.keySet().iterator();
+        while (iter1.hasNext()) {
+            final Iterator<Session> iter2 = sessionsMap.get(iter1.next()).iterator();
+            while (iter2.hasNext()) {
                 final Session s = iter2.next();
-                if (s.isOpen() && !s.equals(session) && pseudo.equals((String) s.getUserProperties().get("username"))) {
+                if (sessionId.equals(s.getId())) {
+                    session = s;
+                } else if (s.isOpen() && pseudo.equals((String) s.getUserProperties().get("username"))) {
                     pseudoAlreadyInUse = true;
                 }
             }
         }
 
-        final JsonObject payload = Json.createBuilderFactory(null).createObjectBuilder()
+        if (!pseudoAlreadyInUse && session != null) {
+            session.getUserProperties().put("username", pseudo);
+            // Generate event CHAT_MESSAGE
+            final JsonObject payload = Json.createBuilderFactory(null).createObjectBuilder()
+                    .add("pseudo", pseudo)
+                    .build();
+            EventManager.getInstance().fireEvent(new Event(EventType.DRAWER_IDENTIFIED, payload), null);
+        }
+
+        final JsonObject p = Json.createBuilderFactory(null).createObjectBuilder()
                 .add("pseudoAvailable", !pseudoAlreadyInUse)
                 .build();
-        final Message message = new Message(MessageType.MSG_IDENTITY_ANSWER.str, "server", "Unknown Yet", payload);
-
+        final Message answer = new Message(MessageType.MSG_IDENTITY_ANSWER.str, "server", "Unknown Yet", p);
         try {
-            session.getBasicRemote().sendObject(message);
-            if (!pseudoAlreadyInUse) {
-                session.getUserProperties().put("username", pseudo);
-                EventManager.getInstance().fireEvent(new Event(EventType.DRAWER_IDENTIFIED, msg), null);
-            }
-        } catch (final IOException | EncodeException e) {
-            LOGGER.warning("Send Pseudo Request Answer failed");
-            LOGGER.warning(e.getMessage());
-            LOGGER.warning(e.getStackTrace().toString());
+            session.getBasicRemote().sendObject(answer);
+        } catch (final IOException | EncodeException ex) {
+            LOGGER.warning("Error in Identifying method.");
+            LOGGER.warning(ex.getMessage());
+            LOGGER.warning(ex.getStackTrace().toString());
         }
     }
 
-    public static void handleEventJoinedBoard(final Event event) {
-        final String user = event.message.getPayload().getString("joiner");
-        final String board = event.message.getPayload().getString("board");
+
+    public static void handleEventDrawerJoinedBoard(final Event event) {
+        final String user = event.payload.getString("joiner");
+        final String board = event.payload.getString("board");
+        final JsonArray userlist = event.payload.getJsonArray("userList");
 
         // find the session of user
         boolean found = false;
         Session session = null;
         final Iterator<String> keys = sessionsMap.keySet().iterator();
-        while (keys.hasNext()) {
+        while (!found && keys.hasNext()) {
             final Iterator<Session> sessions = sessionsMap.get(keys.next()).iterator();
             while (!found && sessions.hasNext()) {
                 final Session s = sessions.next();
@@ -258,7 +266,15 @@ public class WebSocketServerEndPoint {
                 session.getUserProperties().put("board", board);
             }
 
-            final Message broadcast = new Message(MessageType.MSG_DRAWER_JOINED_BOARD.str, "server", "all board members", event.message.getPayload());
+            // Broadcast a message with the updated list of users connected to the board
+            final JsonBuilderFactory factory = Json.createBuilderFactory(null);
+            final JsonArrayBuilder boardConnectedUsers = factory.createArrayBuilder(userlist);
+            final JsonObject payload = Json.createBuilderFactory(null).createObjectBuilder()
+                    .add("leaver", user)
+                    .add("userlist", boardConnectedUsers)
+                    .build();
+
+            final Message broadcast = new Message(MessageType.MSG_DRAWER_JOINED_BOARD.str, "server", "all board members", payload);
             sendMessageToBoard(board, broadcast);
         } else {
             LOGGER.warning("Drawer joined the board" + board + " but no corresponding socket session was found...");
