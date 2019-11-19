@@ -29,28 +29,22 @@ public class Event {
 
         switch (this.type) {
             case DRAWER_CONNECTED:
-                payloadIsCorrect = this.checkPayload_DRAWER_CONNECTED(payload);
+                payloadIsCorrect = this.checkPayloadContains_SessionId(payload);
                 break;
             case DRAWER_DISCONNECTED:
-                payloadIsCorrect = this.checkPayload_DRAWER_DISCONNECTED(payload);
+                payloadIsCorrect = this.checkPayloadContains_Pseudo(payload) || this.checkPayloadContains_SessionId(payload);
                 break;
             case ASK_IDENTITY:
-                payloadIsCorrect = this.checkPayload_ASK_IDENTITY(payload);
-                break;
             case DRAWER_IDENTIFIED:
-                payloadIsCorrect = this.checkPayload_DRAWER_IDENTIFIED(payload);
+                payloadIsCorrect = this.checkPayloadContains_Pseudo(payload) && this.checkPayloadContains_SessionId(payload);
                 break;
             case ASK_JOIN_BOARD:
-                payloadIsCorrect = this.checkPayload_ASK_JOIN_BOARD(payload);
+            case ASK_LEAVE_BOARD:
+                payloadIsCorrect = this.checkPayloadContains_Pseudo(payload) && this.checkPayloadContains_Board(payload);
                 break;
             case DRAWER_JOINED_BOARD:
-                payloadIsCorrect = this.checkPayload_DRAWER_JOINED_BOARD(payload);
-                break;
-            case ASK_LEAVE_BOARD:
-                payloadIsCorrect = this.checkPayload_ASK_LEAVE_BOARD(payload);
-                break;
             case DRAWER_LEFT_BOARD:
-                payloadIsCorrect = this.checkPayload_DRAWER_LEFT_BOARD(payload);
+                payloadIsCorrect = this.checkPayloadContains_Pseudo(payload) && this.checkPayloadContains_Board(payload) && this.checkPayloadContains_Userlist(payload);
                 break;
             default:
                 payloadIsCorrect = false;
@@ -59,79 +53,32 @@ public class Event {
         return payloadIsCorrect;
     }
 
-    public boolean checkPayload_DRAWER_CONNECTED(final JsonObject payload) {
-        if (payload.getString("sessionId").equals(null) || payload.getString("sessionId").equals("")) {
+    private boolean checkPayloadContains_SessionId(final JsonObject payload) {
+        if (!payload.containsKey("sessionId") || (payload.containsKey("sessionId") && payload.getString("sessionId").equals(""))) {
             return false;
         }
         return true;
     }
 
-    public boolean checkPayload_DRAWER_DISCONNECTED(final JsonObject payload) {
-        if (payload.getString("pseudo").equals(null) || payload.getString("pseudo").equals("")) {
-            return false;
-        } else if (payload.getString("sessionId").equals(null) || payload.getString("sessionId").equals("")) {
-            return false;
-        } else if (payload.getString("board").equals(null) || payload.getString("board").equals("")) {
+    private boolean checkPayloadContains_Pseudo(final JsonObject payload) {
+        if (!payload.containsKey("pseudo") || (payload.containsKey("pseudo") && payload.getString("pseudo").equals(""))) {
             return false;
         }
         return true;
     }
 
-    public boolean checkPayload_ASK_IDENTITY(final JsonObject payload) {
-        if (payload.getString("pseudo").equals(null) || payload.getString("pseudo").equals("")) {
-            return false;
-        } else if (payload.getString("sessionId").equals(null) || payload.getString("sessionId").equals("")) {
+    private boolean checkPayloadContains_Board(final JsonObject payload) {
+        if (!payload.containsKey("board") || (payload.containsKey("board") && payload.getString("board").equals(""))) {
             return false;
         }
         return true;
     }
 
-    public boolean checkPayload_DRAWER_IDENTIFIED(final JsonObject payload) {
-        if (payload.getString("pseudo").equals(null) || payload.getString("pseudo").equals("")) {
+    private boolean checkPayloadContains_Userlist(final JsonObject payload) {
+        if (!payload.containsKey("userlist")) {
             return false;
         }
         return true;
+
     }
-
-    public boolean checkPayload_ASK_JOIN_BOARD(final JsonObject payload) {
-        if (payload.getString("pseudo").equals(null) || payload.getString("pseudo").equals("")) {
-            return false;
-        } else if (payload.getString("board").equals(null) || payload.getString("board").equals("")) {
-            return false;
-        }
-        return true;
-    }
-
-    public boolean checkPayload_DRAWER_JOINED_BOARD(final JsonObject payload) {
-        if (payload.getString("pseudo").equals(null) || payload.getString("pseudo").equals("")) {
-            return false;
-        } else if (payload.getString("board").equals(null) || payload.getString("board").equals("")) {
-            return false;
-        } else if (payload.getString("userlist").equals(null)) {
-            return false;
-        }
-        return true;
-    }
-
-    public boolean checkPayload_ASK_LEAVE_BOARD(final JsonObject payload) {
-        if (payload.getString("pseudo").equals(null) || payload.getString("pseudo").equals("")) {
-            return false;
-        } else if (payload.getString("board").equals(null) || payload.getString("board").equals("")) {
-            return false;
-        }
-        return true;
-    }
-
-    public boolean checkPayload_DRAWER_LEFT_BOARD(final JsonObject payload) {
-        if (payload.getString("pseudo").equals(null) || payload.getString("pseudo").equals("")) {
-            return false;
-        } else if (payload.getString("board").equals(null) || payload.getString("board").equals("")) {
-            return false;
-        } else if (payload.getString("userlist").equals(null)) {
-            return false;
-        }
-        return true;
-    }
-
-
 }

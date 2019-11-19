@@ -27,7 +27,10 @@ public class WebSocketServer implements Subscriber {
     public static WebSocketServer getInstance() {
         if (instance == null) {
             instance = new WebSocketServer();
+            instance.registerToEvent(EventType.DRAWER_IDENTIFIED);
             instance.registerToEvent(EventType.DRAWER_JOINED_BOARD);
+            instance.registerToEvent(EventType.DRAWER_LEFT_BOARD);
+            instance.registerToEvent(EventType.CHAT_MESSAGE);
         }
         return instance;
     }
@@ -65,8 +68,17 @@ public class WebSocketServer implements Subscriber {
     public void updateFromEvent(final Event e) {
         System.out.println("Coucou identifié");
         switch (e.type) {
+            case DRAWER_IDENTIFIED:
+                WebSocketServerEndPoint.handleEventDrawerIdentified(e);
+                break;
             case DRAWER_JOINED_BOARD:
-                WebSocketServerEndPoint.handleEventJoinedBoard(e);
+                WebSocketServerEndPoint.handleEventDrawerJoinedBoard(e);
+                break;
+            case DRAWER_LEFT_BOARD:
+                WebSocketServerEndPoint.handleEventDrawerLeftBoard(e);
+                break;
+            case CHAT_MESSAGE:
+                WebSocketServerEndPoint.handleEventChatMessage(e);
                 break;
         }
     }

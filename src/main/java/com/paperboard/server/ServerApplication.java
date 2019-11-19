@@ -3,6 +3,7 @@ package com.paperboard.server;
 import com.paperboard.Error.PaperBoardAlreadyExistException;
 import com.paperboard.Error.UserAlreadyExistException;
 import com.paperboard.server.events.Event;
+import com.paperboard.server.events.EventManager;
 import com.paperboard.server.events.Subscriber;
 import com.paperboard.server.socket.WebSocketServer;
 import org.springframework.boot.SpringApplication;
@@ -16,8 +17,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.logging.Logger;
 
-import static com.paperboard.server.events.EventType.DRAWER_DISCONNECTED;
-import static com.paperboard.server.events.EventType.DRAWER_IDENTIFIED;
+import static com.paperboard.server.events.EventType.*;
 
 @SpringBootApplication
 @ComponentScan(basePackages = "com.paperboard")
@@ -35,7 +35,7 @@ public class ServerApplication implements Subscriber {
     public static ServerApplication getInstance() {
         if (instance == null) {
             instance = new ServerApplication();
-            instance.registerToEvent(DRAWER_IDENTIFIED);
+            instance.registerToEvent(ASK_IDENTITY);
             instance.registerToEvent(DRAWER_DISCONNECTED);
         }
         return instance;
@@ -115,18 +115,21 @@ public class ServerApplication implements Subscriber {
      * @param pseudo the user you want to add to the Set
      * @throws UserAlreadyExistException The error triggered if you try to add two users with the same pseudo in the set
      */
-    public static void addUser(final String pseudo) throws UserAlreadyExistException {
+    public static void addUser(final String pseudo, final Event e) throws UserAlreadyExistException {
         final ServerApplication server = ServerApplication.getInstance();
         if (server.getConnectedUsers().keySet().contains(pseudo)) {
             throw new UserAlreadyExistException(pseudo);
         } else {
             server.getConnectedUsers().put(pseudo, new User(pseudo));
+            EventManager.getInstance().fireEvent(new Event(DRAWER_IDENTIFIED, e.payload), null);
         }
     }
 
     public static void disconnectUser(final String pseudo) {
-        final ServerApplication server = ServerApplication.getInstance();
-        server.getConnectedUsers().remove(pseudo);
+        if (pseudo != null) {
+            final ServerApplication server = ServerApplication.getInstance();
+            server.getConnectedUsers().remove(pseudo);
+        }
     }
 
     public static PaperBoard getPaperBoard(final String title) throws UserAlreadyExistException {
@@ -165,11 +168,11 @@ public class ServerApplication implements Subscriber {
     public void updateFromEvent(final Event e) {
         System.out.println("Coucou identifié");
         switch (e.type) {
-            case DRAWER_IDENTIFIED:
-                addUser(e.message.getPayload().getString("pseudo"));
+            case ASK_IDENTITY:
+                addUser(e.payload.getString("pseudo"), e);
                 break;
             case DRAWER_DISCONNECTED:
-                disconnectUser(e.payload.getString("pseudo"));
+                disconnectUser(e.payload.containsKey("pseudo") ? e.payload.getString("pseudo") : null);
                 break;
             default:
                 System.out.println("Untracked event occurs in server");

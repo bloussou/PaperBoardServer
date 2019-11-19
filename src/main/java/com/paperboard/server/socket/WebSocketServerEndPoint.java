@@ -56,7 +56,7 @@ public class WebSocketServerEndPoint {
         final JsonObject payload;
         switch (MessageType.getEnum(message.getType())) {
             case MSG_IDENTIFY:
-                // Generate event DRAWER_CONNECTED
+                // Generate event ASK_IDENTITY
                 payload = Json.createBuilderFactory(null).createObjectBuilder()
                         .add("pseudo", message.getPayload().getString("pseudo"))
                         .add("sessionId", session.getId())
@@ -106,7 +106,10 @@ public class WebSocketServerEndPoint {
                 break;
             case MSG_CHAT_MESSAGE:
                 // Generate event CHAT_MESSAGE
-                payload = Json.createBuilderFactory(null).createObjectBuilder().build();
+                payload = Json.createBuilderFactory(null).createObjectBuilder()
+                        .add("pseudo", (String) session.getUserProperties().get("username"))
+                        .add("board", message.getPayload().getString("board"))
+                        .build();
                 EventManager.getInstance().fireEvent(new Event(EventType.CHAT_MESSAGE, payload), board);
                 break;
             default:
@@ -126,22 +129,23 @@ public class WebSocketServerEndPoint {
 
     @OnClose
     public void onClose(final Session session, final CloseReason closeReason) {
-        final String oldUser = (String) session.getUserProperties().get("username");
+        final String pseudo = (String) session.getUserProperties().get("username");
         final String board = (String) session.getUserProperties().get("board");
 
         if (this.sessionsMap.containsKey(board)) {
-            if (this.sessionsMap.get(board).contains(session)) {
-                this.handleMsgLeaveBoard(session);
-            }
             if (this.sessionsMap.get(board).size() == 0) {
                 this.sessionsMap.remove(board);
             }
         }
         this.sessionsMap.get(NOT_IN_A_BOARD).remove(session);
-        final JsonObject payload = Json.createBuilderFactory(null).createObjectBuilder()
-                .add("pseudo", oldUser)
-                .build();
-        LOGGER.info("[" + NOT_IN_A_BOARD + "] user [" + oldUser + "] disconnected. (Close reason: " + closeReason.getReasonPhrase() + ")");
+        final JsonObjectBuilder payloadBuilder = Json.createBuilderFactory(null).createObjectBuilder();
+        if (pseudo != null) {
+            payloadBuilder.add("pseudo", pseudo);
+        } else {
+            payloadBuilder.add("sessionId", session.getId());
+        }
+        final JsonObject payload = payloadBuilder.build();
+        LOGGER.info("[" + NOT_IN_A_BOARD + "] user [" + pseudo + "] disconnected. (Close reason: " + closeReason.getReasonPhrase() + ")");
         EventManager.getInstance().fireEvent(new Event(EventType.DRAWER_DISCONNECTED, payload), null);
     }
 
@@ -193,7 +197,7 @@ public class WebSocketServerEndPoint {
     }
 
 
-    public static void handleEventAskIdentity(final Event e) {
+    public static void handleEventDrawerIdentified(final Event e) {
         final String sessionId = e.payload.getString("sessionId");
         final String pseudo = e.payload.getString("pseudo");
 
@@ -218,7 +222,6 @@ public class WebSocketServerEndPoint {
             final JsonObject payload = Json.createBuilderFactory(null).createObjectBuilder()
                     .add("pseudo", pseudo)
                     .build();
-            EventManager.getInstance().fireEvent(new Event(EventType.DRAWER_IDENTIFIED, payload), null);
         }
 
         final JsonObject p = Json.createBuilderFactory(null).createObjectBuilder()
@@ -234,12 +237,7 @@ public class WebSocketServerEndPoint {
         }
     }
 
-
-    public static void handleEventDrawerJoinedBoard(final Event event) {
-        final String user = event.payload.getString("pseudo");
-        final String board = event.payload.getString("board");
-        final JsonArray userlist = event.payload.getJsonArray("userlist");
-
+    private static Session getSession(final String pseudo) {
         // find the session of user
         boolean found = false;
         Session session = null;
@@ -248,12 +246,22 @@ public class WebSocketServerEndPoint {
             final Iterator<Session> sessions = sessionsMap.get(keys.next()).iterator();
             while (!found && sessions.hasNext()) {
                 final Session s = sessions.next();
-                if (s.isOpen() && user.equals((String) s.getUserProperties().get("username"))) {
+                if (s.isOpen() && pseudo.equals((String) s.getUserProperties().get("username"))) {
                     session = s;
                     found = true;
                 }
             }
         }
+        return session;
+    }
+
+
+    public static void handleEventDrawerJoinedBoard(final Event event) {
+        final String pseudo = event.payload.getString("pseudo");
+        final String board = event.payload.getString("board");
+        final JsonArray userlist = event.payload.getJsonArray("userlist");
+
+        final Session session = getSession(pseudo);
 
         if (!session.equals(null)) {
             // Add the corresponding session to the set associated with it
@@ -270,7 +278,7 @@ public class WebSocketServerEndPoint {
             final JsonBuilderFactory factory = Json.createBuilderFactory(null);
             final JsonArrayBuilder boardConnectedUsers = factory.createArrayBuilder(userlist);
             final JsonObject payload = Json.createBuilderFactory(null).createObjectBuilder()
-                    .add("leaver", user)
+                    .add("joiner", pseudo)
                     .add("userlist", boardConnectedUsers)
                     .build();
 
@@ -283,42 +291,59 @@ public class WebSocketServerEndPoint {
     }
 
     public static void handleEventDrawerLeftBoard(final Event event) {
-        final String user = event.payload.getString("pseudo");
+        final String pseudo = event.payload.getString("pseudo");
         final String board = event.payload.getString("board");
-        final JsonArray userlist = event.payload.getJsonArray("userlist");
 
-        if (!board.equals(NOT_IN_A_BOARD) && this.sessionsMap.containsKey(board)) {
-            this.sessionsMap.get(board).remove(session);
+        final Session session = getSession(pseudo);
+
+        if (!board.equals(NOT_IN_A_BOARD) && sessionsMap.containsKey(board)) {
+            sessionsMap.get(board).remove(session);
         }
-        if (!this.sessionsMap.get(NOT_IN_A_BOARD).contains(session)) {
-            this.sessionsMap.get(NOT_IN_A_BOARD).add(session);
+        if (!sessionsMap.get(NOT_IN_A_BOARD).contains(session)) {
+            sessionsMap.get(NOT_IN_A_BOARD).add(session);
         }
 
         // Broadcast a message with the updated list of users connected to the board
         final JsonBuilderFactory factory = Json.createBuilderFactory(null);
         final JsonArrayBuilder boardConnectedUsers = factory.createArrayBuilder();
-        for (final Session s : this.sessionsMap.get(board)) {
+        for (final Session s : sessionsMap.get(board)) {
             final String username = (String) s.getUserProperties().get("username");
             if (s.isOpen() && username != null) {
                 boardConnectedUsers.add(username);
             }
         }
         final JsonObject payload = Json.createBuilderFactory(null).createObjectBuilder()
-                .add("leaver", user)
+                .add("leaver", pseudo)
                 .add("userlist", boardConnectedUsers)
                 .build();
 
-        LOGGER.info("[Board-" + board + "] " + user + " left the board (" + boardConnectedUsers.toString() + ".");
+        LOGGER.info("[Board-" + board + "] " + pseudo + " left the board (" + boardConnectedUsers.toString() + ".");
         final Message broadcast = new Message(MessageType.MSG_DRAWER_LEFT_BOARD.str, "server", "all board members", payload);
-        EventManager.getInstance().fireEvent(new Event(EventType.DRAWER_LEFT_BOARD, broadcast), board);
-        this.sendMessageToBoard(board, broadcast);
+        sendMessageToBoard(board, broadcast);
     }
 
-    public void handleChatMessage(final Session session, final Message msg) {
+    public static void handleEventChatMessage(final Event event) {
+        final String pseudo = event.payload.getString("pseudo");
+        final Session session = getSession(pseudo);
         final String board = (String) session.getUserProperties().get("board");
 
+        // TODO
+        // Broadcast a message with the updated list of users connected to the board
+        final JsonBuilderFactory factory = Json.createBuilderFactory(null);
+        final JsonArrayBuilder boardConnectedUsers = factory.createArrayBuilder();
+        for (final Session s : sessionsMap.get(board)) {
+            final String username = (String) s.getUserProperties().get("username");
+            if (s.isOpen() && username != null) {
+                boardConnectedUsers.add(username);
+            }
+        }
+        final JsonObject payload = Json.createBuilderFactory(null).createObjectBuilder()
+                .add("leaver", pseudo)
+                .add("userlist", boardConnectedUsers)
+                .build();
+        final Message broadcast = new Message(MessageType.MSG_CHAT_MESSAGE.str, "server", "all board members", payload);
         if (!board.equals(NOT_IN_A_BOARD)) {
-            this.sendMessageToBoard(board, msg);
+            sendMessageToBoard(board, broadcast);
         }
     }
 }

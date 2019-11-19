@@ -5,8 +5,6 @@ import com.paperboard.server.events.Event;
 import com.paperboard.server.events.EventManager;
 import com.paperboard.server.events.EventType;
 import com.paperboard.server.events.Subscriber;
-import com.paperboard.server.socket.Message;
-import com.paperboard.server.socket.MessageType;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -19,8 +17,6 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
-
-import static com.paperboard.server.events.EventType.JOIN_BOARD;
 
 public class PaperBoard implements Subscriber {
 
@@ -69,14 +65,16 @@ public class PaperBoard implements Subscriber {
         this.id = String.valueOf(idCounter.getAndIncrement());
         this.title = title;
         this.creationDate = LocalDateTime.now();
-        this.registerToEvent(JOIN_BOARD, title);
+        this.registerToEvent(EventType.ASK_JOIN_BOARD, title);
+        this.registerToEvent(EventType.ASK_LEAVE_BOARD, title);
     }
 
     public PaperBoard(final String title, final Optional<String> backgroundColor, final Optional<String> imageName) {
         this.id = String.valueOf(idCounter.getAndIncrement());
         this.title = title;
         this.creationDate = LocalDateTime.now();
-        this.registerToEvent(JOIN_BOARD, title);
+        this.registerToEvent(EventType.ASK_JOIN_BOARD, title);
+        this.registerToEvent(EventType.ASK_LEAVE_BOARD, title);
         if (!imageName.isEmpty()) {
             this.setBackgroundImageName(imageName.get());
         } else if (!backgroundColor.isEmpty()) {
@@ -123,6 +121,43 @@ public class PaperBoard implements Subscriber {
         this.backgroundImageName = backgroundImageName;
     }
 
+    private void handleAskJoinBoard(final Event e) {
+        final User user = ServerApplication.getInstance().getConnectedUsers().get(e.payload.getString("pseudo"));
+        this.drawers.add(user);
+
+        // Broadcast a message with the updated list of users connected to the board
+        final JsonBuilderFactory factory = Json.createBuilderFactory(null);
+        final JsonArrayBuilder boardConnectedUsers = factory.createArrayBuilder();
+        for (final User u : this.drawers) {
+            boardConnectedUsers.add(u.getPseudo());
+        }
+        final JsonObject payload = Json.createBuilderFactory(null).createObjectBuilder()
+                .add("pseudo", user.getPseudo())
+                .add("userlist", boardConnectedUsers)
+                .add("board", this.title)
+                .build();
+        EventManager.getInstance().fireEvent(new Event(EventType.DRAWER_JOINED_BOARD, payload), this.title);
+    }
+
+    private void handleAskLeaveBoard(final Event e) {
+        // Broadcast a message with the updated list of users connected to the board
+        final User user = ServerApplication.getInstance().getConnectedUsers().get(e.payload.getString("pseudo"));
+        final String board = e.payload.getString("board");
+        this.drawers.remove(user);
+
+        final JsonBuilderFactory factory = Json.createBuilderFactory(null);
+        final JsonArrayBuilder boardConnectedUsers = factory.createArrayBuilder();
+        for (final User u : this.drawers) {
+            boardConnectedUsers.add(u.getPseudo());
+        }
+        final JsonObject payload = Json.createBuilderFactory(null).createObjectBuilder()
+                .add("leaver", user.getPseudo())
+                .add("userlist", boardConnectedUsers)
+                .add("board", this.title)
+                .build();
+        EventManager.getInstance().fireEvent(new Event(EventType.DRAWER_LEFT_BOARD, payload), board);
+    }
+
 
     @Override
     public String toString() {
@@ -150,24 +185,11 @@ public class PaperBoard implements Subscriber {
     public void updateFromEvent(final Event e) {
         LOGGER.info("Detected Event " + e.type.toString() + " firing. Ready to react.");
         switch (e.type) {
-            case JOIN_BOARD:
-                final User user = ServerApplication.getInstance().getConnectedUsers().get(e.message.getFrom());
-                this.drawers.add(user);
-                // Broadcast a message with the updated list of users connected to the board
-                final JsonBuilderFactory factory = Json.createBuilderFactory(null);
-                final JsonArrayBuilder boardConnectedUsers = factory.createArrayBuilder();
-                for (final User u : this.drawers) {
-                    boardConnectedUsers.add(u.getPseudo());
-                }
-                final JsonObject payload = Json.createBuilderFactory(null).createObjectBuilder()
-                        .add("joiner", user.getPseudo())
-                        .add("userlist", boardConnectedUsers)
-                        .add("board", this.getTitle())
-                        .build();
-
-                LOGGER.info("[Board-" + this.getTitle() + "] " + user.getPseudo() + " joined the board (" + boardConnectedUsers.toString() + ".");
-                final Message broadcast = new Message(MessageType.MSG_DRAWER_JOINED_BOARD.str, "server", "all board members", payload);
-                EventManager.getInstance().fireEvent(new Event(EventType.DRAWER_JOINED_BOARD, broadcast), this.title);
+            case ASK_JOIN_BOARD:
+                handleAskJoinBoard(e);
+                break;
+            case ASK_LEAVE_BOARD:
+                handleAskLeaveBoard(e);
                 break;
             default:
                 LOGGER.info("Detected Event " + e.type.toString() + " Not implemented");
