@@ -13,7 +13,8 @@ public class Message {
     private Date date;
     private JsonObject payload;
 
-    public Message(final String type, final String from, final String to, final JsonObject payload) throws IncorrectMessageException {
+    public Message(final String type, final String from, final String to, final JsonObject payload) throws
+            IncorrectMessageException {
 
         if (!MessageType.contains(type)) {
             throw new IncorrectMessageException("Message type [" + type + "] is not allowed.");
@@ -22,7 +23,8 @@ public class Message {
             throw new IncorrectMessageException("You must give the sender name");
         }
         if (to == null || to == "") {
-            throw new IncorrectMessageException("You must give the receiver name (server='server' and broadcast='broadcast'");
+            throw new IncorrectMessageException(
+                    "You must give the receiver name (server='server' and broadcast='broadcast'");
         }
 
         this.type = type;

@@ -49,7 +49,8 @@ public class PaperBoardController {
 
     // TODO documentation
     @RequestMapping(value = "/paperboard", method = RequestMethod.GET)
-    public PaperBoard getPaperBoard(@RequestParam(value = "title") final String title) throws PaperBoardAlreadyExistException {
+    public PaperBoard getPaperBoard(@RequestParam(value = "title") final String title) throws
+            PaperBoardAlreadyExistException {
         return ServerApplication.getPaperBoard(title);
     }
 
@@ -65,8 +66,9 @@ public class PaperBoardController {
      */
     @RequestMapping(value = "/paperboard", method = RequestMethod.POST)
     public PaperBoard postPaperBoard(@RequestParam(value = "title") final String title,
-                                     @RequestParam(value = "backgroundColor") final Optional<String> backgroundColor,
-                                     @RequestParam(value = "backgroundImage") final Optional<String> backgroundImage) throws PaperBoardAlreadyExistException {
+            @RequestParam(value = "backgroundColor") final Optional<String> backgroundColor,
+            @RequestParam(value = "backgroundImage") final Optional<String> backgroundImage) throws
+            PaperBoardAlreadyExistException {
         final PaperBoard paperBoard;
         if (!backgroundColor.isEmpty() || !backgroundImage.isEmpty()) {
             paperBoard = new PaperBoard(title, backgroundColor, backgroundImage);
@@ -79,7 +81,8 @@ public class PaperBoardController {
     }
 
     @PostMapping(value = "/paperboard/upload/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity uploadFile(@RequestParam final String paperboardName, @RequestParam final MultipartFile file) {
+    public ResponseEntity uploadFile(@RequestParam final String paperboardName,
+            @RequestParam final MultipartFile file) {
         if (!file.isEmpty()) {
             try {
                 final String uploadsDir = "/uploads/";
@@ -89,7 +92,8 @@ public class PaperBoardController {
                 }
 
                 final String orgName = file.getOriginalFilename();
-                final String newName = paperboardName.concat(orgName.substring(orgName.lastIndexOf("."), orgName.length()));
+                final String newName = paperboardName.concat(orgName.substring(orgName.lastIndexOf("."),
+                        orgName.length()));
                 final String filePath = realPathtoUploads + newName;
                 final File dest = new File(filePath);
                 file.transferTo(dest);

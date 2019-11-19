@@ -1,7 +1,6 @@
 package com.paperboard.server.socket;
 
-public enum
-MessageType {
+public enum MessageType {
 
     // ---- RECEIVED FROM CLIENTS
     MSG_IDENTIFY("Ask Pseudo"),

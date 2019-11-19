@@ -98,7 +98,8 @@ public class ServerApplication implements Subscriber {
      * Method to add a paperboard to the set of paperboards
      *
      * @param paperBoard the paperboard you want to add to the Set
-     * @throws PaperBoardAlreadyExistException The error triggered if you try to add two paperboards with the same title in the set
+     * @throws PaperBoardAlreadyExistException The error triggered if you try to add two paperboards with the same
+     * title in the set
      */
     public static void addPaperBoard(final PaperBoard paperBoard) throws PaperBoardAlreadyExistException {
         final ServerApplication server = ServerApplication.getInstance();
