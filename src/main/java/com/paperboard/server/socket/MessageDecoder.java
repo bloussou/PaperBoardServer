@@ -30,7 +30,8 @@ public class MessageDecoder implements Decoder.Text<Message> {
             LOGGER.warning(e.getMessage());
             return null;
         } catch (final Exception e) {
-            LOGGER.warning("SocketMessage parsing error : " + string + " is not a valid JSON object (It should not contain other embedding than payload:{}).");
+            LOGGER.warning("SocketMessage parsing error : " + string + " is not a valid JSON object (It should not " +
+                    "contain other embedding than payload:{}).");
             return null;
         }
     }
@@ -45,7 +46,9 @@ public class MessageDecoder implements Decoder.Text<Message> {
             Json.createReader(new StringReader(string)).read();
             return true;
         } catch (final Exception ex) {
-            LOGGER.warning("SocketMessage cannot be decoded : " + string + " is not a valid JSON object (It should respect JSON format with double quotes and it should not contain other embedding than payload:{}.");
+            LOGGER.warning("SocketMessage cannot be decoded : " + string + " is not a valid JSON object (It should " +
+                    "respect JSON format with double quotes and it should not contain other embedding than payload:{}" +
+                    ".");
             return false;
         }
     }

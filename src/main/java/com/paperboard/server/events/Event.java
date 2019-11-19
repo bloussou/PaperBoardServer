@@ -49,11 +49,13 @@ public class Event {
             case DRAWER_JOINED_BOARD:
             case DRAWER_LEFT_BOARD:
                 payloadIsCorrect =
-                        this.checkPayloadContains_String(payload, "pseudo") && this.checkPayloadContains_String(payload, "board") && this.checkPayloadContains_Userlist(payload);
+                        this.checkPayloadContains_String(payload, "pseudo") && this.checkPayloadContains_String(payload, "board") && this
+                        .checkPayloadContains_Userlist(payload);
                 break;
             case CHAT_MESSAGE:
                 payloadIsCorrect =
-                        this.checkPayloadContains_String(payload, "pseudo") && this.checkPayloadContains_String(payload, "board") && this.checkPayloadContains_String(payload, "msg");
+                        this.checkPayloadContains_String(payload, "pseudo") && this.checkPayloadContains_String(payload, "board") && this
+                        .checkPayloadContains_String(payload, "msg");
                 break;
             default:
                 payloadIsCorrect = false;

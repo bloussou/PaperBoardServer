@@ -33,7 +33,8 @@ public class EventManager {
         }
         final String board = specificBoard != null ? specificBoard : ALL_BOARDS;
         subscribers.get(s).add(new Subscription(type, board));
-        LOGGER.info("Added new subscription for " + s.getClass().getName() + " a subscriber for eventType : " + type + " for board " + specificBoard);
+        LOGGER.info("Added new subscription for " + s.getClass()
+                .getName() + " a subscriber for eventType : " + type + " for board " + specificBoard);
     }
 
     public void removeSubscriber(final Subscriber s) {
@@ -42,14 +43,16 @@ public class EventManager {
         }
     }
 
-    public void removeSubscriber(final Subscriber s, @Nullable final EventType e, @Nullable final String specificBoard) {
+    public void removeSubscriber(final Subscriber s, @Nullable final EventType e,
+            @Nullable final String specificBoard) {
         if (e == null && specificBoard == null) {
             this.removeSubscriber(s);
         } else if (subscribers.containsKey(s)) {
             final String board = specificBoard != null ? specificBoard : ALL_BOARDS;
             int index = 0;
             while (index < subscribers.get(s).size()) {
-                if ((e == null || subscribers.get(s).get(index).eventType.equals(e)) && subscribers.get(s).get(index).board.equals(board)) {
+                if ((e == null || subscribers.get(s).get(index).eventType.equals(e)) && subscribers.get(s)
+                        .get(index).board.equals(board)) {
                     subscribers.get(s).remove(index);
                 } else {
                     index += 1;
@@ -71,7 +74,8 @@ public class EventManager {
                     try {
                         s.updateFromEvent(event);
                     } catch (final NullPointerException e) {
-                        LOGGER.warning("An error occurred in the method updateFromEvent. Or Subscriber object is now null. It should have unsubscribed before being destroyed !");
+                        LOGGER.warning("An error occurred in the method updateFromEvent. Or Subscriber object is now "
+                                + "null. It should have unsubscribed before being destroyed !");
                         LOGGER.warning(e.getStackTrace().toString());
                     }
                     fired = true;

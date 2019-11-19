@@ -128,7 +128,8 @@ public class PaperBoard implements Subscriber {
         for (final User u : this.drawers) {
             boardConnectedUsers.add(u.getPseudo());
         }
-        final JsonObject payload = Json.createBuilderFactory(null).createObjectBuilder()
+        final JsonObject payload = Json.createBuilderFactory(null)
+                .createObjectBuilder()
                 .add("pseudo", user.getPseudo())
                 .add("userlist", boardConnectedUsers)
                 .add("board", this.title)
@@ -147,7 +148,8 @@ public class PaperBoard implements Subscriber {
         for (final User u : this.drawers) {
             boardConnectedUsers.add(u.getPseudo());
         }
-        final JsonObjectBuilder payloadFactory = Json.createBuilderFactory(null).createObjectBuilder()
+        final JsonObjectBuilder payloadFactory = Json.createBuilderFactory(null)
+                .createObjectBuilder()
                 .add("pseudo", user.getPseudo())
                 .add("userlist", boardConnectedUsers)
                 .add("board", this.title);

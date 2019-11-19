@@ -49,7 +49,8 @@ public class PaperBoardController {
 
     // TODO documentation
     @RequestMapping(value = "/paperboard", method = RequestMethod.GET)
-    public PaperBoard getPaperBoard(@RequestParam(value = "title") final String title) throws PaperBoardAlreadyExistException {
+    public PaperBoard getPaperBoard(@RequestParam(value = "title") final String title) throws
+            PaperBoardAlreadyExistException {
         return ServerApplication.getPaperBoard(title);
     }
 
@@ -64,9 +65,10 @@ public class PaperBoardController {
      * @throws PaperBoardAlreadyExistException thrown if the user try to create a paperBoard with the same name
      */
     @RequestMapping(value = "/paperboard", method = RequestMethod.POST)
-    public PaperBoard postPaperBoard(@RequestParam(value = "title") final String title, @RequestParam(value =
-            "backgroundColor") final Optional<String> backgroundColor,
-                                     @RequestParam(value = "backgroundImage") final Optional<String> backgroundImage) throws PaperBoardAlreadyExistException {
+    public PaperBoard postPaperBoard(@RequestParam(value = "title") final String title,
+            @RequestParam(value = "backgroundColor") final Optional<String> backgroundColor,
+            @RequestParam(value = "backgroundImage") final Optional<String> backgroundImage) throws
+            PaperBoardAlreadyExistException {
         final PaperBoard paperBoard;
         if (!backgroundColor.isEmpty() || !backgroundImage.isEmpty()) {
             paperBoard = new PaperBoard(title, backgroundColor, backgroundImage);
@@ -80,7 +82,7 @@ public class PaperBoardController {
 
     @PostMapping(value = "/paperboard/upload/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity uploadFile(@RequestParam final String paperboardName,
-                                     @RequestParam final MultipartFile file) {
+            @RequestParam final MultipartFile file) {
         if (!file.isEmpty()) {
             try {
                 final String uploadsDir = "/uploads/";
@@ -110,6 +112,10 @@ public class PaperBoardController {
         final File file = new File(imagePath);
         final InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
 
-        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + file.getName()).contentType(MediaType.APPLICATION_OCTET_STREAM).contentLength(file.length()).body(resource);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + file.getName())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(file.length())
+                .body(resource);
     }
 }
