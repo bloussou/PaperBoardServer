@@ -108,7 +108,8 @@ public class WebSocketServerEndPoint {
                 // Generate event CHAT_MESSAGE
                 payload = Json.createBuilderFactory(null).createObjectBuilder()
                         .add("pseudo", user)
-                        .add("board", message.getPayload().getString("board"))
+                        .add("board", board)
+                        .add("msg", message.getPayload().getString("msg"))
                         .build();
                 EventManager.getInstance().fireEvent(new Event(EventType.CHAT_MESSAGE, payload), board);
                 break;
@@ -347,22 +348,13 @@ public class WebSocketServerEndPoint {
 
     public static void handleEventChatMessage(final Event event) {
         final String pseudo = event.payload.getString("pseudo");
+        final String msg = event.payload.getString("msg");
         final Session session = getSession(pseudo);
         final String board = (String) session.getUserProperties().get("board");
 
-        // TODO
-        // Broadcast a message with the updated list of users connected to the board
-        final JsonBuilderFactory factory = Json.createBuilderFactory(null);
-        final JsonArrayBuilder boardConnectedUsers = factory.createArrayBuilder();
-        for (final Session s : sessionsMap.get(board)) {
-            final String username = (String) s.getUserProperties().get("username");
-            if (s.isOpen() && username != null) {
-                boardConnectedUsers.add(username);
-            }
-        }
         final JsonObject payload = Json.createBuilderFactory(null).createObjectBuilder()
-                .add("leaver", pseudo)
-                .add("userlist", boardConnectedUsers)
+                .add("writer", pseudo)
+                .add("msg", msg)
                 .build();
         final Message broadcast = new Message(MessageType.MSG_CHAT_MESSAGE.str, "server", "all board members", payload);
         if (!board.equals(NOT_IN_A_BOARD)) {

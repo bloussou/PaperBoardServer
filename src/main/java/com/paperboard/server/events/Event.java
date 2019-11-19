@@ -46,6 +46,9 @@ public class Event {
             case DRAWER_LEFT_BOARD:
                 payloadIsCorrect = this.checkPayloadContains_Pseudo(payload) && this.checkPayloadContains_Board(payload) && this.checkPayloadContains_Userlist(payload);
                 break;
+            case CHAT_MESSAGE:
+                payloadIsCorrect = this.checkPayloadContains_Pseudo(payload) && this.checkPayloadContains_Board(payload) && this.checkPayloadContains_Msg(payload);
+                break;
             default:
                 payloadIsCorrect = false;
         }
@@ -74,11 +77,17 @@ public class Event {
         return true;
     }
 
+    private boolean checkPayloadContains_Msg(final JsonObject payload) {
+        if (!payload.containsKey("msg") || (payload.containsKey("msg") && payload.getString("msg").equals(""))) {
+            return false;
+        }
+        return true;
+    }
+
     private boolean checkPayloadContains_Userlist(final JsonObject payload) {
         if (!payload.containsKey("userlist")) {
             return false;
         }
         return true;
-
     }
 }
