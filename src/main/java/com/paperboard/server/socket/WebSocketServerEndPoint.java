@@ -66,7 +66,7 @@ public class WebSocketServerEndPoint {
             case MSG_JOIN_BOARD:
                 // Generate event ASK_JOIN_BOARD
                 payload = Json.createBuilderFactory(null).createObjectBuilder()
-                        .add("pseudo", (String) session.getUserProperties().get("username"))
+                        .add("pseudo", user)
                         .add("board", message.getPayload().getString("board"))
                         .build();
                 EventManager.getInstance().fireEvent(new Event(EventType.ASK_JOIN_BOARD, payload), message.getPayload().getString("board"));
@@ -74,10 +74,10 @@ public class WebSocketServerEndPoint {
             case MSG_LEAVE_BOARD:
                 // Generate event ASK_LEAVE_BOARD
                 payload = Json.createBuilderFactory(null).createObjectBuilder()
-                        .add("pseudo", (String) session.getUserProperties().get("username"))
-                        .add("board", message.getPayload().getString("board"))
+                        .add("pseudo", user)
+                        .add("board", board)
                         .build();
-                EventManager.getInstance().fireEvent(new Event(EventType.ASK_LEAVE_BOARD, payload), message.getPayload().getString("board"));
+                EventManager.getInstance().fireEvent(new Event(EventType.ASK_LEAVE_BOARD, payload), board);
                 break;
             case MSG_CREATE_OBJECT:
                 // Generate event ASK_CREATE_OBJECT
@@ -107,7 +107,7 @@ public class WebSocketServerEndPoint {
             case MSG_CHAT_MESSAGE:
                 // Generate event CHAT_MESSAGE
                 payload = Json.createBuilderFactory(null).createObjectBuilder()
-                        .add("pseudo", (String) session.getUserProperties().get("username"))
+                        .add("pseudo", user)
                         .add("board", message.getPayload().getString("board"))
                         .build();
                 EventManager.getInstance().fireEvent(new Event(EventType.CHAT_MESSAGE, payload), board);
@@ -132,12 +132,18 @@ public class WebSocketServerEndPoint {
         final String pseudo = (String) session.getUserProperties().get("username");
         final String board = (String) session.getUserProperties().get("board");
 
-        if (this.sessionsMap.containsKey(board)) {
-            if (this.sessionsMap.get(board).size() == 0) {
-                this.sessionsMap.remove(board);
-            }
+        if (!board.equals(NOT_IN_A_BOARD)) {
+            final JsonObject payload = Json.createBuilderFactory(null).createObjectBuilder()
+                    .add("pseudo", pseudo)
+                    .add("board", board)
+                    .add("isDisconnect", "true")
+                    .build();
+            EventManager.getInstance().fireEvent(new Event(EventType.ASK_LEAVE_BOARD, payload), board);
+        } else {
+            this.sessionsMap.get(NOT_IN_A_BOARD).remove(session);
         }
-        this.sessionsMap.get(NOT_IN_A_BOARD).remove(session);
+
+
         final JsonObjectBuilder payloadBuilder = Json.createBuilderFactory(null).createObjectBuilder();
         if (pseudo != null) {
             payloadBuilder.add("pseudo", pseudo);
@@ -191,6 +197,22 @@ public class WebSocketServerEndPoint {
             }
         } catch (final IOException | EncodeException e) {
             LOGGER.warning("SendMessageToBoard [" + board + "] failed");
+            LOGGER.warning(e.getMessage());
+            LOGGER.warning(e.getStackTrace().toString());
+        }
+    }
+
+    public static void sendMessageToSession(final Session session, final Message msg) {
+        try {
+            if (session.isOpen()
+            ) {
+                session.getBasicRemote().sendObject(msg);
+            }
+
+            LOGGER.info("Server sent [" + msg.getType() + "] to Session [" + session.getId() + "].");
+
+        } catch (final IOException | EncodeException e) {
+            LOGGER.warning("SendMessageToSession [" + session.getId() + "] failed");
             LOGGER.warning(e.getMessage());
             LOGGER.warning(e.getStackTrace().toString());
         }
@@ -299,7 +321,7 @@ public class WebSocketServerEndPoint {
         if (!board.equals(NOT_IN_A_BOARD) && sessionsMap.containsKey(board)) {
             sessionsMap.get(board).remove(session);
         }
-        if (!sessionsMap.get(NOT_IN_A_BOARD).contains(session)) {
+        if (!sessionsMap.get(NOT_IN_A_BOARD).contains(session) && !event.payload.containsKey("isDisconnect")) {
             sessionsMap.get(NOT_IN_A_BOARD).add(session);
         }
 
@@ -320,6 +342,7 @@ public class WebSocketServerEndPoint {
         LOGGER.info("[Board-" + board + "] " + pseudo + " left the board (" + boardConnectedUsers.toString() + ".");
         final Message broadcast = new Message(MessageType.MSG_DRAWER_LEFT_BOARD.str, "server", "all board members", payload);
         sendMessageToBoard(board, broadcast);
+        sendMessageToSession(session, broadcast);
     }
 
     public static void handleEventChatMessage(final Event event) {

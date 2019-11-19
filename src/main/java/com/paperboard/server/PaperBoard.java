@@ -6,10 +6,7 @@ import com.paperboard.server.events.EventManager;
 import com.paperboard.server.events.EventType;
 import com.paperboard.server.events.Subscriber;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonBuilderFactory;
-import javax.json.JsonObject;
+import javax.json.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Optional;
@@ -150,12 +147,14 @@ public class PaperBoard implements Subscriber {
         for (final User u : this.drawers) {
             boardConnectedUsers.add(u.getPseudo());
         }
-        final JsonObject payload = Json.createBuilderFactory(null).createObjectBuilder()
-                .add("leaver", user.getPseudo())
+        final JsonObjectBuilder payloadFactory = Json.createBuilderFactory(null).createObjectBuilder()
+                .add("pseudo", user.getPseudo())
                 .add("userlist", boardConnectedUsers)
-                .add("board", this.title)
-                .build();
-        EventManager.getInstance().fireEvent(new Event(EventType.DRAWER_LEFT_BOARD, payload), board);
+                .add("board", this.title);
+        if (e.payload.containsKey("isDisconnect")) {
+            payloadFactory.add("isDisconnect", "true");
+        }
+        EventManager.getInstance().fireEvent(new Event(EventType.DRAWER_LEFT_BOARD, payloadFactory.build()), board);
     }
 
 
