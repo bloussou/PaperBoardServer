@@ -66,7 +66,6 @@ public class WebSocketServer implements Subscriber {
 
     @Override
     public void updateFromEvent(final Event e) {
-        System.out.println("Coucou identifié");
         switch (e.type) {
             case DRAWER_IDENTIFIED:
                 WebSocketServerEndPoint.handleEventDrawerIdentified(e);
