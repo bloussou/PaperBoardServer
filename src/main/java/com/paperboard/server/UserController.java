@@ -1,7 +1,8 @@
 package com.paperboard.server;
 
 import com.paperboard.Error.UserAlreadyExistException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Controller to manage the user HTTP requests
@@ -16,11 +17,11 @@ public class UserController {
      * @param pseudo pseudo of the new user.
      * @throws UserAlreadyExistException if there is already a connected user with the same name
      */
-    @RequestMapping(value = "/user", method = RequestMethod.POST)
+   /* @RequestMapping(value = "/user", method = RequestMethod.POST)
     public User createUser(@RequestParam(value = "pseudo") final String pseudo) throws UserAlreadyExistException {
         System.out.println(pseudo);
         final User user = new User(pseudo);
         ServerApplication.addUser(user);
         return user;
-    }
+    }*/
 }

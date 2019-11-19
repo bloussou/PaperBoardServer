@@ -2,7 +2,9 @@ package com.paperboard.server;
 
 import com.paperboard.Error.PaperBoardAlreadyExistException;
 import com.paperboard.Error.UserAlreadyExistException;
-import com.paperboard.server.events.EventType;
+import com.paperboard.server.events.Event;
+import com.paperboard.server.events.EventManager;
+import com.paperboard.server.events.Subscriber;
 import com.paperboard.server.socket.WebSocketServer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -11,27 +13,30 @@ import org.springframework.context.annotation.ComponentScan;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.logging.Logger;
+
+import static com.paperboard.server.events.EventType.*;
 
 @SpringBootApplication
 @ComponentScan(basePackages = "com.paperboard")
-public class ServerApplication {
+public class ServerApplication implements Subscriber {
     private static ServerApplication instance = null;
     private static ConfigurableApplicationContext ctx;
-    private final HashSet<User> connectedUsers = new HashSet<>();
+    private final HashMap<String, User> connectedUsers = new HashMap<>();
     private final HashSet<PaperBoard> paperBoards = new HashSet<>();
     private static Logger LOGGER = Logger.getLogger(ServerApplication.class.getName());
 
     public ServerApplication() {
-
     }
 
 
     public static ServerApplication getInstance() {
         if (instance == null) {
             instance = new ServerApplication();
+            instance.registerToEvent(ASK_IDENTITY);
+            instance.registerToEvent(DRAWER_DISCONNECTED);
         }
         return instance;
     }
@@ -39,6 +44,8 @@ public class ServerApplication {
     public static void runServer() {
         LOGGER.info("---> Starting Http Server !");
         ctx = SpringApplication.run(ServerApplication.class);
+        // Initialize singleton
+        getInstance();
     }
 
     public static void stopServer() {
@@ -64,8 +71,8 @@ public class ServerApplication {
          * 3) The event fired contains the Msg with all the needed information for the subscribers
          * to process there updateFromEvent
          */
-        final PaperBoard pb = new PaperBoard("tableau de papier", Optional.of("rouge"), Optional.empty());
-        pb.registerToEvent(EventType.JOIN_BOARD, pb.getTitle());
+        /*final PaperBoard pb = new PaperBoard("tableau de papier", Optional.of("rouge"), Optional.empty());
+        pb.registerToEvent(EventType.JOIN_BOARD, pb.getTitle());*/
         try {
             final BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
             LOGGER.info("[IMPORTANT INFO] To stop the Http server and the WebSocket server properly press any key.");
@@ -105,15 +112,23 @@ public class ServerApplication {
     /**
      * Method to add a user to the set of connectedUser
      *
-     * @param user the user you want to add to the Set
+     * @param pseudo the user you want to add to the Set
      * @throws UserAlreadyExistException The error triggered if you try to add two users with the same pseudo in the set
      */
-    public static void addUser(final User user) throws UserAlreadyExistException {
+    public static void addUser(final String pseudo, final Event e) throws UserAlreadyExistException {
         final ServerApplication server = ServerApplication.getInstance();
-        if (server.getConnectedUsers().contains(user)) {
-            throw new UserAlreadyExistException(user);
+        if (server.getConnectedUsers().keySet().contains(pseudo)) {
+            throw new UserAlreadyExistException(pseudo);
         } else {
-            server.getConnectedUsers().add(user);
+            server.getConnectedUsers().put(pseudo, new User(pseudo));
+            EventManager.getInstance().fireEvent(new Event(DRAWER_IDENTIFIED, e.payload), null);
+        }
+    }
+
+    public static void disconnectUser(final String pseudo) {
+        if (pseudo != null) {
+            final ServerApplication server = ServerApplication.getInstance();
+            server.getConnectedUsers().remove(pseudo);
         }
     }
 
@@ -141,11 +156,26 @@ public class ServerApplication {
 //        server.getBackgroundImage().put(boardName, storePath);
     }
 
-    public HashSet<User> getConnectedUsers() {
+    public HashMap<String, User> getConnectedUsers() {
         return connectedUsers;
     }
 
     public HashSet<PaperBoard> getPaperBoards() {
         return paperBoards;
+    }
+
+    @Override
+    public void updateFromEvent(final Event e) {
+        System.out.println("Coucou identifié");
+        switch (e.type) {
+            case ASK_IDENTITY:
+                addUser(e.payload.getString("pseudo"), e);
+                break;
+            case DRAWER_DISCONNECTED:
+                disconnectUser(e.payload.containsKey("pseudo") ? e.payload.getString("pseudo") : null);
+                break;
+            default:
+                System.out.println("Untracked event occurs in server");
+        }
     }
 }

@@ -33,7 +33,7 @@ public class EventManager {
         }
         final String board = specificBoard != null ? specificBoard : ALL_BOARDS;
         subscribers.get(s).add(new Subscription(type, board));
-        LOGGER.info("Added new subscription for a subscriber.");
+        LOGGER.info("Added new subscription for " + s.getClass().getName() + " a subscriber for eventType : " + type + " for board " + specificBoard);
     }
 
     public void removeSubscriber(final Subscriber s) {
@@ -59,19 +59,19 @@ public class EventManager {
     }
 
     public void fireEvent(final Event event, @Nullable final String specificBoard) {
-        LOGGER.info("Firing Event " + event.type.toString() + specificBoard == null ? " " : " [Board-" + specificBoard + "] !");
+        LOGGER.info("Firing Event " + event.type.toString() + " [Board-" + specificBoard + "] !");
         final String board = specificBoard != null ? specificBoard : ALL_BOARDS;
         for (final Subscriber s : subscribers.keySet()) {
             final Iterator<Subscription> iter = this.subscribers.get(s).iterator();
             boolean fired = false;
             while (!fired && iter.hasNext()) {
                 final Subscription sub = iter.next();
-                if (sub.eventType.equals(event.type) && sub.board.equals(board)) {
+                if (sub.eventType.equals(event.type) && (sub.board.equals(ALL_BOARDS) || sub.board.equals(board))) {
                     event.firedAt = new Date();
                     try {
                         s.updateFromEvent(event);
                     } catch (final NullPointerException e) {
-                        LOGGER.warning("Subscriber object is now null. It should have unsubscribed before being destroyed !");
+                        LOGGER.warning("An error occurred in the method updateFromEvent. Or Subscriber object is now null. It should have unsubscribed before being destroyed !");
                         LOGGER.warning(e.getStackTrace().toString());
                     }
                     fired = true;
