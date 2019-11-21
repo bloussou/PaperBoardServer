@@ -4,11 +4,11 @@ import com.paperboard.server.User;
 
 public class Shape extends Drawing {
 
-    private String color;
-    private Double lineWidth;
-    private String lineStyle;
+    private String color = "#000000";
+    private Double lineWidth = 1.0;
+    private String lineStyle = "normal";
 
-    public Shape(User user) {
+    public Shape(final User user) {
         super(user);
     }
 

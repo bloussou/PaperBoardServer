@@ -86,7 +86,12 @@ public class WebSocketServerEndPoint {
                 break;
             case MSG_CREATE_OBJECT:
                 // Generate event ASK_CREATE_OBJECT
-                payload = Json.createBuilderFactory(null).createObjectBuilder().build();
+                payload = Json.createBuilderFactory(null)
+                        .createObjectBuilder()
+                        .add("pseudo", user)
+                        .add("board", board)
+                        .add("shape", message.getPayload().getString("shape"))
+                        .build();
                 EventManager.getInstance().fireEvent(new Event(EventType.ASK_CREATE_OBJECT, payload), board);
                 break;
             case MSG_EDIT_OBJECT:
@@ -183,8 +188,7 @@ public class WebSocketServerEndPoint {
             }
 
             if (!recipientFound) {
-                LOGGER.warning("[User-" + msg.getFrom() + "] wanted to send message to " + recipient + " But no use " +
-                        "was found with this name.");
+                LOGGER.warning("[User-" + msg.getFrom() + "] wanted to send message to " + recipient + " But no use " + "was found with this name.");
             }
         } catch (final IOException | EncodeException e) {
             LOGGER.warning("SendMessageToUser [" + recipient + "] failed");
@@ -378,4 +382,25 @@ public class WebSocketServerEndPoint {
             sendMessageToBoard(board, broadcast);
         }
     }
+
+    public static void handleObjectCreated(final Event event) {
+        final String pseudo = event.payload.getString("pseudo");
+        final String shape = event.payload.getString("shape");
+        final Session session = getSession(pseudo);
+        final String board = (String) session.getUserProperties().get("board");
+
+        final JsonObject payload = Json.createBuilderFactory(null)
+                .createObjectBuilder()
+                .add("pseudo", pseudo)
+                .add("shape", shape)
+                .build();
+        final Message broadcast = new Message(MessageType.MSG_OBJECT_CREATED.str,
+                "server",
+                "all board members",
+                payload);
+        if (!board.equals(NOT_IN_A_BOARD)) {
+            sendMessageToBoard(board, broadcast);
+        }
+    }
+
 }
