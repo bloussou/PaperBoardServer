@@ -1,5 +1,6 @@
 package com.paperboard.server;
 
+import com.paperboard.drawings.Circle;
 import com.paperboard.drawings.Drawing;
 import com.paperboard.server.events.Event;
 import com.paperboard.server.events.EventManager;
@@ -63,15 +64,12 @@ public class PaperBoard implements Subscriber {
         this.title = title;
         this.creationDate = LocalDateTime.now();
         this.registerToEvent(EventType.ASK_JOIN_BOARD, title);
+        this.registerToEvent(EventType.ASK_CREATE_OBJECT, title);
         this.registerToEvent(EventType.ASK_LEAVE_BOARD, title);
     }
 
     public PaperBoard(final String title, final Optional<String> backgroundColor, final Optional<String> imageName) {
-        this.id = String.valueOf(idCounter.getAndIncrement());
-        this.title = title;
-        this.creationDate = LocalDateTime.now();
-        this.registerToEvent(EventType.ASK_JOIN_BOARD, title);
-        this.registerToEvent(EventType.ASK_LEAVE_BOARD, title);
+        this(title);
         if (!imageName.isEmpty()) {
             this.setBackgroundImageName(imageName.get());
         } else if (!backgroundColor.isEmpty()) {
@@ -159,6 +157,31 @@ public class PaperBoard implements Subscriber {
         EventManager.getInstance().fireEvent(new Event(EventType.DRAWER_LEFT_BOARD, payloadFactory.build()), board);
     }
 
+    private void handleAskCreateObject(final Event e) {
+        final User user = ServerApplication.getInstance().getConnectedUsers().get(e.payload.getString("pseudo"));
+        final String board = e.payload.getString("board");
+        if (drawers.contains(user)) {
+            final String shape = e.payload.getString("shape");
+            switch (shape) {
+                case "Circle":
+                    final Drawing circle = new Circle(user);
+                    drawings.add(new Circle(user));
+                    final JsonObject payload = Json.createBuilderFactory(null)
+                            .createObjectBuilder()
+                            .add("pseudo", user.getPseudo())
+                            .add("shape", "circle")
+                            .add("board", this.title)
+                            .build();
+                    EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_CREATED, payload), board);
+                    break;
+                default:
+                    LOGGER.warning("This shape is not yet implemented" + shape);
+            }
+        } else {
+            // TODO throw error
+        }
+    }
+
 
     @Override
     public String toString() {
@@ -191,6 +214,9 @@ public class PaperBoard implements Subscriber {
                 break;
             case ASK_LEAVE_BOARD:
                 handleAskLeaveBoard(e);
+                break;
+            case ASK_CREATE_OBJECT:
+                handleAskCreateObject(e);
                 break;
             default:
                 LOGGER.info("Detected Event " + e.type.toString() + " Not implemented");

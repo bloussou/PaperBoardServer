@@ -31,6 +31,7 @@ public class WebSocketServer implements Subscriber {
             instance.registerToEvent(EventType.DRAWER_JOINED_BOARD);
             instance.registerToEvent(EventType.DRAWER_LEFT_BOARD);
             instance.registerToEvent(EventType.CHAT_MESSAGE);
+            instance.registerToEvent(EventType.OBJECT_CREATED);
         }
         return instance;
     }
@@ -78,6 +79,9 @@ public class WebSocketServer implements Subscriber {
                 break;
             case CHAT_MESSAGE:
                 WebSocketServerEndPoint.handleEventChatMessage(e);
+                break;
+            case OBJECT_CREATED:
+                WebSocketServerEndPoint.handleObjectCreated(e);
                 break;
         }
     }

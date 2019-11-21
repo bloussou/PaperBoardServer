@@ -33,29 +33,35 @@ public class Event {
                 payloadIsCorrect = this.checkPayloadContains_String(payload, "sessionId");
                 break;
             case DRAWER_DISCONNECTED:
-                payloadIsCorrect =
-                        this.checkPayloadContains_String(payload, "pseudo") || this.checkPayloadContains_String(payload, "sessionId");
+                payloadIsCorrect = this.checkPayloadContains_String(payload,
+                        "pseudo") || this.checkPayloadContains_String(payload, "sessionId");
                 break;
             case ASK_IDENTITY:
             case DRAWER_IDENTIFIED:
-                payloadIsCorrect =
-                        this.checkPayloadContains_String(payload, "pseudo") && this.checkPayloadContains_String(payload, "sessionId");
+                payloadIsCorrect = this.checkPayloadContains_String(payload,
+                        "pseudo") && this.checkPayloadContains_String(payload, "sessionId");
                 break;
             case ASK_JOIN_BOARD:
             case ASK_LEAVE_BOARD:
-                payloadIsCorrect =
-                        this.checkPayloadContains_String(payload, "pseudo") && this.checkPayloadContains_String(payload, "board");
+                payloadIsCorrect = this.checkPayloadContains_String(payload,
+                        "pseudo") && this.checkPayloadContains_String(payload, "board");
                 break;
             case DRAWER_JOINED_BOARD:
             case DRAWER_LEFT_BOARD:
-                payloadIsCorrect =
-                        this.checkPayloadContains_String(payload, "pseudo") && this.checkPayloadContains_String(payload, "board") && this
-                        .checkPayloadContains_Userlist(payload);
+                payloadIsCorrect = this.checkPayloadContains_String(payload,
+                        "pseudo") && this.checkPayloadContains_String(payload,
+                        "board") && this.checkPayloadContains_Userlist(payload);
                 break;
             case CHAT_MESSAGE:
-                payloadIsCorrect =
-                        this.checkPayloadContains_String(payload, "pseudo") && this.checkPayloadContains_String(payload, "board") && this
-                        .checkPayloadContains_String(payload, "msg");
+                payloadIsCorrect = this.checkPayloadContains_String(payload,
+                        "pseudo") && this.checkPayloadContains_String(payload,
+                        "board") && this.checkPayloadContains_String(payload, "msg");
+                break;
+            case OBJECT_CREATED:
+            case ASK_CREATE_OBJECT:
+                payloadIsCorrect = this.checkPayloadContains_String(payload,
+                        "pseudo") && this.checkPayloadContains_String(payload,
+                        "board") && this.checkPayloadContains_String(payload, "shape");
                 break;
             default:
                 payloadIsCorrect = false;
