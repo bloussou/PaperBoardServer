@@ -98,7 +98,18 @@ public class WebSocketServerEndPoint {
                 break;
             case MSG_EDIT_OBJECT:
                 // Generate event ASK_EDIT_OBJECT
-                payload = message.getPayload();
+                final JsonObjectBuilder payloadBuilder = Json.createBuilderFactory(null)
+                        .createObjectBuilder()
+                        .add("pseudo", user)
+                        .add("board", board);
+                final Iterator<String> keys = message.getPayload().keySet().iterator();
+                while (keys.hasNext()) {
+                    final String key = keys.next();
+                    if (!key.equals("pseudo") && !key.equals("board")) {
+                        payloadBuilder.add(key, message.getPayload().getString(key));
+                    }
+                }
+                payload = payloadBuilder.build();
                 EventManager.getInstance().fireEvent(new Event(EventType.ASK_EDIT_OBJECT, payload), board);
                 break;
             case MSG_LOCK_OBJECT:
