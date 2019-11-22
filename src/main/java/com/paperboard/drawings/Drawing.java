@@ -50,6 +50,14 @@ public abstract class Drawing implements IDrawing {
         return position;
     }
 
+    public boolean isLocked() {
+        return isLocked;
+    }
+
+    public String getLockedBy() {
+        return lockedBy;
+    }
+
     public void setPosition(final Position position) {
         this.position = position;
     }

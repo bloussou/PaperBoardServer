@@ -91,6 +91,9 @@ public class WebSocketServer implements Subscriber {
             case OBJECT_UNLOCKED:
                 WebSocketServerEndPoint.handleEventObjectUnlocked(e);
                 break;
+            case OBJECT_EDITED:
+                WebSocketServerEndPoint.handleEventObjectEdited(e);
+                break;
         }
     }
 }

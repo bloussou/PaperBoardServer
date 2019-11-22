@@ -1,9 +1,6 @@
 package com.paperboard.server;
 
-import com.paperboard.drawings.Circle;
-import com.paperboard.drawings.Drawing;
-import com.paperboard.drawings.DrawingType;
-import com.paperboard.drawings.Position;
+import com.paperboard.drawings.*;
 import com.paperboard.server.events.Event;
 import com.paperboard.server.events.EventManager;
 import com.paperboard.server.events.EventType;
@@ -17,6 +14,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
+
+import static com.paperboard.drawings.DrawingType.CIRCLE;
 
 public class PaperBoard implements Subscriber {
 
@@ -174,7 +173,7 @@ public class PaperBoard implements Subscriber {
                     final JsonObject payload = Json.createBuilderFactory(null)
                             .createObjectBuilder()
                             .add("pseudo", user.getPseudo())
-                            .add("shape", DrawingType.CIRCLE.str)
+                            .add("shape", CIRCLE.str)
                             .add("id", circle.getId())
                             .add("X", circle.getPosition().getX().toString())
                             .add("Y", circle.getPosition().getY().toString())
@@ -228,6 +227,63 @@ public class PaperBoard implements Subscriber {
         return;
     }
 
+    private void handleAskEditObject(final Event e) {
+        final User user = ServerApplication.getInstance().getConnectedUsers().get(e.payload.getString("pseudo"));
+        final String board = this.title;
+        final String drawingId = e.payload.getString("drawingId");
+
+        final Drawing drawing = this.drawings.get(drawingId);
+        final String drawingType = drawing.getType();
+        final JsonObject payload = e.payload;
+        final Set<String> keys = payload.keySet();
+
+        final JsonObjectBuilder modifications = Json.createBuilderFactory(null).createObjectBuilder();
+        modifications.add("pseudo", user.getPseudo()).add("drawingId", drawingId).add("board", board);
+
+        // Check that you can modify the drawing
+        if (drawing.isLocked() && user.getPseudo().equals(drawing.getLockedBy())) {
+            // Default modification
+            if (payload.containsKey("X") && payload.containsKey("Y")) {
+                final Double x = Double.parseDouble(payload.getString("X"));
+                final Double y = Double.parseDouble(payload.getString("Y"));
+                drawing.setPosition(new Position(x, y));
+                modifications.add("X", x.toString()).add("Y", y.toString());
+            }
+            switch (DrawingType.getEnum(drawingType)) {
+                case CIRCLE:
+                    final Circle circle = (Circle) drawing;
+                    for (final String key : keys) {
+                        switch (ModificationType.getEnum(key)) {
+                            case LINE_WIDTH:
+                                final Double lineWidth =
+                                        Double.parseDouble(payload.getString(ModificationType.LINE_WIDTH.str));
+                                circle.setLineWidth(lineWidth);
+                                modifications.add(ModificationType.LINE_WIDTH.str, lineWidth.toString());
+                                break;
+                            case LINE_COLOR:
+                                final String lineColor = payload.getString(ModificationType.LINE_COLOR.str);
+                                circle.setLineColor(lineColor);
+                                modifications.add(ModificationType.LINE_COLOR.str, lineColor);
+                                break;
+                            case RADIUS:
+                                final Double radius =
+                                        Double.parseDouble(payload.getString(ModificationType.RADIUS.str));
+                                circle.setRadius(radius);
+                                modifications.add(ModificationType.RADIUS.str, radius.toString());
+                                break;
+                            default:
+                                LOGGER.warning("This modification is not yet implemented for edition" + key);
+                        }
+                    }
+                    break;
+                default:
+                    LOGGER.warning("This shape is not yet implemented for edition" + drawingType);
+            }
+            EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_EDITED, modifications.build()), board);
+        }
+
+    }
+
 
     @Override
     public String toString() {
@@ -269,6 +325,9 @@ public class PaperBoard implements Subscriber {
                 break;
             case ASK_UNLOCK_OBJECT:
                 handleAskUnlockObject(e);
+                break;
+            case ASK_EDIT_OBJECT:
+                handleAskEditObject(e);
                 break;
             default:
                 LOGGER.info("Detected Event " + e.type.toString() + " Not implemented");

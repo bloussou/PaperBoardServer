@@ -98,7 +98,7 @@ public class WebSocketServerEndPoint {
                 break;
             case MSG_EDIT_OBJECT:
                 // Generate event ASK_EDIT_OBJECT
-                payload = Json.createBuilderFactory(null).createObjectBuilder().build();
+                payload = message.getPayload();
                 EventManager.getInstance().fireEvent(new Event(EventType.ASK_EDIT_OBJECT, payload), board);
                 break;
             case MSG_LOCK_OBJECT:
@@ -433,6 +433,21 @@ public class WebSocketServerEndPoint {
 
         final JsonObject payload = event.payload;
         final Message broadcast = new Message(MessageType.MSG_OBJECT_UNLOCKED.str,
+                "server",
+                "all board members",
+                payload);
+        if (!board.equals(NOT_IN_A_BOARD)) {
+            sendMessageToBoard(board, broadcast);
+        }
+    }
+
+    public static void handleEventObjectEdited(final Event event) {
+        final String pseudo = event.payload.getString("pseudo");
+        final Session session = getSession(pseudo);
+        final String board = (String) session.getUserProperties().get("board");
+
+        final JsonObject payload = event.payload;
+        final Message broadcast = new Message(MessageType.MSG_OBJECT_EDITED.str,
                 "server",
                 "all board members",
                 payload);
