@@ -1,5 +1,6 @@
 package com.paperboard.server.events;
 
+import com.paperboard.drawings.ModificationType;
 import reactor.util.annotation.Nullable;
 
 import javax.json.JsonObject;
@@ -79,15 +80,28 @@ public class Event {
             case ASK_UNLOCK_OBJECT:
             case OBJECT_LOCKED:
             case OBJECT_UNLOCKED:
-            case OBJECT_EDITED:
                 payloadIsCorrect = this.checkPayloadContains_String(payload,
                         "pseudo") && this.checkPayloadContains_String(payload,
                         "board") && this.checkPayloadContains_String(payload, "drawingId");
                 break;
+            case OBJECT_EDITED:
+                payloadIsCorrect = this.checkPayloadContains_String(payload,
+                        "pseudo") && this.checkPayloadContains_String(payload,
+                        "board") && this.checkPayloadContains_String(payload, "drawingId");
+                for (final String key : payload.keySet()) {
+                    if (!ModificationType.contains(key)) {
+                        payloadIsCorrect = false;
+                    }
+                }
+                break;
             case ASK_EDIT_OBJECT:
                 payloadIsCorrect = this.checkPayloadContains_String(payload,
                         "pseudo") && this.checkPayloadContains_String(payload, "drawingId");
-                // values available are X, Y, lineWidth, lineColor, radius
+                for (final String key : payload.keySet()) {
+                    if (!ModificationType.contains(key)) {
+                        payloadIsCorrect = false;
+                    }
+                }
                 break;
             default:
                 payloadIsCorrect = false;
