@@ -91,6 +91,8 @@ public class WebSocketServerEndPoint {
                         .add("pseudo", user)
                         .add("board", board)
                         .add("shape", message.getPayload().getString("shape"))
+                        .add("positionX", message.getPayload().getString("positionX"))
+                        .add("positionY", message.getPayload().getString("positionY"))
                         .build();
                 EventManager.getInstance().fireEvent(new Event(EventType.ASK_CREATE_OBJECT, payload), board);
                 break;
@@ -385,15 +387,10 @@ public class WebSocketServerEndPoint {
 
     public static void handleObjectCreated(final Event event) {
         final String pseudo = event.payload.getString("pseudo");
-        final String shape = event.payload.getString("shape");
         final Session session = getSession(pseudo);
         final String board = (String) session.getUserProperties().get("board");
 
-        final JsonObject payload = Json.createBuilderFactory(null)
-                .createObjectBuilder()
-                .add("pseudo", pseudo)
-                .add("shape", shape)
-                .build();
+        final JsonObject payload = event.payload;
         final Message broadcast = new Message(MessageType.MSG_OBJECT_CREATED.str,
                 "server",
                 "all board members",

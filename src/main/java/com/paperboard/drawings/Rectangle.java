@@ -7,7 +7,7 @@ public class Rectangle extends Shape {
     private String backgroundColor;
     private Double height;
 
-    public Rectangle(User user) {
-        super(user);
+    public Rectangle(final User user) {
+        super(DrawingType.RECTANGLE.str, user);
     }
 }
