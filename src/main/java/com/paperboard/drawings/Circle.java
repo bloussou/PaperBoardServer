@@ -9,4 +9,20 @@ public class Circle extends Shape {
     public Circle(final User user) {
         super(user);
     }
+
+    public Double getRadius() {
+        return radius;
+    }
+
+    public void setRadius(final Double radius) {
+        this.radius = radius;
+    }
+
+    public String getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    public void setBackgroundColor(final String backgroundColor) {
+        this.backgroundColor = backgroundColor;
+    }
 }

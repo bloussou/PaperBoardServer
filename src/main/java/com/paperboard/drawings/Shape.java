@@ -14,6 +14,29 @@ public class Shape extends Drawing {
 
     @Override
     public void resize() {
+    }
 
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(final String color) {
+        this.color = color;
+    }
+
+    public Double getLineWidth() {
+        return lineWidth;
+    }
+
+    public void setLineWidth(final Double lineWidth) {
+        this.lineWidth = lineWidth;
+    }
+
+    public String getLineStyle() {
+        return lineStyle;
+    }
+
+    public void setLineStyle(final String lineStyle) {
+        this.lineStyle = lineStyle;
     }
 }
