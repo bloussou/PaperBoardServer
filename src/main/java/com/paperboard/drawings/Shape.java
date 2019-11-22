@@ -7,12 +7,12 @@ public class Shape extends Drawing {
     private Double lineWidth = 10.0;
     private String lineStyle = "normal";
 
-    public Shape(final User user, final Position position) {
-        super(user, position);
+    public Shape(final String type, final User user, final Position position) {
+        super(type, user, position);
     }
 
-    public Shape(final User user) {
-        super(user);
+    public Shape(final String type, final User user) {
+        super(type, user);
     }
 
     @Override

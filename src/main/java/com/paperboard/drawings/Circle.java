@@ -7,7 +7,7 @@ public class Circle extends Shape {
     private String fillColor;
 
     public Circle(final User user, final Position position) {
-        super(user, position);
+        super(DrawingType.CIRCLE.str, user, position);
     }
 
     public Double getRadius() {

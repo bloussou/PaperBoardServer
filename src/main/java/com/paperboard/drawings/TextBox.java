@@ -7,8 +7,8 @@ public class TextBox extends Drawing {
     private Double textSize;
     private String textColor;
 
-    public TextBox(User user) {
-        super(user);
+    public TextBox(final User user) {
+        super(DrawingType.TEXT_BOX.str, user);
     }
 
     @Override

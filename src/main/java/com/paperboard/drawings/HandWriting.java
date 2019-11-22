@@ -6,7 +6,7 @@ public class HandWriting extends Shape {
     private java.util.ArrayList<Double> pathX;
     private java.util.ArrayList<Double> pathY;
 
-    public HandWriting(User user) {
-        super(user);
+    public HandWriting(final User user) {
+        super(DrawingType.HANDWRITING.str, user);
     }
 }
