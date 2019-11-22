@@ -144,6 +144,14 @@ public class PaperBoard implements Subscriber {
         final String board = e.payload.getString("board");
         this.drawers.remove(user);
 
+        // unlock object if the drawers has locked one
+        for (final String drawingId : this.drawings.keySet()) {
+            final Drawing drawing = this.drawings.get(drawingId);
+            if (drawing.getLockedBy().equals(user.getPseudo())) {
+                drawing.unlockDrawing(user);
+            }
+        }
+
         final JsonBuilderFactory factory = Json.createBuilderFactory(null);
         final JsonArrayBuilder boardConnectedUsers = factory.createArrayBuilder();
         for (final User u : this.drawers) {
@@ -198,6 +206,12 @@ public class PaperBoard implements Subscriber {
         final String drawingId = e.payload.getString("drawingId");
 
         final Drawing drawing = this.drawings.get(drawingId);
+        for (final String drawId : this.drawings.keySet()) {
+            if (this.drawings.get(drawId).getLockedBy().equals(user.getPseudo())) {
+                //TODO throw error, ot possible to lock two paperboard
+                return;
+            }
+        }
         if (drawing.lockDrawing(user)) {
             final JsonObject payload = Json.createBuilderFactory(null)
                     .createObjectBuilder()
@@ -207,7 +221,6 @@ public class PaperBoard implements Subscriber {
                     .build();
             EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_LOCKED, payload), board);
         }
-        return;
     }
 
     private void handleAskUnlockObject(final Event e) {
