@@ -66,4 +66,12 @@ public abstract class Drawing implements IDrawing {
         }
     }
 
+    public boolean unlockDrawing(final User user) {
+        if (user.getPseudo().equals(this.lockedBy) && this.isLocked) {
+            isLocked = false;
+            lockedBy = "";
+            return true;
+        }
+        return false;
+    }
 }

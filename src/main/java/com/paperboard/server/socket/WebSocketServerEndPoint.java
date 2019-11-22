@@ -113,7 +113,12 @@ public class WebSocketServerEndPoint {
                 break;
             case MSG_UNLOCK_OBJECT:
                 // Generate event ASK_UNLOCK_OBJECT
-                payload = Json.createBuilderFactory(null).createObjectBuilder().build();
+                payload = Json.createBuilderFactory(null)
+                        .createObjectBuilder()
+                        .add("pseudo", user)
+                        .add("board", board)
+                        .add("drawingId", message.getPayload().getString("drawingId"))
+                        .build();
                 EventManager.getInstance().fireEvent(new Event(EventType.ASK_UNLOCK_OBJECT, payload), board);
                 break;
             case MSG_DELETE_OBJECT:
@@ -420,5 +425,21 @@ public class WebSocketServerEndPoint {
             sendMessageToBoard(board, broadcast);
         }
     }
+
+    public static void handleEventObjectUnlocked(final Event event) {
+        final String pseudo = event.payload.getString("pseudo");
+        final Session session = getSession(pseudo);
+        final String board = (String) session.getUserProperties().get("board");
+
+        final JsonObject payload = event.payload;
+        final Message broadcast = new Message(MessageType.MSG_OBJECT_UNLOCKED.str,
+                "server",
+                "all board members",
+                payload);
+        if (!board.equals(NOT_IN_A_BOARD)) {
+            sendMessageToBoard(board, broadcast);
+        }
+    }
+
 
 }

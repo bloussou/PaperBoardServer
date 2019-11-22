@@ -25,8 +25,7 @@ public class PaperBoard implements Subscriber {
     final private String title;
     private String backgroundColor;
     private java.util.Set<User> drawers = new HashSet<>();
-    private ConcurrentHashMap<String, Drawing> drawings =
-            new ConcurrentHashMap<String, Drawing>();
+    private ConcurrentHashMap<String, Drawing> drawings = new ConcurrentHashMap<String, Drawing>();
     private String backgroundImageName;
     private static final Logger LOGGER = Logger.getLogger(PaperBoard.class.getName());
 
@@ -69,6 +68,7 @@ public class PaperBoard implements Subscriber {
         this.registerToEvent(EventType.ASK_CREATE_OBJECT, title);
         this.registerToEvent(EventType.ASK_LEAVE_BOARD, title);
         this.registerToEvent(EventType.ASK_LOCK_OBJECT, title);
+        this.registerToEvent(EventType.ASK_UNLOCK_OBJECT, title);
     }
 
     public PaperBoard(final String title, final Optional<String> backgroundColor, final Optional<String> imageName) {
@@ -210,6 +210,24 @@ public class PaperBoard implements Subscriber {
         return;
     }
 
+    private void handleAskUnlockObject(final Event e) {
+        final User user = ServerApplication.getInstance().getConnectedUsers().get(e.payload.getString("pseudo"));
+        final String board = this.title;
+        final String drawingId = e.payload.getString("drawingId");
+
+        final Drawing drawing = this.drawings.get(drawingId);
+        if (drawing.unlockDrawing(user)) {
+            final JsonObject payload = Json.createBuilderFactory(null)
+                    .createObjectBuilder()
+                    .add("pseudo", user.getPseudo())
+                    .add("drawingId", drawingId)
+                    .add("board", board)
+                    .build();
+            EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_UNLOCKED, payload), board);
+        }
+        return;
+    }
+
 
     @Override
     public String toString() {
@@ -248,6 +266,9 @@ public class PaperBoard implements Subscriber {
                 break;
             case ASK_LOCK_OBJECT:
                 handleAskLockObject(e);
+                break;
+            case ASK_UNLOCK_OBJECT:
+                handleAskUnlockObject(e);
                 break;
             default:
                 LOGGER.info("Detected Event " + e.type.toString() + " Not implemented");

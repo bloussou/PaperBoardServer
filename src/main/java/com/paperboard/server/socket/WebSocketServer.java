@@ -87,6 +87,9 @@ public class WebSocketServer implements Subscriber {
             case OBJECT_LOCKED:
                 WebSocketServerEndPoint.handleEventObjectLocked(e);
                 break;
+            case OBJECT_UNLOCKED:
+                WebSocketServerEndPoint.handleEventObjectUnlocked(e);
+                break;
         }
     }
 }
