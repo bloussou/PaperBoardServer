@@ -75,6 +75,13 @@ public class Event {
                         "shape") && this.checkPayloadContains_String(payload,
                         "positionX") && this.checkPayloadContains_String(payload, "positionY");
                 break;
+            case ASK_LOCK_OBJECT:
+            case OBJECT_LOCKED:
+                payloadIsCorrect = this.checkPayloadContains_String(payload,
+                        "pseudo") && this.checkPayloadContains_String(payload,
+                        "board") && this.checkPayloadContains_String(payload,
+                        "drawingId");
+                break;
             default:
                 payloadIsCorrect = false;
         }

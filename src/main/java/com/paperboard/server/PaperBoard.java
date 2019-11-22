@@ -2,6 +2,7 @@ package com.paperboard.server;
 
 import com.paperboard.drawings.Circle;
 import com.paperboard.drawings.Drawing;
+import com.paperboard.drawings.DrawingType;
 import com.paperboard.drawings.Position;
 import com.paperboard.server.events.Event;
 import com.paperboard.server.events.EventManager;
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
@@ -24,8 +25,8 @@ public class PaperBoard implements Subscriber {
     final private String title;
     private String backgroundColor;
     private java.util.Set<User> drawers = new HashSet<>();
-    private java.util.concurrent.CopyOnWriteArrayList<com.paperboard.drawings.Drawing> drawings =
-            new CopyOnWriteArrayList<Drawing>();
+    private ConcurrentHashMap<String, Drawing> drawings =
+            new ConcurrentHashMap<String, Drawing>();
     private String backgroundImageName;
     private static final Logger LOGGER = Logger.getLogger(PaperBoard.class.getName());
 
@@ -67,6 +68,7 @@ public class PaperBoard implements Subscriber {
         this.registerToEvent(EventType.ASK_JOIN_BOARD, title);
         this.registerToEvent(EventType.ASK_CREATE_OBJECT, title);
         this.registerToEvent(EventType.ASK_LEAVE_BOARD, title);
+        this.registerToEvent(EventType.ASK_LOCK_OBJECT, title);
     }
 
     public PaperBoard(final String title, final Optional<String> backgroundColor, final Optional<String> imageName) {
@@ -104,7 +106,7 @@ public class PaperBoard implements Subscriber {
         return drawers;
     }
 
-    public CopyOnWriteArrayList<Drawing> getDrawings() {
+    public ConcurrentHashMap<String, Drawing> getDrawings() {
         return drawings;
     }
 
@@ -168,11 +170,11 @@ public class PaperBoard implements Subscriber {
             switch (shape) {
                 case "Circle":
                     final Circle circle = new Circle(user, new Position(positionX, positionY));
-                    drawings.add(circle);
+                    drawings.put(circle.getId(), circle);
                     final JsonObject payload = Json.createBuilderFactory(null)
                             .createObjectBuilder()
                             .add("pseudo", user.getPseudo())
-                            .add("shape", "circle")
+                            .add("shape", DrawingType.CIRCLE.str)
                             .add("id", circle.getId())
                             .add("X", circle.getPosition().getX().toString())
                             .add("Y", circle.getPosition().getY().toString())
@@ -188,6 +190,24 @@ public class PaperBoard implements Subscriber {
         } else {
             // TODO throw error
         }
+    }
+
+    private void handleAskLockObject(final Event e) {
+        final User user = ServerApplication.getInstance().getConnectedUsers().get(e.payload.getString("pseudo"));
+        final String board = this.title;
+        final String drawingId = e.payload.getString("drawingId");
+
+        final Drawing drawing = this.drawings.get(drawingId);
+        if (drawing.lockDrawing(user)) {
+            final JsonObject payload = Json.createBuilderFactory(null)
+                    .createObjectBuilder()
+                    .add("pseudo", user.getPseudo())
+                    .add("drawingId", drawingId)
+                    .add("board", board)
+                    .build();
+            EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_LOCKED, payload), board);
+        }
+        return;
     }
 
 
@@ -225,6 +245,9 @@ public class PaperBoard implements Subscriber {
                 break;
             case ASK_CREATE_OBJECT:
                 handleAskCreateObject(e);
+                break;
+            case ASK_LOCK_OBJECT:
+                handleAskLockObject(e);
                 break;
             default:
                 LOGGER.info("Detected Event " + e.type.toString() + " Not implemented");

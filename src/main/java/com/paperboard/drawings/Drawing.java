@@ -7,6 +7,8 @@ import java.util.concurrent.atomic.AtomicLong;
 public abstract class Drawing implements IDrawing {
     private static AtomicLong idCounter = new AtomicLong(0);
     private final User owner;
+    private boolean isLocked;
+    private String lockedBy;
     private final String id;
     private final String type;
     private Position position;
@@ -15,13 +17,13 @@ public abstract class Drawing implements IDrawing {
         this.id = "drawing" + String.valueOf(idCounter.getAndIncrement());
         this.owner = user;
         this.type = type;
+        this.isLocked = false;
+        this.lockedBy = null;
     }
 
     public Drawing(final String type, final User user, final Position position) {
-        this.id = "drawing" + String.valueOf(idCounter.getAndIncrement());
-        this.owner = user;
+        this(type, user);
         this.position = position;
-        this.type = type;
     }
 
     @Override
@@ -51,4 +53,17 @@ public abstract class Drawing implements IDrawing {
     public void setPosition(final Position position) {
         this.position = position;
     }
+
+    public boolean lockDrawing(final User user) {
+        synchronized (this) {
+            if (!this.isLocked) {
+                this.isLocked = true;
+                this.lockedBy = user.getPseudo();
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
 }

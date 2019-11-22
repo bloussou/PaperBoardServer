@@ -20,8 +20,8 @@ import java.util.Optional;
 /**
  * Controller to manage httpRequests about PaperBoard
  */
-//@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:4200"})
-@CrossOrigin("*")
+@CrossOrigin(origins = "*")
+//@CrossOrigin("*")
 @RestController("/paperboard")
 public class PaperBoardController {
 
@@ -66,8 +66,8 @@ public class PaperBoardController {
      */
     @RequestMapping(value = "/paperboard", method = RequestMethod.POST)
     public PaperBoard postPaperBoard(@RequestParam(value = "title") final String title,
-            @RequestParam(value = "backgroundColor") final Optional<String> backgroundColor,
-            @RequestParam(value = "backgroundImage") final Optional<String> backgroundImage) throws
+                                     @RequestParam(value = "backgroundColor") final Optional<String> backgroundColor,
+                                     @RequestParam(value = "backgroundImage") final Optional<String> backgroundImage) throws
             PaperBoardAlreadyExistException {
         final PaperBoard paperBoard;
         if (!backgroundColor.isEmpty() || !backgroundImage.isEmpty()) {
@@ -82,7 +82,7 @@ public class PaperBoardController {
 
     @PostMapping(value = "/paperboard/upload/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity uploadFile(@RequestParam final String paperboardName,
-            @RequestParam final MultipartFile file) {
+                                     @RequestParam final MultipartFile file) {
         if (!file.isEmpty()) {
             try {
                 final String uploadsDir = "/uploads/";

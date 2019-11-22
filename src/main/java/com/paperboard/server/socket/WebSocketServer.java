@@ -32,6 +32,7 @@ public class WebSocketServer implements Subscriber {
             instance.registerToEvent(EventType.DRAWER_LEFT_BOARD);
             instance.registerToEvent(EventType.CHAT_MESSAGE);
             instance.registerToEvent(EventType.OBJECT_CREATED);
+            instance.registerToEvent(EventType.OBJECT_LOCKED);
         }
         return instance;
     }
@@ -82,6 +83,9 @@ public class WebSocketServer implements Subscriber {
                 break;
             case OBJECT_CREATED:
                 WebSocketServerEndPoint.handleObjectCreated(e);
+                break;
+            case OBJECT_LOCKED:
+                WebSocketServerEndPoint.handleEventObjectLocked(e);
                 break;
         }
     }

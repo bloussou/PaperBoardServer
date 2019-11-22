@@ -42,7 +42,7 @@ public class WebSocketServerEndPoint {
     /**
      * When you send something through a socket message, your message should be a json formatted string like
      * string s = '{"from": "Ludo", "to": "Brieuc", "type": "Edit Object", "payload":{"shapeType": "rectangle",
-     * "shapeId": "rect-0121", "color": "blue"}}'
+     * "drawingId": "rect-0121", "color": "blue"}}'
      *
      * @param message
      * @param session
@@ -103,7 +103,12 @@ public class WebSocketServerEndPoint {
                 break;
             case MSG_LOCK_OBJECT:
                 // Generate event ASK_LOCK_OBJECT
-                payload = Json.createBuilderFactory(null).createObjectBuilder().build();
+                payload = Json.createBuilderFactory(null)
+                        .createObjectBuilder()
+                        .add("pseudo", user)
+                        .add("board", board)
+                        .add("drawingId", message.getPayload().getString("drawingId"))
+                        .build();
                 EventManager.getInstance().fireEvent(new Event(EventType.ASK_LOCK_OBJECT, payload), board);
                 break;
             case MSG_UNLOCK_OBJECT:
@@ -168,6 +173,25 @@ public class WebSocketServerEndPoint {
         final JsonObject payload = payloadBuilder.build();
         LOGGER.info("[" + NOT_IN_A_BOARD + "] user [" + pseudo + "] disconnected. (Close reason: " + closeReason.getReasonPhrase() + ")");
         EventManager.getInstance().fireEvent(new Event(EventType.DRAWER_DISCONNECTED, payload), null);
+    }
+
+
+    private static Session getSession(final String pseudo) {
+        // find the session of user
+        boolean found = false;
+        Session session = null;
+        final Iterator<String> keys = sessionsMap.keySet().iterator();
+        while (!found && keys.hasNext()) {
+            final Iterator<Session> sessions = sessionsMap.get(keys.next()).iterator();
+            while (!found && sessions.hasNext()) {
+                final Session s = sessions.next();
+                if (s.isOpen() && pseudo.equals((String) s.getUserProperties().get("username"))) {
+                    session = s;
+                    found = true;
+                }
+            }
+        }
+        return session;
     }
 
     public static void sendMessageToUser(final Message msg) {
@@ -274,24 +298,6 @@ public class WebSocketServerEndPoint {
         }
     }
 
-    private static Session getSession(final String pseudo) {
-        // find the session of user
-        boolean found = false;
-        Session session = null;
-        final Iterator<String> keys = sessionsMap.keySet().iterator();
-        while (!found && keys.hasNext()) {
-            final Iterator<Session> sessions = sessionsMap.get(keys.next()).iterator();
-            while (!found && sessions.hasNext()) {
-                final Session s = sessions.next();
-                if (s.isOpen() && pseudo.equals((String) s.getUserProperties().get("username"))) {
-                    session = s;
-                    found = true;
-                }
-            }
-        }
-        return session;
-    }
-
 
     public static void handleEventDrawerJoinedBoard(final Event event) {
         final String pseudo = event.payload.getString("pseudo");
@@ -392,6 +398,21 @@ public class WebSocketServerEndPoint {
 
         final JsonObject payload = event.payload;
         final Message broadcast = new Message(MessageType.MSG_OBJECT_CREATED.str,
+                "server",
+                "all board members",
+                payload);
+        if (!board.equals(NOT_IN_A_BOARD)) {
+            sendMessageToBoard(board, broadcast);
+        }
+    }
+
+    public static void handleEventObjectLocked(final Event event) {
+        final String pseudo = event.payload.getString("pseudo");
+        final Session session = getSession(pseudo);
+        final String board = (String) session.getUserProperties().get("board");
+
+        final JsonObject payload = event.payload;
+        final Message broadcast = new Message(MessageType.MSG_OBJECT_LOCKED.str,
                 "server",
                 "all board members",
                 payload);
