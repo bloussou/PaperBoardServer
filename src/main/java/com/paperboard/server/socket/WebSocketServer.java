@@ -33,6 +33,7 @@ public class WebSocketServer implements Subscriber {
             instance.registerToEvent(EventType.CHAT_MESSAGE);
             instance.registerToEvent(EventType.OBJECT_CREATED);
             instance.registerToEvent(EventType.OBJECT_LOCKED);
+            instance.registerToEvent(EventType.OBJECT_UNLOCKED);
         }
         return instance;
     }
