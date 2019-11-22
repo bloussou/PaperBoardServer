@@ -34,6 +34,7 @@ public class WebSocketServer implements Subscriber {
             instance.registerToEvent(EventType.OBJECT_CREATED);
             instance.registerToEvent(EventType.OBJECT_LOCKED);
             instance.registerToEvent(EventType.OBJECT_UNLOCKED);
+            instance.registerToEvent(EventType.OBJECT_EDITED);
         }
         return instance;
     }

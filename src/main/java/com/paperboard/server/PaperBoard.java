@@ -68,6 +68,7 @@ public class PaperBoard implements Subscriber {
         this.registerToEvent(EventType.ASK_LEAVE_BOARD, title);
         this.registerToEvent(EventType.ASK_LOCK_OBJECT, title);
         this.registerToEvent(EventType.ASK_UNLOCK_OBJECT, title);
+        this.registerToEvent(EventType.ASK_EDIT_OBJECT, title);
     }
 
     public PaperBoard(final String title, final Optional<String> backgroundColor, final Optional<String> imageName) {
