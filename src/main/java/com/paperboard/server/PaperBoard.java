@@ -2,6 +2,7 @@ package com.paperboard.server;
 
 import com.paperboard.drawings.Circle;
 import com.paperboard.drawings.Drawing;
+import com.paperboard.drawings.Position;
 import com.paperboard.server.events.Event;
 import com.paperboard.server.events.EventManager;
 import com.paperboard.server.events.EventType;
@@ -160,17 +161,24 @@ public class PaperBoard implements Subscriber {
     private void handleAskCreateObject(final Event e) {
         final User user = ServerApplication.getInstance().getConnectedUsers().get(e.payload.getString("pseudo"));
         final String board = e.payload.getString("board");
+        final Double positionX = Double.parseDouble(e.payload.getString("positionX"));
+        final Double positionY = Double.parseDouble(e.payload.getString("positionY"));
         if (drawers.contains(user)) {
             final String shape = e.payload.getString("shape");
             switch (shape) {
                 case "Circle":
-                    final Drawing circle = new Circle(user);
-                    drawings.add(new Circle(user));
+                    final Circle circle = new Circle(user, new Position(positionX, positionY));
+                    drawings.add(circle);
                     final JsonObject payload = Json.createBuilderFactory(null)
                             .createObjectBuilder()
                             .add("pseudo", user.getPseudo())
                             .add("shape", "circle")
-                            .add("board", this.title)
+                            .add("id", circle.getId())
+                            .add("X", circle.getPosition().getX().toString())
+                            .add("Y", circle.getPosition().getY().toString())
+                            .add("radius", circle.getRadius().toString())
+                            .add("lineWidth", circle.getLineWidth().toString())
+                            .add("lineColor", circle.getLineColor())
                             .build();
                     EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_CREATED, payload), board);
                     break;

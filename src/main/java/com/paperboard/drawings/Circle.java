@@ -3,11 +3,11 @@ package com.paperboard.drawings;
 import com.paperboard.server.User;
 
 public class Circle extends Shape {
-    private Double radius = 10.0;
-    private String backgroundColor;
+    private Double radius = 50.0;
+    private String fillColor;
 
-    public Circle(final User user) {
-        super(user);
+    public Circle(final User user, final Position position) {
+        super(user, position);
     }
 
     public Double getRadius() {
@@ -18,11 +18,11 @@ public class Circle extends Shape {
         this.radius = radius;
     }
 
-    public String getBackgroundColor() {
-        return backgroundColor;
+    public String getFillColor() {
+        return fillColor;
     }
 
-    public void setBackgroundColor(final String backgroundColor) {
-        this.backgroundColor = backgroundColor;
+    public void setFillColor(final String fillColor) {
+        this.fillColor = fillColor;
     }
 }

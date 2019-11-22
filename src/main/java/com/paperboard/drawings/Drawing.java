@@ -10,10 +10,15 @@ public abstract class Drawing implements IDrawing {
     private final String id;
     private Position position;
 
-
     public Drawing(final User user) {
         this.id = "drawing" + String.valueOf(idCounter.getAndIncrement());
         this.owner = user;
+    }
+
+    public Drawing(final User user, final Position position) {
+        this.id = "drawing" + String.valueOf(idCounter.getAndIncrement());
+        this.owner = user;
+        this.position = position;
     }
 
     @Override

@@ -58,10 +58,22 @@ public class Event {
                         "board") && this.checkPayloadContains_String(payload, "msg");
                 break;
             case OBJECT_CREATED:
+                payloadIsCorrect = this.checkPayloadContains_String(payload,
+                        "pseudo") && this.checkPayloadContains_String(payload,
+                        "shape") && this.checkPayloadContains_String(payload, "id") && this.checkPayloadContains_String(
+                        payload,
+                        "X") && this.checkPayloadContains_String(payload, "Y") && this.checkPayloadContains_String(
+                        payload,
+                        "lineWidth") && this.checkPayloadContains_String(payload, "lineColor");
+                payloadIsCorrect = payloadIsCorrect && (payload.getString("shape")
+                        .equals("circle") && this.checkPayloadContains_String(payload, "radius"));
+                break;
             case ASK_CREATE_OBJECT:
                 payloadIsCorrect = this.checkPayloadContains_String(payload,
                         "pseudo") && this.checkPayloadContains_String(payload,
-                        "board") && this.checkPayloadContains_String(payload, "shape");
+                        "board") && this.checkPayloadContains_String(payload,
+                        "shape") && this.checkPayloadContains_String(payload,
+                        "positionX") && this.checkPayloadContains_String(payload, "positionY");
                 break;
             default:
                 payloadIsCorrect = false;

@@ -3,10 +3,13 @@ package com.paperboard.drawings;
 import com.paperboard.server.User;
 
 public class Shape extends Drawing {
-
-    private String color = "#000000";
-    private Double lineWidth = 1.0;
+    private String lineColor = "red";
+    private Double lineWidth = 10.0;
     private String lineStyle = "normal";
+
+    public Shape(final User user, final Position position) {
+        super(user, position);
+    }
 
     public Shape(final User user) {
         super(user);
@@ -16,12 +19,12 @@ public class Shape extends Drawing {
     public void resize() {
     }
 
-    public String getColor() {
-        return color;
+    public String getLineColor() {
+        return lineColor;
     }
 
-    public void setColor(final String color) {
-        this.color = color;
+    public void setLineColor(final String lineColor) {
+        this.lineColor = lineColor;
     }
 
     public Double getLineWidth() {
