@@ -96,7 +96,7 @@ public class Event {
                 break;
             case ASK_EDIT_OBJECT:
                 payloadIsCorrect = this.checkPayloadContains_String(payload,
-                        "pseudo") && this.checkPayloadContains_String(payload, "drawingId");
+                        "pseudo") && this.checkPayloadContains_String(payload, "drawingId") && this.checkPayloadContains_String(payload, "board");
                 for (final String key : payload.keySet()) {
                     if (!ModificationType.contains(key)) {
                         payloadIsCorrect = false;
