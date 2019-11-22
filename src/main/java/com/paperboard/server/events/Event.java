@@ -79,9 +79,15 @@ public class Event {
             case ASK_UNLOCK_OBJECT:
             case OBJECT_LOCKED:
             case OBJECT_UNLOCKED:
+            case OBJECT_EDITED:
                 payloadIsCorrect = this.checkPayloadContains_String(payload,
                         "pseudo") && this.checkPayloadContains_String(payload,
                         "board") && this.checkPayloadContains_String(payload, "drawingId");
+                break;
+            case ASK_EDIT_OBJECT:
+                payloadIsCorrect = this.checkPayloadContains_String(payload,
+                        "pseudo") && this.checkPayloadContains_String(payload, "drawingId");
+                // values available are X, Y, lineWidth, lineColor, radius
                 break;
             default:
                 payloadIsCorrect = false;

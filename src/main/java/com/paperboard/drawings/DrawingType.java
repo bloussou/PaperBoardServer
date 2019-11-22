@@ -8,4 +8,13 @@ public enum DrawingType {
     DrawingType(final String str) {
         this.str = str;
     }
+
+    public static DrawingType getEnum(final String str) {
+        for (final DrawingType drawingType : DrawingType.values()) {
+            if (drawingType.str.equals(str)) {
+                return drawingType;
+            }
+        }
+        return null;
+    }
 }
