@@ -89,16 +89,19 @@ public class Event {
                         "pseudo") && this.checkPayloadContains_String(payload,
                         "board") && this.checkPayloadContains_String(payload, "drawingId");
                 for (final String key : payload.keySet()) {
-                    if (!ModificationType.contains(key)) {
+                    if (!ModificationType.contains(key) && !key.equals("pseudo") && !key.equals("drawingId") && !key.equals(
+                            "board")) {
                         payloadIsCorrect = false;
                     }
                 }
                 break;
             case ASK_EDIT_OBJECT:
                 payloadIsCorrect = this.checkPayloadContains_String(payload,
-                        "pseudo") && this.checkPayloadContains_String(payload, "drawingId") && this.checkPayloadContains_String(payload, "board");
+                        "pseudo") && this.checkPayloadContains_String(payload,
+                        "drawingId") && this.checkPayloadContains_String(payload, "board");
                 for (final String key : payload.keySet()) {
-                    if (!ModificationType.contains(key)) {
+                    if (!ModificationType.contains(key) && !key.equals("pseudo") && !key.equals("drawingId") && !key.equals(
+                            "board")) {
                         payloadIsCorrect = false;
                     }
                 }
