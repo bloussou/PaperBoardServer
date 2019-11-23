@@ -267,7 +267,7 @@ public class PaperBoard implements Subscriber {
                 case CIRCLE:
                     final Circle circle = (Circle) drawing;
                     for (final String key : keys) {
-                        if (key != null && !key.equals("pseudo") && !key.equals("board") && !key.equals("drawingId")) {
+                        if (key != null && !key.equals("pseudo") && !key.equals("board") && !key.equals("drawingId") && !key.equals("X") && !key.equals("Y")) {
                             switch (ModificationType.getEnum(key)) {
                                 case LINE_WIDTH:
                                     final Double lineWidth =
