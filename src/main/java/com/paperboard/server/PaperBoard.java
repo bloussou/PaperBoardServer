@@ -267,26 +267,28 @@ public class PaperBoard implements Subscriber {
                 case CIRCLE:
                     final Circle circle = (Circle) drawing;
                     for (final String key : keys) {
-                        switch (ModificationType.getEnum(key)) {
-                            case LINE_WIDTH:
-                                final Double lineWidth =
-                                        Double.parseDouble(payload.getString(ModificationType.LINE_WIDTH.str));
-                                circle.setLineWidth(lineWidth);
-                                modifications.add(ModificationType.LINE_WIDTH.str, lineWidth.toString());
-                                break;
-                            case LINE_COLOR:
-                                final String lineColor = payload.getString(ModificationType.LINE_COLOR.str);
-                                circle.setLineColor(lineColor);
-                                modifications.add(ModificationType.LINE_COLOR.str, lineColor);
-                                break;
-                            case RADIUS:
-                                final Double radius =
-                                        Double.parseDouble(payload.getString(ModificationType.RADIUS.str));
-                                circle.setRadius(radius);
-                                modifications.add(ModificationType.RADIUS.str, radius.toString());
-                                break;
-                            default:
-                                LOGGER.warning("This modification is not yet implemented for edition" + key);
+                        if (key != null) {
+                            switch (ModificationType.getEnum(key)) {
+                                case LINE_WIDTH:
+                                    final Double lineWidth =
+                                            Double.parseDouble(payload.getString(ModificationType.LINE_WIDTH.str));
+                                    circle.setLineWidth(lineWidth);
+                                    modifications.add(ModificationType.LINE_WIDTH.str, lineWidth.toString());
+                                    break;
+                                case LINE_COLOR:
+                                    final String lineColor = payload.getString(ModificationType.LINE_COLOR.str);
+                                    circle.setLineColor(lineColor);
+                                    modifications.add(ModificationType.LINE_COLOR.str, lineColor);
+                                    break;
+                                case RADIUS:
+                                    final Double radius =
+                                            Double.parseDouble(payload.getString(ModificationType.RADIUS.str));
+                                    circle.setRadius(radius);
+                                    modifications.add(ModificationType.RADIUS.str, radius.toString());
+                                    break;
+                                default:
+                                    LOGGER.warning("This modification is not yet implemented for edition" + key);
+                            }
                         }
                     }
                     break;

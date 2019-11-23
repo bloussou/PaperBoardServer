@@ -18,7 +18,7 @@ public abstract class Drawing implements IDrawing {
         this.owner = user;
         this.type = type;
         this.isLocked = false;
-        this.lockedBy = null;
+        this.lockedBy = "";
     }
 
     public Drawing(final String type, final User user, final Position position) {

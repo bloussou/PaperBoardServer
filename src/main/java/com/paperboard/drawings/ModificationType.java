@@ -1,7 +1,7 @@
 package com.paperboard.drawings;
 
 public enum ModificationType {
-    LINE_WIDTH("lineWidth"), LINE_COLOR("lineColor"), RADIUS("radius"), X("X"), Y("Y");
+    LINE_WIDTH("lineWidth"), LINE_COLOR("lineColor"), RADIUS("radius"), X("X"), Y("Y"), NULL("");
 
     public final String str;
 
@@ -24,6 +24,6 @@ public enum ModificationType {
                 return modificationType;
             }
         }
-        return null;
+        return NULL;
     }
 }
