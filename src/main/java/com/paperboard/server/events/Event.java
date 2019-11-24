@@ -37,8 +37,11 @@ public class Event {
                 payloadIsCorrect = this.checkPayloadContains_String(payload,
                         "pseudo") || this.checkPayloadContains_String(payload, "sessionId");
                 break;
+            case DRAWER_IDENTIFICATION:
+                payloadIsCorrect = this.checkPayloadContains_String(payload,
+                        "pseudo") && this.checkPayloadContains_String(payload, "sessionId") && this.checkPayloadContains_String(payload, "isAvailable");
+                break;
             case ASK_IDENTITY:
-            case DRAWER_IDENTIFIED:
                 payloadIsCorrect = this.checkPayloadContains_String(payload,
                         "pseudo") && this.checkPayloadContains_String(payload, "sessionId");
                 break;

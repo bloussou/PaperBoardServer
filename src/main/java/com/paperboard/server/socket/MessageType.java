@@ -4,6 +4,9 @@ public enum MessageType {
 
     // ---- RECEIVED FROM CLIENTS
     MSG_IDENTIFY("Ask Pseudo"),
+    MSG_GET_BOARD("Get Board"),
+    MSG_GET_ALL_BOARDS("Get All Boards"),
+    MSG_CREATE_BOARD("Create Board"),
     MSG_JOIN_BOARD("Join Board"),
     MSG_LEAVE_BOARD("Leave Board"),
     MSG_CREATE_OBJECT("Create Object"),
@@ -17,6 +20,9 @@ public enum MessageType {
 
     // ---- SENT TO CLIENTS
     MSG_IDENTITY_ANSWER("Pseudo Request Answer"),
+    MSG_ANSWER_GET_BOARD("Answer Get Board"),
+    MSG_ANSWER_GET_ALL_BOARDS("Answer Get All Boards"),
+    MSG_ANSWER_CREATE_BOARD("Answer Create Board"),
     MSG_DRAWER_JOINED_BOARD("New Drawer Joined Board"),
     MSG_DRAWER_LEFT_BOARD("Drawer Left Board"),
     MSG_OBJECT_CREATED("Object Created"),

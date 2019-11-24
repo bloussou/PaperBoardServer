@@ -6,59 +6,38 @@ import com.paperboard.server.events.Event;
 import com.paperboard.server.events.EventManager;
 import com.paperboard.server.events.Subscriber;
 import com.paperboard.server.socket.WebSocketServer;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.ComponentScan;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.logging.Logger;
 
 import static com.paperboard.server.events.EventType.*;
 
-@SpringBootApplication
-@ComponentScan(basePackages = "com.paperboard")
-public class ServerApplication implements Subscriber {
-    private static ServerApplication instance = null;
-    private static ConfigurableApplicationContext ctx;
+public class PaperBoardApplication implements Subscriber {
+    private static PaperBoardApplication instance = null;
     private final HashMap<String, User> connectedUsers = new HashMap<>();
     private final HashSet<PaperBoard> paperBoards = new HashSet<>();
-    private static Logger LOGGER = Logger.getLogger(ServerApplication.class.getName());
+    private static Logger LOGGER = Logger.getLogger(PaperBoardApplication.class.getName());
 
-    public ServerApplication() {
+    public PaperBoardApplication() {
     }
 
 
-    public static ServerApplication getInstance() {
+    public static PaperBoardApplication getInstance() {
         if (instance == null) {
-            instance = new ServerApplication();
+            instance = new PaperBoardApplication();
             instance.registerToEvent(ASK_IDENTITY);
             instance.registerToEvent(DRAWER_DISCONNECTED);
         }
         return instance;
     }
 
-    public static void runServer() {
-        LOGGER.info("---> Starting Http Server !");
-        ctx = SpringApplication.run(ServerApplication.class);
-        // Initialize singleton
-        getInstance();
-    }
-
-    public static void stopServer() {
-        final int exitCode = SpringApplication.exit(ctx, () -> {
-            // no errors
-            return 0;
-        });
-        System.exit(exitCode);
-        LOGGER.info("---> Http Server stopped");
-    }
-
     public static void main(final String[] args) {
-        ServerApplication.runServer();
+        PaperBoardApplication.getInstance();
         WebSocketServer.runServer();
-
         try {
             LOGGER.info("[IMPORTANT INFO] ... Server running until it crashes ...");
             while (true) {
@@ -67,7 +46,6 @@ public class ServerApplication implements Subscriber {
             throw new RuntimeException(e);
         } finally {
             WebSocketServer.stopServer();
-            ServerApplication.stopServer();
         }
     }
 
@@ -75,9 +53,9 @@ public class ServerApplication implements Subscriber {
      * For test purpose and maybe other feature, this function clear the two Set connectedUsers and paperBoards
      */
     public static void clearData() {
-        final ServerApplication server = ServerApplication.getInstance();
-        server.getPaperBoards().clear();
-        server.getConnectedUsers().clear();
+        final PaperBoardApplication app = PaperBoardApplication.getInstance();
+        app.getPaperBoards().clear();
+        app.getConnectedUsers().clear();
     }
 
     /**
@@ -88,11 +66,11 @@ public class ServerApplication implements Subscriber {
      *                                         title in the set
      */
     public static void addPaperBoard(final PaperBoard paperBoard) throws PaperBoardAlreadyExistException {
-        final ServerApplication server = ServerApplication.getInstance();
-        if (server.getPaperBoards().contains(paperBoard)) {
+        final PaperBoardApplication app = PaperBoardApplication.getInstance();
+        if (app.getPaperBoards().contains(paperBoard)) {
             throw new PaperBoardAlreadyExistException(paperBoard);
         } else {
-            server.getPaperBoards().add(paperBoard);
+            app.getPaperBoards().add(paperBoard);
         }
     }
 
@@ -103,27 +81,32 @@ public class ServerApplication implements Subscriber {
      * @throws UserAlreadyExistException The error triggered if you try to add two users with the same pseudo in the set
      */
     public static void addUser(final String pseudo, final Event e) throws UserAlreadyExistException {
-        final ServerApplication server = ServerApplication.getInstance();
-        if (server.getConnectedUsers().keySet().contains(pseudo)) {
-            throw new UserAlreadyExistException(pseudo);
+        final PaperBoardApplication app = PaperBoardApplication.getInstance();
+        final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder()
+                .add("pseudo", e.payload.getString("pseudo"))
+                .add("sessionId", e.payload.getString("sessionId"));
+        if (app.getConnectedUsers().keySet().contains(pseudo)) {
+            payloadBuilder.add("isAvailable", "false");
         } else {
-            server.getConnectedUsers().put(pseudo, new User(pseudo));
-            EventManager.getInstance().fireEvent(new Event(DRAWER_IDENTIFIED, e.payload), null);
+            app.getConnectedUsers().put(pseudo, new User(pseudo));
+            payloadBuilder.add("isAvailable", "true");
         }
+        final JsonObject payload = payloadBuilder.build();
+        EventManager.getInstance().fireEvent(new Event(DRAWER_IDENTIFICATION, payload), null);
     }
 
     public static void disconnectUser(final String pseudo) {
         if (pseudo != null) {
-            final ServerApplication server = ServerApplication.getInstance();
-            server.getConnectedUsers().remove(pseudo);
+            final PaperBoardApplication app = PaperBoardApplication.getInstance();
+            app.getConnectedUsers().remove(pseudo);
         }
     }
 
     public static PaperBoard getPaperBoard(final String title) throws UserAlreadyExistException {
         final PaperBoard paperboard = new PaperBoard(title);
-        final ServerApplication server = ServerApplication.getInstance();
-        if (server.getPaperBoards().contains(paperboard)) {
-            for (final PaperBoard obj : server.getPaperBoards()) {
+        final PaperBoardApplication app = PaperBoardApplication.getInstance();
+        if (app.getPaperBoards().contains(paperboard)) {
+            for (final PaperBoard obj : app.getPaperBoards()) {
                 if (obj.equals(paperboard))
                     return obj;
             }
@@ -133,22 +116,22 @@ public class ServerApplication implements Subscriber {
     }
 
     public static String getBackgroundImagePath(final String boardName) {
-        final ServerApplication server = ServerApplication.getInstance();
+        final PaperBoardApplication app = PaperBoardApplication.getInstance();
         return "todo";
-//        return server.getBackgroundImage().get(boardName);
+//        return app.getBackgroundImage().get(boardName);
     }
 
     public static void addBackgroundImage(final String boardName, final String storePath) {
-        final ServerApplication server = ServerApplication.getInstance();
-//        server.getBackgroundImage().put(boardName, storePath);
+        final PaperBoardApplication app = PaperBoardApplication.getInstance();
+//        app.getBackgroundImage().put(boardName, storePath);
     }
 
     public HashMap<String, User> getConnectedUsers() {
         return connectedUsers;
     }
 
-    public HashSet<PaperBoard> getPaperBoards() {
-        return paperBoards;
+    public static HashSet<PaperBoard> getPaperBoards() {
+        return instance.paperBoards;
     }
 
     @Override

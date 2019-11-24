@@ -26,7 +26,7 @@ public class WebSocketServer implements Subscriber {
     public static WebSocketServer getInstance() {
         if (instance == null) {
             instance = new WebSocketServer();
-            instance.registerToEvent(EventType.DRAWER_IDENTIFIED);
+            instance.registerToEvent(EventType.DRAWER_IDENTIFICATION);
             instance.registerToEvent(EventType.DRAWER_JOINED_BOARD);
             instance.registerToEvent(EventType.DRAWER_LEFT_BOARD);
             instance.registerToEvent(EventType.CHAT_MESSAGE);
@@ -75,8 +75,8 @@ public class WebSocketServer implements Subscriber {
     @Override
     public void updateFromEvent(final Event e) {
         switch (e.type) {
-            case DRAWER_IDENTIFIED:
-                WebSocketServerEndPoint.handleEventDrawerIdentified(e);
+            case DRAWER_IDENTIFICATION:
+                WebSocketServerEndPoint.handleEventDrawerIdentification(e);
                 break;
             case DRAWER_JOINED_BOARD:
                 WebSocketServerEndPoint.handleEventDrawerJoinedBoard(e);

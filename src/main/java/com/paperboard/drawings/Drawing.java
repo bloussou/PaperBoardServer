@@ -2,6 +2,7 @@ package com.paperboard.drawings;
 
 import com.paperboard.server.User;
 
+import javax.json.JsonObjectBuilder;
 import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class Drawing implements IDrawing {
@@ -82,4 +83,6 @@ public abstract class Drawing implements IDrawing {
         }
         return false;
     }
+
+    public abstract JsonObjectBuilder encodeToJsonObjectBuilder();
 }

@@ -1,5 +1,7 @@
 package com.paperboard.server;
 
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import java.util.concurrent.atomic.AtomicLong;
 
 
@@ -30,6 +32,12 @@ public class User {
     @Override
     public String toString() {
         return this.pseudo;
+    }
+
+    public JsonObjectBuilder encodeToJsonObjectBuilder() {
+        final JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+        jsonBuilder.add("pseudo", this.pseudo);
+        return jsonBuilder;
     }
 
     @Override

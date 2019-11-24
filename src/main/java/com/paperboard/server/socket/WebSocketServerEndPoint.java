@@ -1,5 +1,8 @@
 package com.paperboard.server.socket;
 
+import com.paperboard.Error.PaperBoardAlreadyExistException;
+import com.paperboard.server.PaperBoard;
+import com.paperboard.server.PaperBoardApplication;
 import com.paperboard.server.events.Event;
 import com.paperboard.server.events.EventManager;
 import com.paperboard.server.events.EventType;
@@ -57,12 +60,20 @@ public class WebSocketServerEndPoint {
         switch (MessageType.getEnum(message.getType())) {
             case MSG_IDENTIFY:
                 // Generate event ASK_IDENTITY
-                payload = Json.createBuilderFactory(null)
-                        .createObjectBuilder()
+                payload = Json.createObjectBuilder()
                         .add("pseudo", message.getPayload().getString("pseudo"))
                         .add("sessionId", session.getId())
                         .build();
                 EventManager.getInstance().fireEvent(new Event(EventType.ASK_IDENTITY, payload), null);
+                break;
+            case MSG_GET_BOARD:
+                this.handleMsgGetBoard(session, message);
+                break;
+            case MSG_GET_ALL_BOARDS:
+                this.handleMsgGetAllBoards(session, message);
+                break;
+            case MSG_CREATE_BOARD:
+                this.handleMsgCreateBoard(session, message);
                 break;
             case MSG_JOIN_BOARD:
                 // Generate event ASK_JOIN_BOARD
@@ -272,7 +283,47 @@ public class WebSocketServerEndPoint {
     }
 
 
-    public static void handleEventDrawerIdentified(final Event e) {
+    public void handleMsgGetBoard(final Session session, final Message message) {
+        if (message.getPayload().containsKey("title")) {
+            final PaperBoard paperboard = PaperBoardApplication.getPaperBoard(message.getPayload().getString("title"));
+            final JsonObject payload = Json.createObjectBuilder().add("paperboard", paperboard.encodeToJsonObjectBuilder()).build();
+            final Message answer = new Message(MessageType.MSG_ANSWER_GET_BOARD.str, "server", (String) session.getUserProperties().get("username"), payload);
+            ;
+            sendMessageToSession(session, answer);
+        }
+    }
+
+    public void handleMsgGetAllBoards(final Session session, final Message message) {
+        final HashSet<PaperBoard> paperBoards = PaperBoardApplication.getPaperBoards();
+        final Iterator<PaperBoard> iter = paperBoards.iterator();
+        final JsonArrayBuilder dataList = Json.createArrayBuilder();
+        while (iter.hasNext()) {
+            dataList.add(iter.next().encodeToJsonObjectBuilder());
+        }
+        final JsonObject payload = Json.createObjectBuilder().add("paperboards", dataList).build();
+        final Message answer = new Message(MessageType.MSG_ANSWER_GET_ALL_BOARDS.str, "server", (String) session.getUserProperties().get("username"), payload);
+        ;
+        sendMessageToSession(session, answer);
+    }
+
+    public void handleMsgCreateBoard(final Session session, final Message message) {
+        if (message.getPayload().containsKey("title")) {
+            final PaperBoard paperBoard = new PaperBoard(message.getPayload().getString("title"));
+            try {
+                PaperBoardApplication.addPaperBoard(paperBoard);
+                final JsonObject payload = Json.createObjectBuilder().add("created", true).build();
+                final Message answer = new Message(MessageType.MSG_ANSWER_CREATE_BOARD.str, "server", (String) session.getUserProperties().get("username"), payload);
+                sendMessageToSession(session, answer);
+            } catch (final PaperBoardAlreadyExistException e) {
+                LOGGER.warning("Someone tried to create paperboard [" + message.getPayload().getString("title") + "] but it already exists.");
+                final JsonObject payload = Json.createObjectBuilder().add("created", false).add("reason", "Already Exists").build();
+                final Message answer = new Message(MessageType.MSG_ANSWER_CREATE_BOARD.str, "server", (String) session.getUserProperties().get("username"), payload);
+                sendMessageToSession(session, answer);
+            }
+        }
+    }
+
+    public static void handleEventDrawerIdentification(final Event e) {
         final String sessionId = e.payload.getString("sessionId");
         final String pseudo = e.payload.getString("pseudo");
 
@@ -313,7 +364,6 @@ public class WebSocketServerEndPoint {
             LOGGER.warning(ex.getStackTrace().toString());
         }
     }
-
 
     public static void handleEventDrawerJoinedBoard(final Event event) {
         final String pseudo = event.payload.getString("pseudo");

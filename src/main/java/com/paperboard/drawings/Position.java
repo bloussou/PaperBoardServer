@@ -1,5 +1,8 @@
 package com.paperboard.drawings;
 
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
+
 public class Position {
     private Double x;
     private Double y;
@@ -23,5 +26,12 @@ public class Position {
 
     public void setY(final Double y) {
         this.y = y;
+    }
+
+    public JsonObjectBuilder encodeToJsonObjectBuilder() {
+        final JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+        jsonBuilder.add("x", this.x);
+        jsonBuilder.add("y", this.y);
+        return jsonBuilder;
     }
 }
