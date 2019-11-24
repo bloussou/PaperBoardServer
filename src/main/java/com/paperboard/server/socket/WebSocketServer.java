@@ -13,7 +13,7 @@ public class WebSocketServer implements Subscriber {
 
     private static WebSocketServer instance = null;
     private static String HOSTNAME = "localhost";
-    private static String SOCKET_PORT_DEFAULT = "8081";
+    private static String SOCKET_PORT_DEFAULT = "8025";
     private static String SOCKET_PORT = System.getenv("PORT");
     private static String SOCKET_API = "/websocket";
     private static Server server;

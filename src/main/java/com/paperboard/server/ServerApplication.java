@@ -56,7 +56,7 @@ public class ServerApplication implements Subscriber {
     }
 
     public static void main(final String[] args) {
-        //ServerApplication.runServer();
+        ServerApplication.runServer();
         WebSocketServer.runServer();
 
         try {
@@ -67,7 +67,7 @@ public class ServerApplication implements Subscriber {
             throw new RuntimeException(e);
         } finally {
             WebSocketServer.stopServer();
-            //ServerApplication.stopServer();
+            ServerApplication.stopServer();
         }
     }
 
