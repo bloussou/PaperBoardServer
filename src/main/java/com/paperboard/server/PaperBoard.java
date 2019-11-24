@@ -8,12 +8,12 @@ import com.paperboard.server.events.Subscriber;
 import com.paperboard.server.socket.Message;
 import com.paperboard.server.socket.MessageType;
 import com.paperboard.server.socket.WebSocketServerEndPoint;
+import reactor.util.annotation.Nullable;
 
 import javax.json.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -34,8 +34,8 @@ public class PaperBoard implements Subscriber {
     private String backgroundImage = "";
 
     public PaperBoard(final String title) {
-        this.id = String.valueOf(idCounter.getAndIncrement());
-        this.title = title;
+        this.id           = String.valueOf(idCounter.getAndIncrement());
+        this.title        = title;
         this.creationDate = LocalDateTime.now();
         this.registerToEvent(EventType.ASK_JOIN_BOARD, title);
         this.registerToEvent(EventType.ASK_CREATE_OBJECT, title);
@@ -46,12 +46,14 @@ public class PaperBoard implements Subscriber {
         this.registerToEvent(EventType.ASK_DELETE_OBJECT, title);
     }
 
-    public PaperBoard(final String title, final Optional<String> backgroundColor, final Optional<String> imageName) {
+    public PaperBoard(final String title,
+                      final @Nullable String backgroundColor,
+                      final @Nullable String backgroundImage) {
         this(title);
-        if (!imageName.isEmpty()) {
-            this.backgroundImage = imageName.get();
-        } else if (!backgroundColor.isEmpty()) {
-            this.backgroundColor = backgroundColor.get();
+        if (backgroundImage != null) {
+            this.backgroundImage = backgroundImage;
+        } else if (backgroundColor != null) {
+            this.backgroundColor = backgroundColor;
         }
     }
 
@@ -210,9 +212,9 @@ public class PaperBoard implements Subscriber {
                     .add("type", drawing.getType())
                     .build();
             final Message msg = new Message(MessageType.MSG_DELETE_OBJECT.str,
-                    user.getPseudo(),
-                    drawing.getOwner().getPseudo(),
-                    payload);
+                                            user.getPseudo(),
+                                            drawing.getOwner().getPseudo(),
+                                            payload);
             WebSocketServerEndPoint.sendMessageToUser(msg);
         }
 
@@ -246,12 +248,16 @@ public class PaperBoard implements Subscriber {
                 case CIRCLE:
                     final Circle circle = (Circle) drawing;
                     for (final String key : keys) {
-                        if (key != null && !key.equals("pseudo") && !key.equals("board") && !key.equals("drawingId") && !key
-                                .equals("X") && !key.equals("Y")) {
+                        if (key != null &&
+                            !key.equals("pseudo") &&
+                            !key.equals("board") &&
+                            !key.equals("drawingId") &&
+                            !key.equals("X") &&
+                            !key.equals("Y")) {
                             switch (ModificationType.getEnum(key)) {
                                 case LINE_WIDTH:
-                                    final Double lineWidth =
-                                            Double.parseDouble(payload.getString(ModificationType.LINE_WIDTH.str));
+                                    final Double lineWidth
+                                            = Double.parseDouble(payload.getString(ModificationType.LINE_WIDTH.str));
                                     circle.setLineWidth(lineWidth);
                                     modifications.add(ModificationType.LINE_WIDTH.str, lineWidth.toString());
                                     break;
@@ -261,8 +267,8 @@ public class PaperBoard implements Subscriber {
                                     modifications.add(ModificationType.LINE_COLOR.str, lineColor);
                                     break;
                                 case RADIUS:
-                                    final Double radius =
-                                            Double.parseDouble(payload.getString(ModificationType.RADIUS.str));
+                                    final Double radius
+                                            = Double.parseDouble(payload.getString(ModificationType.RADIUS.str));
                                     circle.setRadius(radius);
                                     modifications.add(ModificationType.RADIUS.str, radius.toString());
                                     break;

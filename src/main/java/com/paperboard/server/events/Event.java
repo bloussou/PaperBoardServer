@@ -23,7 +23,7 @@ public class Event {
      * @param type    a specified EventType
      * @param payload the JsonObject payload describing the event
      */
-    public Event(final EventType type, @Nullable final JsonObject payload) {
+    public Event(final EventType type, @Nullable final JsonObject payload) throws IncorrectEventException {
         this.type    = type;
         this.source  = new Throwable().getStackTrace()[1];
         this.payload = payload;
@@ -34,6 +34,7 @@ public class Event {
                                                                           "Payload does not suit the event " +
                                                                           "requirements.");
             LOGGER.warning("ERROR : " + e.getMessage());
+            throw e;
         }
     }
 
