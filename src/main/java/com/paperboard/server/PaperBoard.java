@@ -333,7 +333,7 @@ public class PaperBoard implements Subscriber {
                                     break;
                                 case LINE_STYLE:
                                     final String lineStyle = payload.getString(ModificationType.LINE_STYLE.str);
-                                    circle.setFillColor(lineStyle);
+                                    circle.setLineStyle(lineStyle);
                                     modifications.add(ModificationType.LINE_STYLE.str, lineStyle);
                                     break;
                                 default:

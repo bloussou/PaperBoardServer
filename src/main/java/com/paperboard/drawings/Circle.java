@@ -34,6 +34,7 @@ public class Circle extends Shape {
         final JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
         jsonBuilder.add("id", this.getId());
         jsonBuilder.add("fillColor", this.getFillColor());
+        jsonBuilder.add("lineColor", this.getLineColor());
         jsonBuilder.add("lineStyle", this.getLineStyle());
         jsonBuilder.add("lineWidth", this.getLineWidth());
         jsonBuilder.add("isLocked", this.isLocked());
