@@ -267,7 +267,8 @@ public class PaperBoard implements Subscriber {
                 case CIRCLE:
                     final Circle circle = (Circle) drawing;
                     for (final String key : keys) {
-                        if (key != null && !key.equals("pseudo") && !key.equals("board") && !key.equals("drawingId") && !key.equals("X") && !key.equals("Y")) {
+                        if (key != null && !key.equals("pseudo") && !key.equals("board") && !key.equals("drawingId") && !key
+                                .equals("X") && !key.equals("Y")) {
                             switch (ModificationType.getEnum(key)) {
                                 case LINE_WIDTH:
                                     final Double lineWidth =
@@ -285,6 +286,11 @@ public class PaperBoard implements Subscriber {
                                             Double.parseDouble(payload.getString(ModificationType.RADIUS.str));
                                     circle.setRadius(radius);
                                     modifications.add(ModificationType.RADIUS.str, radius.toString());
+                                    break;
+                                case FILL_COLOR:
+                                    final String fillColor = payload.getString(ModificationType.FILL_COLOR.str);
+                                    circle.setFillColor(fillColor);
+                                    modifications.add(ModificationType.FILL_COLOR.str, fillColor);
                                     break;
                                 default:
                                     LOGGER.warning("This modification is not yet implemented for edition" + key);
