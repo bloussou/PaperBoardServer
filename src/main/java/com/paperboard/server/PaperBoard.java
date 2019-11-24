@@ -297,7 +297,6 @@ public class PaperBoard implements Subscriber {
             }
             EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_EDITED, modifications.build()), board);
         }
-
     }
 
 

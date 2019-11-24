@@ -14,3 +14,8 @@ Interactive paperBoard
 - Delete
 - move ?
 - leave
+
+# HEROKU DEPLOYMENT
+
+- email: La poste adresse of Ludo.
+- pwd: Same from Nantes. With ! start & end.
