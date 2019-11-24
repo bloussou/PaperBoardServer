@@ -11,8 +11,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.logging.Logger;
@@ -62,9 +60,9 @@ public class ServerApplication implements Subscriber {
         WebSocketServer.runServer();
 
         try {
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            LOGGER.info("[IMPORTANT INFO] To stop the Http server and the WebSocket server properly press any key.");
-            reader.readLine();
+            LOGGER.info("[IMPORTANT INFO] ... Server running until it crashes ...");
+            while (true) {
+            }
         } catch (final Exception e) {
             throw new RuntimeException(e);
         } finally {
