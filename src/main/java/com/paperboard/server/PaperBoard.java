@@ -246,7 +246,7 @@ public class PaperBoard implements Subscriber {
     }
 
     private void handleAskDeleteObject(final Event e) {
-        final User user = ServerApplication.getInstance().getConnectedUsers().get(e.payload.getString("pseudo"));
+        final User user = PaperBoardApplication.getInstance().getConnectedUsers().get(e.payload.getString("pseudo"));
         final String board = this.title;
         final String drawingId = e.payload.getString("drawingId");
 
