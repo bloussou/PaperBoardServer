@@ -13,7 +13,8 @@ public class WebSocketServer implements Subscriber {
 
     private static WebSocketServer instance = null;
     private static String HOSTNAME = "localhost";
-    private static int SOCKET_PORT;
+    private static String SOCKET_PORT_DEFAULT = "8081";
+    private static String SOCKET_PORT = System.getenv("PORT");
     private static String SOCKET_API = "/websocket";
     private static Server server;
     private static final Logger LOGGER = Logger.getLogger(WebSocketServer.class.getName());
@@ -54,11 +55,14 @@ public class WebSocketServer implements Subscriber {
 
     public static void runServer() {
         LOGGER.info("---> Starting WebSocket Server !");
-        server = new Server(HOSTNAME, SOCKET_PORT, SOCKET_API, WebSocketServerEndPoint.class);
         try {
+            final int port = SOCKET_PORT == null
+                    ? Integer.parseInt(SOCKET_PORT_DEFAULT.trim())
+                    : Integer.parseInt(SOCKET_PORT.trim());
+            server = new Server(HOSTNAME, port, SOCKET_API, WebSocketServerEndPoint.class);
             server.start();
             getInstance();
-        } catch (final DeploymentException e) {
+        } catch (final DeploymentException | NumberFormatException e) {
             e.printStackTrace();
         }
     }
