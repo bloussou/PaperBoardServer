@@ -15,7 +15,7 @@ public class WebSocketServer implements Subscriber {
 
     private static WebSocketServer instance = null;
     private static String HOSTNAME = "localhost";
-    private static int SOCKET_PORT = 8025;
+    private static int SOCKET_PORT;
     private static String SOCKET_API = "/websocket";
     private static Server server;
     private static final Logger LOGGER = Logger.getLogger(WebSocketServer.class.getName());
