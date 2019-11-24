@@ -80,6 +80,8 @@ public class Event {
             case ASK_UNLOCK_OBJECT:
             case OBJECT_LOCKED:
             case OBJECT_UNLOCKED:
+            case ASK_DELETE_OBJECT:
+            case OBJECT_DELETED:
                 payloadIsCorrect = this.checkPayloadContains_String(payload,
                         "pseudo") && this.checkPayloadContains_String(payload,
                         "board") && this.checkPayloadContains_String(payload, "drawingId");

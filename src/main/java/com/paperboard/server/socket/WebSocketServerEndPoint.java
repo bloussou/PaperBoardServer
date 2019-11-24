@@ -134,7 +134,12 @@ public class WebSocketServerEndPoint {
                 break;
             case MSG_DELETE_OBJECT:
                 // Generate event ASK_DELETE_OBJECT
-                payload = Json.createBuilderFactory(null).createObjectBuilder().build();
+                payload = Json.createBuilderFactory(null)
+                        .createObjectBuilder()
+                        .add("pseudo", user)
+                        .add("board", board)
+                        .add("drawingId", message.getPayload().getString("drawingId"))
+                        .build();
                 EventManager.getInstance().fireEvent(new Event(EventType.ASK_DELETE_OBJECT, payload), board);
                 break;
             case MSG_CHAT_MESSAGE:
@@ -217,18 +222,12 @@ public class WebSocketServerEndPoint {
         try {
             boolean recipientFound = false;
             final Iterator<String> keys = sessionsMap.keySet().iterator();
-            while (!recipientFound && keys.hasNext()) {
-                final Iterator<Session> sessions = sessionsMap.get(keys.next()).iterator();
-                while (!recipientFound && sessions.hasNext()) {
-                    final Session s = sessions.next();
-                    if (s.isOpen() && s.getUserProperties().get("username").equals(recipient)) {
-                        s.getBasicRemote().sendObject(msg);
-                        recipientFound = true;
-                        LOGGER.info("Server sent [" + msg.getType() + "] to User [" + recipient + "].");
-                    }
-                }
+            final Session session = getSession(recipient);
+            if (session != null) {
+                session.getBasicRemote().sendObject(msg);
+                recipientFound = true;
+                LOGGER.info("Server sent [" + msg.getType() + "] to User [" + recipient + "].");
             }
-
             if (!recipientFound) {
                 LOGGER.warning("[User-" + msg.getFrom() + "] wanted to send message to " + recipient + " But no use " + "was found with this name.");
             }
@@ -459,6 +458,21 @@ public class WebSocketServerEndPoint {
 
         final JsonObject payload = event.payload;
         final Message broadcast = new Message(MessageType.MSG_OBJECT_EDITED.str,
+                "server",
+                "all board members",
+                payload);
+        if (!board.equals(NOT_IN_A_BOARD)) {
+            sendMessageToBoard(board, broadcast);
+        }
+    }
+
+    public static void handleEventObjectDeleted(final Event event) {
+        final String pseudo = event.payload.getString("pseudo");
+        final Session session = getSession(pseudo);
+        final String board = (String) session.getUserProperties().get("board");
+
+        final JsonObject payload = event.payload;
+        final Message broadcast = new Message(MessageType.MSG_OBJECT_DELETED.str,
                 "server",
                 "all board members",
                 payload);

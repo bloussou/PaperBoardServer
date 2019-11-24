@@ -1,7 +1,14 @@
 package com.paperboard.drawings;
 
 public enum ModificationType {
-    LINE_WIDTH("lineWidth"), LINE_COLOR("lineColor"), RADIUS("radius"), X("X"), Y("Y"), NULL("");
+    LINE_WIDTH("lineWidth"),
+    LINE_COLOR("lineColor"),
+    RADIUS("radius"),
+    X("X"),
+    Y("Y"),
+    LINE_STYLE("lineStyle"),
+    FILL_COLOR("fillColor"),
+    NULL("");
 
     public final String str;
 

@@ -35,6 +35,7 @@ public class WebSocketServer implements Subscriber {
             instance.registerToEvent(EventType.OBJECT_LOCKED);
             instance.registerToEvent(EventType.OBJECT_UNLOCKED);
             instance.registerToEvent(EventType.OBJECT_EDITED);
+            instance.registerToEvent(EventType.OBJECT_DELETED);
         }
         return instance;
     }
@@ -94,6 +95,9 @@ public class WebSocketServer implements Subscriber {
                 break;
             case OBJECT_EDITED:
                 WebSocketServerEndPoint.handleEventObjectEdited(e);
+                break;
+            case OBJECT_DELETED:
+                WebSocketServerEndPoint.handleEventObjectDeleted(e);
                 break;
         }
     }

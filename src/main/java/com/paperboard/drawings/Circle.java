@@ -4,7 +4,7 @@ import com.paperboard.server.User;
 
 public class Circle extends Shape {
     private Double radius = 50.0;
-    private String fillColor;
+    private String fillColor = "transparent";
 
     public Circle(final User user, final Position position) {
         super(DrawingType.CIRCLE.str, user, position);
