@@ -7,77 +7,91 @@ import javax.json.JsonObject;
 import java.util.Date;
 import java.util.logging.Logger;
 
+/**
+ * Event object related to an EventType and checking that the payload contains at least the needed attributes.
+ */
 public class Event {
-
     private static final Logger LOGGER = Logger.getLogger(Event.class.getName());
+    final public EventType type;
+    final public StackTraceElement source;
+    final public JsonObject payload;
     public Date firedAt;
-    public EventType type;
-    public JsonObject payload;
-    public StackTraceElement source;
 
-    public Event(final EventType type, @Nullable final JsonObject payload) {
-        this.type = type;
-        this.source = new Throwable().getStackTrace()[1];
-        if (!this.checkPayload(payload)) {
-            final IncorrectEventException e = new IncorrectEventException("Event [" + this.type + "] creation error: "
-                    + "Payload does not suit the event requirements.");
-            LOGGER.warning("ERROR : " + e.getMessage());
-        }
+    /**
+     * Constructor for Event assign and log if there is an error in the payload.
+     *
+     * @param type    a specified EventType
+     * @param payload the JsonObject payload describing the event
+     */
+    public Event(final EventType type, @Nullable final JsonObject payload) throws IncorrectEventException {
+        this.type    = type;
+        this.source  = new Throwable().getStackTrace()[1];
         this.payload = payload;
+        if (!this.checkPayload(payload)) {
+            final IncorrectEventException e = new IncorrectEventException("Event [" +
+                                                                          this.type +
+                                                                          "] creation error: " +
+                                                                          "Payload does not suit the event " +
+                                                                          "requirements.");
+            LOGGER.warning("ERROR : " + e.getMessage());
+            throw e;
+        }
     }
 
+    /**
+     * Method to check the correctness of the payload for each EventType
+     *
+     * @param payload
+     * @return boolean
+     */
     public boolean checkPayload(final JsonObject payload) {
-        boolean payloadIsCorrect = true;
+        boolean payloadIsCorrect;
 
         switch (this.type) {
             case DRAWER_CONNECTED:
-                payloadIsCorrect = this.checkPayloadContains_String(payload, "sessionId");
+                payloadIsCorrect = checkPayloadContains_String(payload, "sessionId");
                 break;
             case DRAWER_DISCONNECTED:
-                payloadIsCorrect = this.checkPayloadContains_String(payload,
-                        "pseudo") || this.checkPayloadContains_String(payload, "sessionId");
+                payloadIsCorrect = checkPayloadContains_String(payload, "pseudo") ||
+                                   checkPayloadContains_String(payload, "sessionId");
                 break;
             case DRAWER_IDENTIFICATION:
-                payloadIsCorrect = this.checkPayloadContains_String(payload,
-                        "pseudo") && this.checkPayloadContains_String(payload, "sessionId") && this.checkPayloadContains_String(payload, "isAvailable");
+                payloadIsCorrect = checkPayloadContains_String(payload, "pseudo", "sessionId", "isAvailable");
                 break;
             case ASK_IDENTITY:
-                payloadIsCorrect = this.checkPayloadContains_String(payload,
-                        "pseudo") && this.checkPayloadContains_String(payload, "sessionId");
+                payloadIsCorrect = checkPayloadContains_String(payload, "pseudo", "sessionId");
                 break;
             case ASK_JOIN_BOARD:
             case ASK_LEAVE_BOARD:
-                payloadIsCorrect = this.checkPayloadContains_String(payload,
-                        "pseudo") && this.checkPayloadContains_String(payload, "board");
+                payloadIsCorrect = checkPayloadContains_String(payload, "pseudo", "board");
                 break;
             case DRAWER_JOINED_BOARD:
             case DRAWER_LEFT_BOARD:
-                payloadIsCorrect = this.checkPayloadContains_String(payload,
-                        "pseudo") && this.checkPayloadContains_String(payload,
-                        "board") && this.checkPayloadContains_Userlist(payload);
+                payloadIsCorrect = checkPayloadContains_String(payload, "pseudo", "board", "userlist");
                 break;
             case CHAT_MESSAGE:
-                payloadIsCorrect = this.checkPayloadContains_String(payload,
-                        "pseudo") && this.checkPayloadContains_String(payload,
-                        "board") && this.checkPayloadContains_String(payload, "msg");
+                payloadIsCorrect = checkPayloadContains_String(payload, "pseudo", "board", "msg");
                 break;
             case OBJECT_CREATED:
-                payloadIsCorrect = this.checkPayloadContains_String(payload,
-                        "pseudo") && this.checkPayloadContains_String(payload,
-                        "shape") && this.checkPayloadContains_String(payload, "id") && this.checkPayloadContains_String(
-                        payload,
-                        "X") && this.checkPayloadContains_String(payload, "Y") && this.checkPayloadContains_String(
-                        payload,
-                        "lineWidth") && this.checkPayloadContains_String(payload, "lineColor");
-                payloadIsCorrect = payloadIsCorrect && (payload.getString("shape")
-                        .equals("circle") && this.checkPayloadContains_String(payload, "radius"));
+                payloadIsCorrect = checkPayloadContains_String(payload,
+                                                               "pseudo",
+                                                               "shape",
+                                                               "id",
+                                                               "X",
+                                                               "Y",
+                                                               "lineWidth",
+                                                               "lineColor");
+                payloadIsCorrect = payloadIsCorrect &&
+                                   (payload.getString("shape").equals("circle") &&
+                                    checkPayloadContains_String(payload, "radius"));
                 break;
             case ASK_CREATE_OBJECT:
-                payloadIsCorrect = this.checkPayloadContains_String(payload,
-                        "pseudo") && this.checkPayloadContains_String(payload,
-                        "board") && this.checkPayloadContains_String(payload,
-                        "shape") && this.checkPayloadContains_String(payload,
-                        "positionX") && this.checkPayloadContains_String(payload, "positionY");
+                payloadIsCorrect = checkPayloadContains_String(payload,
+                                                               "pseudo",
+                                                               "board",
+                                                               "shape",
+                                                               "positionX",
+                                                               "positionY");
                 break;
             case ASK_LOCK_OBJECT:
             case ASK_UNLOCK_OBJECT:
@@ -85,49 +99,50 @@ public class Event {
             case OBJECT_UNLOCKED:
             case ASK_DELETE_OBJECT:
             case OBJECT_DELETED:
-                payloadIsCorrect = this.checkPayloadContains_String(payload,
-                        "pseudo") && this.checkPayloadContains_String(payload,
-                        "board") && this.checkPayloadContains_String(payload, "drawingId");
+                payloadIsCorrect = checkPayloadContains_String(payload, "pseudo", "board", "drawingId");
                 break;
             case OBJECT_EDITED:
-                payloadIsCorrect = this.checkPayloadContains_String(payload,
-                        "pseudo") && this.checkPayloadContains_String(payload,
-                        "board") && this.checkPayloadContains_String(payload, "drawingId");
-                for (final String key : payload.keySet()) {
-                    if (!ModificationType.contains(key) && !key.equals("pseudo") && !key.equals("drawingId") && !key.equals(
-                            "board")) {
-                        payloadIsCorrect = false;
-                    }
-                }
-                break;
             case ASK_EDIT_OBJECT:
-                payloadIsCorrect = this.checkPayloadContains_String(payload,
-                        "pseudo") && this.checkPayloadContains_String(payload,
-                        "drawingId") && this.checkPayloadContains_String(payload, "board");
-                for (final String key : payload.keySet()) {
-                    if (!ModificationType.contains(key) && !key.equals("pseudo") && !key.equals("drawingId") && !key.equals(
-                            "board")) {
-                        payloadIsCorrect = false;
-                    }
-                }
+                payloadIsCorrect = checkPayloadContains_String(payload, "pseudo", "drawingId", "board") &&
+                                   checkPayloadContains_ModificationType(payload);
                 break;
             default:
                 payloadIsCorrect = false;
         }
-
         return payloadIsCorrect;
     }
 
-    private boolean checkPayloadContains_String(final JsonObject payload, final String key) {
-        if (!payload.containsKey(key) || (payload.containsKey(key) && payload.getString(key).equals(""))) {
-            return false;
+    /**
+     * Method to check that a payload is containing a specific key and that this one is not an empty string.
+     *
+     * @param payload the payload you want to check
+     * @param keys    keys requested in the payload
+     * @return boolean
+     */
+    public static boolean checkPayloadContains_String(final JsonObject payload, final String... keys) {
+        for (final String key : keys) {
+            if (!payload.containsKey(key) || (payload.containsKey(key) && payload.getString(key).equals(""))) {
+                return false;
+            }
         }
         return true;
     }
 
-    private boolean checkPayloadContains_Userlist(final JsonObject payload) {
-        if (!payload.containsKey("userlist")) {
-            return false;
+    /**
+     * Iterate on payload keys to check that every key except "pseudo", "drawingId" and "board" are in
+     * ModificationType enum.
+     *
+     * @param payload
+     * @return boolean
+     */
+    public static boolean checkPayloadContains_ModificationType(final JsonObject payload) {
+        for (final String key : payload.keySet()) {
+            if (!ModificationType.contains(key) &&
+                !key.equals("pseudo") &&
+                !key.equals("drawingId") &&
+                !key.equals("board")) {
+                return false;
+            }
         }
         return true;
     }

@@ -1,5 +1,8 @@
 package com.paperboard.server.events;
 
+/**
+ * Enum describing the different events fired in the app
+ */
 public enum EventType {
 
     // ---- REQUESTS RECEIVED FROM CLIENTS
