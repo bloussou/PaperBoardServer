@@ -5,6 +5,9 @@ import com.paperboard.server.events.Event;
 import com.paperboard.server.events.EventManager;
 import com.paperboard.server.events.EventType;
 import com.paperboard.server.events.Subscriber;
+import com.paperboard.server.socket.Message;
+import com.paperboard.server.socket.MessageType;
+import com.paperboard.server.socket.WebSocketServerEndPoint;
 
 import javax.json.*;
 import java.time.LocalDateTime;
@@ -70,6 +73,7 @@ public class PaperBoard implements Subscriber {
         this.registerToEvent(EventType.ASK_LOCK_OBJECT, title);
         this.registerToEvent(EventType.ASK_UNLOCK_OBJECT, title);
         this.registerToEvent(EventType.ASK_EDIT_OBJECT, title);
+        this.registerToEvent(EventType.ASK_DELETE_OBJECT, title);
     }
 
     public PaperBoard(final String title, final Optional<String> backgroundColor, final Optional<String> imageName) {
@@ -241,6 +245,41 @@ public class PaperBoard implements Subscriber {
         return;
     }
 
+    private void handleAskDeleteObject(final Event e) {
+        final User user = ServerApplication.getInstance().getConnectedUsers().get(e.payload.getString("pseudo"));
+        final String board = this.title;
+        final String drawingId = e.payload.getString("drawingId");
+
+        final Drawing drawing = this.drawings.get(drawingId);
+
+        if (drawing.getOwner().equals(user) || !this.drawers.contains(drawing.getOwner())) {
+            this.drawings.remove(drawingId);
+            final JsonObject payload = Json.createBuilderFactory(null)
+                    .createObjectBuilder()
+                    .add("pseudo", user.getPseudo())
+                    .add("drawingId", drawingId)
+                    .add("board", board)
+                    .build();
+            EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_DELETED, payload), board);
+        } else {
+            final JsonObject payload = Json.createBuilderFactory(null)
+                    .createObjectBuilder()
+                    .add("pseudo", user.getPseudo())
+                    .add("drawingId", drawingId)
+                    .add("board", board)
+                    .add("type", drawing.getType())
+                    .build();
+            final Message msg = new Message(MessageType.MSG_DELETE_OBJECT.str,
+                    user.getPseudo(),
+                    drawing.getOwner().getPseudo(),
+                    payload);
+            WebSocketServerEndPoint.sendMessageToUser(msg);
+        }
+
+
+        return;
+    }
+
     private void handleAskEditObject(final Event e) {
         final User user = PaperBoardApplication.getInstance().getConnectedUsers().get(e.payload.getString("pseudo"));
         final String board = this.title;
@@ -267,7 +306,8 @@ public class PaperBoard implements Subscriber {
                 case CIRCLE:
                     final Circle circle = (Circle) drawing;
                     for (final String key : keys) {
-                        if (key != null && !key.equals("pseudo") && !key.equals("board") && !key.equals("drawingId") && !key.equals("X") && !key.equals("Y")) {
+                        if (key != null && !key.equals("pseudo") && !key.equals("board") && !key.equals("drawingId") && !key
+                                .equals("X") && !key.equals("Y")) {
                             switch (ModificationType.getEnum(key)) {
                                 case LINE_WIDTH:
                                     final Double lineWidth =
@@ -285,6 +325,16 @@ public class PaperBoard implements Subscriber {
                                             Double.parseDouble(payload.getString(ModificationType.RADIUS.str));
                                     circle.setRadius(radius);
                                     modifications.add(ModificationType.RADIUS.str, radius.toString());
+                                    break;
+                                case FILL_COLOR:
+                                    final String fillColor = payload.getString(ModificationType.FILL_COLOR.str);
+                                    circle.setFillColor(fillColor);
+                                    modifications.add(ModificationType.FILL_COLOR.str, fillColor);
+                                    break;
+                                case LINE_STYLE:
+                                    final String lineStyle = payload.getString(ModificationType.LINE_STYLE.str);
+                                    circle.setFillColor(lineStyle);
+                                    modifications.add(ModificationType.LINE_STYLE.str, lineStyle);
                                     break;
                                 default:
                                     LOGGER.warning("This modification is not yet implemented for edition" + key);
@@ -371,6 +421,9 @@ public class PaperBoard implements Subscriber {
                 break;
             case ASK_EDIT_OBJECT:
                 handleAskEditObject(e);
+                break;
+            case ASK_DELETE_OBJECT:
+                handleAskDeleteObject(e);
                 break;
             default:
                 LOGGER.info("Detected Event " + e.type.toString() + " Not implemented");
