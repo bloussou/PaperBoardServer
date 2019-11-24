@@ -8,12 +8,12 @@ import com.paperboard.server.events.Subscriber;
 import com.paperboard.server.socket.Message;
 import com.paperboard.server.socket.MessageType;
 import com.paperboard.server.socket.WebSocketServerEndPoint;
+import reactor.util.annotation.Nullable;
 
 import javax.json.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -23,49 +23,19 @@ import static com.paperboard.drawings.DrawingType.CIRCLE;
 
 public class PaperBoard implements Subscriber {
 
-    private static AtomicLong idCounter = new AtomicLong(0);
+    final private static AtomicLong idCounter = new AtomicLong(0);
     final private String id;
     final private String title;
+    final private LocalDateTime creationDate;
+    final private static Logger LOGGER = Logger.getLogger(PaperBoard.class.getName());
     private String backgroundColor = "";
     private java.util.Set<User> drawers = new HashSet<>();
-    private ConcurrentHashMap<String, Drawing> drawings = new ConcurrentHashMap<String, Drawing>();
-    private String backgroundImageName = "";
-    private static final Logger LOGGER = Logger.getLogger(PaperBoard.class.getName());
-
-
-    private LocalDateTime creationDate;
-
-
-    public class PaperBoardInfo {
-        private int numberOfConnectedUser;
-        private String title;
-
-
-        private LocalDateTime creationDate;
-
-        public PaperBoardInfo(final String title, final int connectedUser, final LocalDateTime creationDate) {
-            this.numberOfConnectedUser = connectedUser;
-            this.title = title;
-            this.creationDate = creationDate;
-        }
-
-        public int getNumberOfConnectedUser() {
-            return numberOfConnectedUser;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public LocalDateTime getCreationDate() {
-            return creationDate;
-        }
-
-    }
+    private ConcurrentHashMap<String, Drawing> drawings = new ConcurrentHashMap<>();
+    private String backgroundImage = "";
 
     public PaperBoard(final String title) {
-        this.id = String.valueOf(idCounter.getAndIncrement());
-        this.title = title;
+        this.id           = String.valueOf(idCounter.getAndIncrement());
+        this.title        = title;
         this.creationDate = LocalDateTime.now();
         this.registerToEvent(EventType.ASK_JOIN_BOARD, title);
         this.registerToEvent(EventType.ASK_CREATE_OBJECT, title);
@@ -76,51 +46,23 @@ public class PaperBoard implements Subscriber {
         this.registerToEvent(EventType.ASK_DELETE_OBJECT, title);
     }
 
-    public PaperBoard(final String title, final Optional<String> backgroundColor, final Optional<String> imageName) {
+    public PaperBoard(final String title,
+                      final @Nullable String backgroundColor,
+                      final @Nullable String backgroundImage) {
         this(title);
-        if (!imageName.isEmpty()) {
-            this.setBackgroundImageName(imageName.get());
-        } else if (!backgroundColor.isEmpty()) {
-            this.setBackgroundColor(backgroundColor.get());
+        if (backgroundImage != null) {
+            this.backgroundImage = backgroundImage;
+        } else if (backgroundColor != null) {
+            this.backgroundColor = backgroundColor;
         }
-    }
-
-    public PaperBoardInfo getInfo() {
-        return new PaperBoardInfo(this.getTitle(), this.getDrawers().size(), this.getCreationDate());
-    }
-
-    public LocalDateTime getCreationDate() {
-        return creationDate;
     }
 
     public String getTitle() {
         return title;
     }
 
-    public String getBackgroundColor() {
-        return backgroundColor;
-    }
-
-    public void setBackgroundColor(final String backgroundColor) {
-        this.backgroundColor = backgroundColor;
-    }
-
-
-    public Set<User> getDrawers() {
-        return drawers;
-    }
-
     public ConcurrentHashMap<String, Drawing> getDrawings() {
         return drawings;
-    }
-
-
-    public String getBackgroundImageName() {
-        return backgroundImageName;
-    }
-
-    public void setBackgroundImageName(final String backgroundImageName) {
-        this.backgroundImageName = backgroundImageName;
     }
 
     private void handleAskJoinBoard(final Event e) {
@@ -270,9 +212,9 @@ public class PaperBoard implements Subscriber {
                     .add("type", drawing.getType())
                     .build();
             final Message msg = new Message(MessageType.MSG_DELETE_OBJECT.str,
-                    user.getPseudo(),
-                    drawing.getOwner().getPseudo(),
-                    payload);
+                                            user.getPseudo(),
+                                            drawing.getOwner().getPseudo(),
+                                            payload);
             WebSocketServerEndPoint.sendMessageToUser(msg);
         }
 
@@ -306,12 +248,16 @@ public class PaperBoard implements Subscriber {
                 case CIRCLE:
                     final Circle circle = (Circle) drawing;
                     for (final String key : keys) {
-                        if (key != null && !key.equals("pseudo") && !key.equals("board") && !key.equals("drawingId") && !key
-                                .equals("X") && !key.equals("Y")) {
+                        if (key != null &&
+                            !key.equals("pseudo") &&
+                            !key.equals("board") &&
+                            !key.equals("drawingId") &&
+                            !key.equals("X") &&
+                            !key.equals("Y")) {
                             switch (ModificationType.getEnum(key)) {
                                 case LINE_WIDTH:
-                                    final Double lineWidth =
-                                            Double.parseDouble(payload.getString(ModificationType.LINE_WIDTH.str));
+                                    final Double lineWidth
+                                            = Double.parseDouble(payload.getString(ModificationType.LINE_WIDTH.str));
                                     circle.setLineWidth(lineWidth);
                                     modifications.add(ModificationType.LINE_WIDTH.str, lineWidth.toString());
                                     break;
@@ -321,8 +267,8 @@ public class PaperBoard implements Subscriber {
                                     modifications.add(ModificationType.LINE_COLOR.str, lineColor);
                                     break;
                                 case RADIUS:
-                                    final Double radius =
-                                            Double.parseDouble(payload.getString(ModificationType.RADIUS.str));
+                                    final Double radius
+                                            = Double.parseDouble(payload.getString(ModificationType.RADIUS.str));
                                     circle.setRadius(radius);
                                     modifications.add(ModificationType.RADIUS.str, radius.toString());
                                     break;
@@ -357,10 +303,10 @@ public class PaperBoard implements Subscriber {
     public JsonObjectBuilder encodeToJsonObjectBuilder() {
         final JsonObjectBuilder builder = Json.createObjectBuilder();
         builder.add("backgroundColor", this.backgroundColor);
-        builder.add("backgroundImageName", this.backgroundImageName);
+        builder.add("backgroundImageName", this.backgroundImage);
         builder.add("backgroundImage", "");
         builder.add("creationDate", String.valueOf(this.creationDate));
-        builder.add("numberOfConnectedUser", this.getInfo().getNumberOfConnectedUser());
+        builder.add("numberOfConnectedUser", this.drawers.size());
         builder.add("title", this.title);
         builder.add("backgroundColor", this.backgroundColor);
 

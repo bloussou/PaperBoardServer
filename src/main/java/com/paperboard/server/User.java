@@ -7,26 +7,20 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * User class to define the user object
+ * Pseudo are unique, this way we can check that each user has a different pseudo
  */
 public class User {
     private static AtomicLong idCounter = new AtomicLong(0);
     private final String id;
-    private String pseudo;
+    private final String pseudo;
 
     public User(final String pseudo) {
-        this.id = "user" + String.valueOf(idCounter.getAndIncrement());
+        this.id = "user".concat(String.valueOf(idCounter.getAndIncrement()));
         this.pseudo = pseudo;
-    }
-
-    public void joinPaperBoard() {
     }
 
     public String getPseudo() {
-        return pseudo;
-    }
-
-    public void setPseudo(final String pseudo) {
-        this.pseudo = pseudo;
+        return this.pseudo;
     }
 
     @Override
@@ -40,6 +34,12 @@ public class User {
         return jsonBuilder;
     }
 
+    /**
+     * Override of equals based on pseudo.
+     *
+     * @param obj
+     * @return
+     */
     @Override
     public boolean equals(final Object obj) {
         if (obj == this) {
@@ -52,6 +52,9 @@ public class User {
         return this.getPseudo().equals(user.getPseudo());
     }
 
+    /**
+     * @return
+     */
     @Override
     public int hashCode() {
         return this.getPseudo().length();
