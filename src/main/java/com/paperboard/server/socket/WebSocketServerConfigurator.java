@@ -10,7 +10,7 @@ public class WebSocketServerConfigurator extends ServerEndpointConfig.Configurat
 
     private static final String[] ALLOWED_METHODS = {"GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"};
     private static final String[] ALLOWED_ORIGINS = {"http://localhost:3000",
-            "chrome-extension" + "://fgponpodhbmadfljofbimhhlengambbn",};
+            "chrome-extension" + "://fgponpodhbmadfljofbimhhlengambbn", "https://paperboard-just-draw-it.herokuapp.com"};
 
     @Override
     public boolean checkOrigin(final String originHeaderValue) {
@@ -26,8 +26,8 @@ public class WebSocketServerConfigurator extends ServerEndpointConfig.Configurat
 
     @Override
     public void modifyHandshake(final ServerEndpointConfig sec,
-            final HandshakeRequest request,
-            final HandshakeResponse response) {
+                                final HandshakeRequest request,
+                                final HandshakeResponse response) {
         response.getHeaders().put("Access-Control-Allow-Headers", Collections.singletonList("content-type"));
         response.getHeaders().put("Access-Control-Allow-Methods", Arrays.asList(ALLOWED_METHODS));
         response.getHeaders().put("Access-Control-Allow-Origin", Arrays.asList(ALLOWED_ORIGINS));
