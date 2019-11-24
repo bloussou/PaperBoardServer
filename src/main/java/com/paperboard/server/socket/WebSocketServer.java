@@ -7,8 +7,6 @@ import com.paperboard.server.events.Subscriber;
 import org.glassfish.tyrus.server.Server;
 
 import javax.websocket.DeploymentException;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.logging.Logger;
 
 public class WebSocketServer implements Subscriber {
@@ -39,6 +37,7 @@ public class WebSocketServer implements Subscriber {
         return instance;
     }
 
+    /*
     public static void main(final String[] args) {
         runServer();
         try {
@@ -51,6 +50,7 @@ public class WebSocketServer implements Subscriber {
             stopServer();
         }
     }
+    */
 
     public static void runServer() {
         LOGGER.info("---> Starting WebSocket Server !");

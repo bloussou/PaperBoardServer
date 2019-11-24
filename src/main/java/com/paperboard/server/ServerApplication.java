@@ -58,21 +58,9 @@ public class ServerApplication implements Subscriber {
     }
 
     public static void main(final String[] args) {
-        ServerApplication.runServer();
+        //ServerApplication.runServer();
         WebSocketServer.runServer();
 
-        /**
-         * EXAMPLE OF SUBSCRIPTION (SUBSCRIBER/PUBLISHER PATTERN)
-         * Here the object 'pb' subscribes to the event JOIN_BOARD (a user joins a board).
-         * 1) It has to implement the Suscriber interface with a specific 'updateFromEvent(Event e)' method
-         * which is triggered anytime such event is fired.
-         * 2) The JOIN_BOARD event is fired by the SocketEndPoint component when it receives a message from any client
-         * with type MSG_JOIN_BOARD.
-         * 3) The event fired contains the Msg with all the needed information for the subscribers
-         * to process there updateFromEvent
-         */
-        /*final PaperBoard pb = new PaperBoard("tableau de papier", Optional.of("rouge"), Optional.empty());
-        pb.registerToEvent(EventType.JOIN_BOARD, pb.getTitle());*/
         try {
             final BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
             LOGGER.info("[IMPORTANT INFO] To stop the Http server and the WebSocket server properly press any key.");
@@ -81,7 +69,7 @@ public class ServerApplication implements Subscriber {
             throw new RuntimeException(e);
         } finally {
             WebSocketServer.stopServer();
-            ServerApplication.stopServer();
+            //ServerApplication.stopServer();
         }
     }
 
@@ -99,7 +87,7 @@ public class ServerApplication implements Subscriber {
      *
      * @param paperBoard the paperboard you want to add to the Set
      * @throws PaperBoardAlreadyExistException The error triggered if you try to add two paperboards with the same
-     * title in the set
+     *                                         title in the set
      */
     public static void addPaperBoard(final PaperBoard paperBoard) throws PaperBoardAlreadyExistException {
         final ServerApplication server = ServerApplication.getInstance();
