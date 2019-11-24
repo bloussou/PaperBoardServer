@@ -45,17 +45,9 @@ public class PaperBoardApplication implements Subscriber {
         } catch (final Exception e) {
             throw new RuntimeException(e);
         } finally {
+            instance.unregisterFromAllEvent();
             WebSocketServer.stopServer();
         }
-    }
-
-    /**
-     * For test purpose and maybe other feature, this function clear the two Set connectedUsers and paperBoards
-     */
-    public static void clearData() {
-        final PaperBoardApplication app = PaperBoardApplication.getInstance();
-        app.getPaperBoards().clear();
-        app.getConnectedUsers().clear();
     }
 
     /**
