@@ -34,8 +34,8 @@ public class PaperBoard implements Subscriber {
     private String backgroundImage = "";
 
     public PaperBoard(final String title) {
-        this.id           = String.valueOf(idCounter.getAndIncrement());
-        this.title        = title;
+        this.id = String.valueOf(idCounter.getAndIncrement());
+        this.title = title;
         this.creationDate = LocalDateTime.now();
         this.registerToEvent(EventType.ASK_JOIN_BOARD, title);
         this.registerToEvent(EventType.ASK_CREATE_OBJECT, title);
@@ -125,11 +125,11 @@ public class PaperBoard implements Subscriber {
                 case "circle":
                     final Circle circle = new Circle(user, new Position(positionX, positionY));
                     drawings.put(circle.getId(), circle);
-                    final JsonObject payload = Json.createBuilderFactory(null)
+                    final JsonObject payloadCircle = Json.createBuilderFactory(null)
                             .createObjectBuilder()
                             .add("pseudo", user.getPseudo())
-                            .add("shape", CIRCLE.str)
-                            .add("id", circle.getId())
+                            .add("type", CIRCLE.str)
+                            .add("drawingId", circle.getId())
                             .add("X", circle.getPosition().getX().toString())
                             .add("Y", circle.getPosition().getY().toString())
                             .add("radius", circle.getRadius().toString())
@@ -138,17 +138,20 @@ public class PaperBoard implements Subscriber {
                             .add("lineWidth", circle.getLineWidth().toString())
                             .add("lineColor", circle.getLineColor())
                             .build();
-                    EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_CREATED, payload), board);
+                    EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_CREATED, payloadCircle), board);
                     break;
                 case "image":
-                    final Double width = Double.parseDouble(e.payload.getString("width"));
-                    final Double height = Double.parseDouble(e.payload.getString("height"));
-                    final String srcURI = e.payload.getString("srcURI");
+                    final JsonObject description = e.payload.getJsonObject("description");
+                    final Double width = Double.parseDouble(description.getString("width"));
+                    final Double height = Double.parseDouble(description.getString("height"));
+                    final String srcURI = description.getString("srcURI");
                     final Image image = new Image(user, new Position(positionX, positionY), width, height, srcURI);
                     drawings.put(image.getId(), image);
+
+                    final JsonObject payloadImage = image.encodeToJsonObjectBuilder().add("pseudo", user.getPseudo()).build();
                     EventManager.getInstance()
-                            .fireEvent(new Event(EventType.OBJECT_CREATED, image.encodeToJsonObjectBuilder().build()),
-                                       board);
+                            .fireEvent(new Event(EventType.OBJECT_CREATED, payloadImage),
+                                    board);
                     break;
                 default:
                     LOGGER.warning("This shape is not yet implemented" + shape);
@@ -224,9 +227,9 @@ public class PaperBoard implements Subscriber {
                     .add("type", drawing.getType())
                     .build();
             final Message msg = new Message(MessageType.MSG_DELETE_OBJECT.str,
-                                            user.getPseudo(),
-                                            drawing.getOwner().getPseudo(),
-                                            payload);
+                    user.getPseudo(),
+                    drawing.getOwner().getPseudo(),
+                    payload);
             WebSocketServerEndPoint.sendMessageToUser(msg);
         }
 

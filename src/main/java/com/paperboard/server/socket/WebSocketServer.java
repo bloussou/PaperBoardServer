@@ -58,7 +58,7 @@ public class WebSocketServer implements Subscriber {
         LOGGER.info("---> Starting WebSocket Server !");
         try {
             final int port = SOCKET_PORT == null ? Integer.parseInt(SOCKET_PORT_DEFAULT.trim()) :
-                             Integer.parseInt(SOCKET_PORT.trim());
+                    Integer.parseInt(SOCKET_PORT.trim());
             server = new Server(HOSTNAME, port, SOCKET_API, WebSocketServerEndPoint.class);
             server.start();
             getInstance();
@@ -89,7 +89,7 @@ public class WebSocketServer implements Subscriber {
                 WebSocketServerEndPoint.handleEventChatMessage(e);
                 break;
             case OBJECT_CREATED:
-                WebSocketServerEndPoint.handleObjectCreated(e);
+                WebSocketServerEndPoint.handleEventObjectCreated(e);
                 break;
             case OBJECT_LOCKED:
                 WebSocketServerEndPoint.handleEventObjectLocked(e);

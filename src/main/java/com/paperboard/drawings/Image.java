@@ -17,14 +17,14 @@ public class Image extends Drawing {
                  final String srcURI) {
         super(DrawingType.IMAGE.str, user, position);
         this.height = height;
-        this.width  = width;
+        this.width = width;
         this.srcURI = srcURI;
     }
 
     @Override
     public JsonObjectBuilder encodeToJsonObjectBuilder() {
         final JsonObjectBuilder jsonBuilder = super.encodeToJsonObjectBuilder();
-        jsonBuilder.add("height", this.height.toString()).add("width", this.width.toString()).add("url", this.srcURI);
+        jsonBuilder.add("height", this.height.toString()).add("width", this.width.toString()).add("srcURI", this.srcURI);
         return jsonBuilder;
     }
 

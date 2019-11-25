@@ -24,15 +24,15 @@ public class Event {
      * @param payload the JsonObject payload describing the event
      */
     public Event(final EventType type, @Nullable final JsonObject payload) throws IncorrectEventException {
-        this.type    = type;
-        this.source  = new Throwable().getStackTrace()[1];
+        this.type = type;
+        this.source = new Throwable().getStackTrace()[1];
         this.payload = payload;
         if (!this.checkPayload(payload)) {
             final IncorrectEventException e = new IncorrectEventException("Event [" +
-                                                                          this.type +
-                                                                          "] creation error: " +
-                                                                          "Payload does not suit the event " +
-                                                                          "requirements.");
+                    this.type +
+                    "] creation error: " +
+                    "Payload does not suit the event " +
+                    "requirements.");
             LOGGER.warning("ERROR : " + e.getMessage());
             throw e;
         }
@@ -53,7 +53,7 @@ public class Event {
                 break;
             case DRAWER_DISCONNECTED:
                 payloadIsCorrect = checkPayloadContains_String(payload, "pseudo") ||
-                                   checkPayloadContains_String(payload, "sessionId");
+                        checkPayloadContains_String(payload, "sessionId");
                 break;
             case DRAWER_IDENTIFICATION:
                 payloadIsCorrect = checkPayloadContains_String(payload, "pseudo", "sessionId", "isAvailable");
@@ -68,31 +68,32 @@ public class Event {
             case DRAWER_JOINED_BOARD:
             case DRAWER_LEFT_BOARD:
                 payloadIsCorrect = checkPayloadContains_String(payload, "pseudo", "board") &&
-                                   payload.containsKey("userlist");
+                        payload.containsKey("userlist");
                 break;
             case CHAT_MESSAGE:
                 payloadIsCorrect = checkPayloadContains_String(payload, "pseudo", "board", "msg");
                 break;
             case OBJECT_CREATED:
                 payloadIsCorrect = checkPayloadContains_String(payload,
-                                                               "pseudo",
-                                                               "shape",
-                                                               "id",
-                                                               "X",
-                                                               "Y",
-                                                               "lineWidth",
-                                                               "lineColor");
+                        "pseudo",
+                        "shape",
+                        "id",
+                        "X",
+                        "Y",
+                        "lineWidth",
+                        "lineColor");
                 payloadIsCorrect = payloadIsCorrect &&
-                                   (payload.getString("shape").equals("circle") &&
-                                    checkPayloadContains_String(payload, "radius"));
+                        (payload.getString("shape").equals("circle") &&
+                                checkPayloadContains_String(payload, "radius"));
+                payloadIsCorrect = true;
                 break;
             case ASK_CREATE_OBJECT:
                 payloadIsCorrect = checkPayloadContains_String(payload,
-                                                               "pseudo",
-                                                               "board",
-                                                               "shape",
-                                                               "positionX",
-                                                               "positionY");
+                        "pseudo",
+                        "board",
+                        "shape",
+                        "positionX",
+                        "positionY") && payload.containsKey("description");
                 break;
             case ASK_LOCK_OBJECT:
             case ASK_UNLOCK_OBJECT:
@@ -105,7 +106,7 @@ public class Event {
             case OBJECT_EDITED:
             case ASK_EDIT_OBJECT:
                 payloadIsCorrect = checkPayloadContains_String(payload, "pseudo", "drawingId", "board") &&
-                                   checkPayloadContains_ModificationType(payload);
+                        checkPayloadContains_ModificationType(payload);
                 break;
             default:
                 payloadIsCorrect = false;
@@ -139,9 +140,9 @@ public class Event {
     public static boolean checkPayloadContains_ModificationType(final JsonObject payload) {
         for (final String key : payload.keySet()) {
             if (!ModificationType.contains(key) &&
-                !key.equals("pseudo") &&
-                !key.equals("drawingId") &&
-                !key.equals("board")) {
+                    !key.equals("pseudo") &&
+                    !key.equals("drawingId") &&
+                    !key.equals("board")) {
                 return false;
             }
         }
