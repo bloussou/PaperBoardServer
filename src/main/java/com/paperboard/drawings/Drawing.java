@@ -2,10 +2,11 @@ package com.paperboard.drawings;
 
 import com.paperboard.server.User;
 
+import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import java.util.concurrent.atomic.AtomicLong;
 
-public abstract class Drawing implements IDrawing {
+public abstract class Drawing {
     private static AtomicLong idCounter = new AtomicLong(0);
     private final User owner;
     private boolean isLocked;
@@ -14,49 +15,13 @@ public abstract class Drawing implements IDrawing {
     private final String type;
     private Position position;
 
-    public Drawing(final String type, final User user) {
-        this.id = "drawing" + String.valueOf(idCounter.getAndIncrement());
-        this.owner = user;
-        this.type = type;
+    public Drawing(final String type, final User user, final Position position) {
+        this.id       = "drawing" + String.valueOf(idCounter.getAndIncrement());
+        this.owner    = user;
+        this.type     = type;
         this.isLocked = false;
         this.lockedBy = "";
-    }
-
-    public Drawing(final String type, final User user, final Position position) {
-        this(type, user);
         this.position = position;
-    }
-
-    @Override
-    public void move() {
-    }
-
-    @Override
-    public void delete() {
-    }
-
-    public User getOwner() {
-        return owner;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public Position getPosition() {
-        return position;
-    }
-
-    public boolean isLocked() {
-        return isLocked;
-    }
-
-    public String getLockedBy() {
-        return lockedBy;
     }
 
     public void setPosition(final Position position) {
@@ -84,5 +49,38 @@ public abstract class Drawing implements IDrawing {
         return false;
     }
 
-    public abstract JsonObjectBuilder encodeToJsonObjectBuilder();
+    public JsonObjectBuilder encodeToJsonObjectBuilder() {
+        final JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+        jsonBuilder.add("id", this.id)
+                .add("isLocked", this.isLocked)
+                .add("lockedBy", this.lockedBy)
+                .add("type", this.type)
+                .add("position", this.position.encodeToJsonObjectBuilder())
+                .add("owner", this.owner.encodeToJsonObjectBuilder());
+        return jsonBuilder;
+    }
+
+    public User getOwner() {
+        return owner;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public Position getPosition() {
+        return position;
+    }
+
+    public boolean isLocked() {
+        return isLocked;
+    }
+
+    public String getLockedBy() {
+        return lockedBy;
+    }
 }
