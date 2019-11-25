@@ -306,8 +306,12 @@ public class WebSocketServerEndPoint {
     }
 
     public void handleMsgCreateBoard(final Session session, final Message message) {
-        if (message.getPayload().containsKey("title")) {
-            final PaperBoard paperBoard = new PaperBoard(message.getPayload().getString("title"));
+        final String title = message.getPayload().containsKey("title") ? message.getPayload().getString("title") : null;
+        final String backgroundColor = message.getPayload().containsKey("backgroundColor") ? message.getPayload().getString("backgroundColor") : null;
+        final String backgroundImage = message.getPayload().containsKey("backgroundImage") ? message.getPayload().getString("backgroundImage") : null;
+
+        if (title != null) {
+            final PaperBoard paperBoard = new PaperBoard(title, backgroundColor, backgroundImage);
             try {
                 PaperBoardApplication.addPaperBoard(paperBoard);
                 final JsonObject payload = Json.createObjectBuilder().add("created", true).build();
