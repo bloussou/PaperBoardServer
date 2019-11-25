@@ -309,8 +309,7 @@ public class PaperBoard implements Subscriber {
     public JsonObjectBuilder encodeToJsonObjectBuilder() {
         final JsonObjectBuilder builder = Json.createObjectBuilder();
         builder.add("backgroundColor", this.backgroundColor);
-        builder.add("backgroundImageName", this.backgroundImage);
-        builder.add("backgroundImage", "");
+        builder.add("backgroundImage", this.backgroundImage);
         builder.add("creationDate", String.valueOf(this.creationDate));
         builder.add("numberOfConnectedUser", this.drawers.size());
         builder.add("title", this.title);

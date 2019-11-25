@@ -67,7 +67,8 @@ public class Event {
                 break;
             case DRAWER_JOINED_BOARD:
             case DRAWER_LEFT_BOARD:
-                payloadIsCorrect = checkPayloadContains_String(payload, "pseudo", "board", "userlist");
+                payloadIsCorrect = checkPayloadContains_String(payload, "pseudo", "board") &&
+                                   payload.containsKey("userlist");
                 break;
             case CHAT_MESSAGE:
                 payloadIsCorrect = checkPayloadContains_String(payload, "pseudo", "board", "msg");
