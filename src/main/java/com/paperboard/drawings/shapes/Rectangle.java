@@ -1,9 +1,11 @@
 package com.paperboard.drawings.shapes;
 
 import com.paperboard.drawings.DrawingType;
+import com.paperboard.drawings.ModificationType;
 import com.paperboard.drawings.Position;
 import com.paperboard.server.User;
 
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 public class Rectangle extends Shape {
@@ -22,6 +24,31 @@ public class Rectangle extends Shape {
                 .add("positionBottomRight", this.height.toString())
                 .add("backgroundColor", this.fillColor);
         return jsonBuilder;
+    }
+
+    @Override
+    public JsonObjectBuilder editDrawing(final JsonObject payload, final String board) {
+        final JsonObjectBuilder modifications = super.editDrawing(payload, board);
+        for (final String key : payload.keySet()) {
+            switch (ModificationType.getEnum(key)) {
+                case WIDTH:
+                    final Double width = Double.parseDouble(payload.getString(key));
+                    this.setWidth(width);
+                    modifications.add(key, width.toString());
+                    break;
+                case HEIGHT:
+                    final Double height = Double.parseDouble(payload.getString(key));
+                    this.setHeight(height);
+                    modifications.add(key, height.toString());
+                    break;
+                case FILL_COLOR:
+                    final String fillColor = payload.getString(key);
+                    this.setFillColor(fillColor);
+                    modifications.add(key, fillColor);
+                    break;
+            }
+        }
+        return modifications;
     }
 
     public Double getWidth() {

@@ -1,9 +1,11 @@
 package com.paperboard.drawings.shapes;
 
 import com.paperboard.drawings.DrawingType;
+import com.paperboard.drawings.ModificationType;
 import com.paperboard.drawings.Position;
 import com.paperboard.server.User;
 
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 public class Triangle extends Shape {
@@ -16,6 +18,45 @@ public class Triangle extends Shape {
         this.positionBottomLeft  = new Position(position.getX() - 20.0, position.getY() - 20.0);
         this.positionBottomRight = new Position(position.getX() + 20.0, position.getY() - 20.0);
     }
+
+    @Override
+    public JsonObjectBuilder encodeToJsonObjectBuilder() {
+        final JsonObjectBuilder jsonBuilder = super.encodeToJsonObjectBuilder();
+        jsonBuilder.add("positionBottomLeft", this.positionBottomLeft.encodeToJsonObjectBuilder())
+                .add("positionBottomRight", this.positionBottomRight.encodeToJsonObjectBuilder())
+                .add("fillColor", this.fillColor);
+        return jsonBuilder;
+    }
+
+    @Override
+    public JsonObjectBuilder editDrawing(final JsonObject payload, final String board) {
+        final JsonObjectBuilder modifications = super.editDrawing(payload, board);
+        for (final String key : payload.keySet()) {
+            switch (ModificationType.getEnum(key)) {
+                case POSITION_BOTTOM_LEFT:
+                    final JsonObject positionGetRight = payload.getJsonObject(key);
+                    final Position positionRight = new Position(Double.parseDouble(positionGetRight.getString("x")),
+                                                                Double.parseDouble(positionGetRight.getString("y")));
+                    this.setPositionBottomRight(positionRight);
+                    modifications.add(key, positionRight.encodeToJsonObjectBuilder());
+                    break;
+                case POSITION_BOTTOM_RIGHT:
+                    final JsonObject positionGetLeft = payload.getJsonObject(key);
+                    final Position positionLeft = new Position(Double.parseDouble(positionGetLeft.getString("x")),
+                                                               Double.parseDouble(positionGetLeft.getString("y")));
+                    this.setPositionBottomLeft(positionLeft);
+                    modifications.add(key, positionLeft.encodeToJsonObjectBuilder());
+                    break;
+                case FILL_COLOR:
+                    final String fillColor = payload.getString(key);
+                    this.setFillColor(fillColor);
+                    modifications.add(key, fillColor);
+                    break;
+            }
+        }
+        return modifications;
+    }
+
 
     public Position getPositionBottomLeft() {
         return positionBottomLeft;
@@ -39,14 +80,5 @@ public class Triangle extends Shape {
 
     public void setFillColor(final String fillColor) {
         this.fillColor = fillColor;
-    }
-
-    @Override
-    public JsonObjectBuilder encodeToJsonObjectBuilder() {
-        final JsonObjectBuilder jsonBuilder = super.encodeToJsonObjectBuilder();
-        jsonBuilder.add("positionBottomLeft", this.positionBottomLeft.encodeToJsonObjectBuilder())
-                .add("positionBottomRight", this.positionBottomRight.encodeToJsonObjectBuilder())
-                .add("fillColor", this.fillColor);
-        return jsonBuilder;
     }
 }

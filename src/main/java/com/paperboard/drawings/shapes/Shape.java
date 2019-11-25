@@ -30,19 +30,19 @@ public abstract class Shape extends Drawing {
         for (final String key : payload.keySet()) {
             switch (ModificationType.getEnum(key)) {
                 case LINE_WIDTH:
-                    final Double lineWidth = Double.parseDouble(payload.getString(ModificationType.LINE_WIDTH.str));
+                    final Double lineWidth = Double.parseDouble(payload.getString(key));
                     this.setLineWidth(lineWidth);
-                    modifications.add(ModificationType.LINE_WIDTH.str, lineWidth.toString());
+                    modifications.add(key, lineWidth.toString());
                     break;
                 case LINE_COLOR:
-                    final String lineColor = payload.getString(ModificationType.LINE_COLOR.str);
+                    final String lineColor = payload.getString(key);
                     this.setLineColor(lineColor);
-                    modifications.add(ModificationType.LINE_COLOR.str, lineColor);
+                    modifications.add(key, lineColor);
                     break;
                 case LINE_STYLE:
-                    final String lineStyle = payload.getString(ModificationType.LINE_STYLE.str);
+                    final String lineStyle = payload.getString(key);
                     this.setLineStyle(lineStyle);
-                    modifications.add(ModificationType.LINE_STYLE.str, lineStyle);
+                    modifications.add(key, lineStyle);
                     break;
             }
         }

@@ -30,14 +30,14 @@ public class Image extends Drawing {
         for (final String key : payload.keySet()) {
             switch (ModificationType.getEnum(key)) {
                 case HEIGHT:
-                    final Double height = Double.parseDouble(payload.getString(ModificationType.HEIGHT.str));
+                    final Double height = Double.parseDouble(payload.getString(key));
                     this.setHeight(height);
-                    modifications.add(ModificationType.HEIGHT.str, height.toString());
+                    modifications.add(key, height.toString());
                     break;
                 case WIDTH:
-                    final Double width = Double.parseDouble(payload.getString(ModificationType.WIDTH.str));
+                    final Double width = Double.parseDouble(payload.getString(key));
                     this.setWidth(width);
-                    modifications.add(ModificationType.WIDTH.str, width);
+                    modifications.add(key, width);
                     break;
             }
         }

@@ -16,6 +16,34 @@ public class Circle extends Shape {
         super(DrawingType.CIRCLE.str, user, position);
     }
 
+    @Override
+    public JsonObjectBuilder encodeToJsonObjectBuilder() {
+        final JsonObjectBuilder jsonBuilder = super.encodeToJsonObjectBuilder();
+        jsonBuilder.add("fillColor", this.fillColor).add("radius", this.radius);
+        return jsonBuilder;
+    }
+
+    @Override
+    public JsonObjectBuilder editDrawing(final JsonObject payload, final String board) {
+        final JsonObjectBuilder modifications = super.editDrawing(payload, board);
+        for (final String key : payload.keySet()) {
+            switch (ModificationType.getEnum(key)) {
+                case RADIUS:
+                    final Double radius = Double.parseDouble(payload.getString(key));
+                    this.setRadius(radius);
+                    modifications.add(key, radius.toString());
+                    break;
+                case FILL_COLOR:
+                    final String fillColor = payload.getString(key);
+                    this.setFillColor(fillColor);
+                    modifications.add(key, fillColor);
+                    break;
+            }
+        }
+        return modifications;
+    }
+
+
     public Double getRadius() {
         return radius;
     }
@@ -30,32 +58,5 @@ public class Circle extends Shape {
 
     public void setFillColor(final String fillColor) {
         this.fillColor = fillColor;
-    }
-
-    @Override
-    public JsonObjectBuilder encodeToJsonObjectBuilder() {
-        final JsonObjectBuilder jsonBuilder = super.encodeToJsonObjectBuilder();
-        jsonBuilder.add("fillColor", this.fillColor).add("radius", this.radius);
-        return jsonBuilder;
-    }
-
-    @Override
-    public JsonObjectBuilder editDrawing(final JsonObject payload, final String board) {
-        final JsonObjectBuilder modifications = super.editDrawing(payload, board);
-        for (final String key : payload.keySet()) {
-            switch (ModificationType.getEnum(key)) {
-                case RADIUS:
-                    final Double radius = Double.parseDouble(payload.getString(ModificationType.RADIUS.str));
-                    this.setRadius(radius);
-                    modifications.add(ModificationType.RADIUS.str, radius.toString());
-                    break;
-                case FILL_COLOR:
-                    final String fillColor = payload.getString(ModificationType.FILL_COLOR.str);
-                    this.setFillColor(fillColor);
-                    modifications.add(ModificationType.FILL_COLOR.str, fillColor);
-                    break;
-            }
-        }
-        return modifications;
     }
 }

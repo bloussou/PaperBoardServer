@@ -5,6 +5,7 @@ import com.paperboard.drawings.DrawingType;
 import com.paperboard.drawings.Image;
 import com.paperboard.drawings.Position;
 import com.paperboard.drawings.shapes.Circle;
+import com.paperboard.drawings.shapes.HandWriting;
 import com.paperboard.server.events.Event;
 import com.paperboard.server.events.EventManager;
 import com.paperboard.server.events.EventType;
@@ -249,7 +250,8 @@ public class PaperBoard implements Subscriber {
                     modifications = circle.editDrawing(payload, board);
                     break;
                 case HANDWRITING:
-                    //TODO
+                    final HandWriting handWriting = (HandWriting) drawing;
+                    modifications = handWriting.editDrawing(payload, board);
                     break;
                 case LINE:
                     //TODO
