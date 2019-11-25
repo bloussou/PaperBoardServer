@@ -9,7 +9,7 @@ import javax.json.JsonObjectBuilder;
 public class Triangle extends Shape {
     private Position positionBottomLeft;
     private Position positionBottomRight;
-    private String backgroundColor = "transparent";
+    private String fillColor = "transparent";
 
     public Triangle(final User user, final Position position) {
         super(DrawingType.TRIANGLE.str, user, position);
@@ -33,12 +33,12 @@ public class Triangle extends Shape {
         this.positionBottomRight = positionBottomRight;
     }
 
-    public String getBackgroundColor() {
-        return backgroundColor;
+    public String getFillColor() {
+        return fillColor;
     }
 
-    public void setBackgroundColor(final String backgroundColor) {
-        this.backgroundColor = backgroundColor;
+    public void setFillColor(final String fillColor) {
+        this.fillColor = fillColor;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class Triangle extends Shape {
         final JsonObjectBuilder jsonBuilder = super.encodeToJsonObjectBuilder();
         jsonBuilder.add("positionBottomLeft", this.positionBottomLeft.encodeToJsonObjectBuilder())
                 .add("positionBottomRight", this.positionBottomRight.encodeToJsonObjectBuilder())
-                .add("backgroundColor", this.backgroundColor);
+                .add("fillColor", this.fillColor);
         return jsonBuilder;
     }
 }

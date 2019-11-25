@@ -7,8 +7,19 @@ public enum ModificationType {
     X("X"),
     Y("Y"),
     LINE_STYLE("lineStyle"),
-    FILL_COLOR("fillColor"),
+    FILL_COLOR("fillColor"),,
+    HEIGHT("height"),
+    WIDTH("width"),
+    TEXT("text"),
+    TEXT_SIZE("textSize"),
+    TEXT_COLOR("textColor"),
+    POSITION_BOTTOM_LEFT("positionBottomLeft"),
+    POSITION_BOTTOM_RIGHT("positionBottomRight"),
+    POSITION_END_POINT("positionEndPoint"),
+    PATH_X("pathX"),
+    PATH_Y("pathY"),
     NULL("");
+
 
     public final String str;
 
