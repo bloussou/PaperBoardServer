@@ -19,8 +19,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
-import static com.paperboard.drawings.DrawingType.CIRCLE;
-
 
 public class PaperBoard implements Subscriber {
 
@@ -119,18 +117,8 @@ public class PaperBoard implements Subscriber {
                 case "circle":
                     final Circle circle = new Circle(user, new Position(positionX, positionY));
                     drawings.put(circle.getId(), circle);
-                    final JsonObject payloadCircle = Json.createBuilderFactory(null)
-                            .createObjectBuilder()
+                    final JsonObject payloadCircle = circle.encodeToJsonObjectBuilder()
                             .add("pseudo", user.getPseudo())
-                            .add("type", CIRCLE.str)
-                            .add("drawingId", circle.getId())
-                            .add("X", circle.getPosition().getX().toString())
-                            .add("Y", circle.getPosition().getY().toString())
-                            .add("radius", circle.getRadius().toString())
-                            .add("fillColor", circle.getFillColor())
-                            .add("lineStyle", circle.getLineStyle())
-                            .add("lineWidth", circle.getLineWidth().toString())
-                            .add("lineColor", circle.getLineColor())
                             .build();
                     EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_CREATED, payloadCircle), board);
                     break;
