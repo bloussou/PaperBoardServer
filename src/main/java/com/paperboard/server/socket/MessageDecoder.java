@@ -23,8 +23,7 @@ public class MessageDecoder implements Decoder.Text<Message> {
             final String to = json.getString("to");
             final JsonObject payload = json.getJsonObject("payload");
 
-            final Message msg = new Message(type, from, to, payload);
-            return msg;
+            return new Message(type, from, to, payload);
         } catch (final IncorrectMessageException e) {
             LOGGER.warning(e.getMessage());
             return null;

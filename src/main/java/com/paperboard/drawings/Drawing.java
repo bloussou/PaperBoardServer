@@ -25,7 +25,7 @@ public abstract class Drawing {
     private Position position;
 
     public Drawing(final String type, final User user, final Position position) {
-        this.id       = "drawing" + String.valueOf(idCounter.getAndIncrement());
+        this.id       = "drawing" + idCounter.getAndIncrement();
         this.owner    = user;
         this.type     = type;
         this.isLocked = false;
@@ -36,7 +36,7 @@ public abstract class Drawing {
     /**
      * Synchronized method to lock the drawing by setting isLocked and lockedBy
      *
-     * @param user
+     * @param user User
      * @return boolean, true the user manages to lock the shape
      */
     public boolean lockDrawing(final User user) {
@@ -54,8 +54,8 @@ public abstract class Drawing {
     /**
      * Unlock the drawing by setting isLocked and lockedBy to default values
      *
-     * @param user
-     * @return
+     * @param user User
+     * @return boolean
      */
     public boolean unlockDrawing(final User user) {
         if (user.getPseudo().equals(this.lockedBy) && this.isLocked) {

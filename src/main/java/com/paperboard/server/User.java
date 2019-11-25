@@ -15,7 +15,7 @@ public class User {
     private final String pseudo;
 
     public User(final String pseudo) {
-        this.id = "user".concat(String.valueOf(idCounter.getAndIncrement()));
+        this.id     = "user".concat(String.valueOf(idCounter.getAndIncrement()));
         this.pseudo = pseudo;
     }
 
@@ -37,8 +37,8 @@ public class User {
     /**
      * Override of equals based on pseudo.
      *
-     * @param obj
-     * @return
+     * @param obj Object
+     * @return boolean
      */
     @Override
     public boolean equals(final Object obj) {
@@ -53,7 +53,7 @@ public class User {
     }
 
     /**
-     * @return
+     * @return int
      */
     @Override
     public int hashCode() {

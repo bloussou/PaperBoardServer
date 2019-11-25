@@ -13,8 +13,10 @@ import javax.json.*;
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 /**
@@ -24,7 +26,7 @@ import java.util.logging.Logger;
         configurator = WebSocketServerConfigurator.class)
 public class WebSocketServerEndPoint {
 
-    public static String NOT_IN_A_BOARD = "-Not In a Board-";
+    private static String NOT_IN_A_BOARD = "-Not In a Board-";
     private static ConcurrentReferenceHashMap<String, HashSet<Session>> sessionsMap
             = new ConcurrentReferenceHashMap<>();
     private static final Logger LOGGER = Logger.getLogger(WebSocketServerEndPoint.class.getName());
@@ -32,10 +34,10 @@ public class WebSocketServerEndPoint {
     @OnOpen
     public void open(final Session session) {
         session.getUserProperties().put("board", NOT_IN_A_BOARD);
-        if (!this.sessionsMap.containsKey(NOT_IN_A_BOARD)) {
-            this.sessionsMap.put(NOT_IN_A_BOARD, new HashSet<Session>());
+        if (!sessionsMap.containsKey(NOT_IN_A_BOARD)) {
+            sessionsMap.put(NOT_IN_A_BOARD, new HashSet<>());
         }
-        this.sessionsMap.get(NOT_IN_A_BOARD).add(session);
+        Objects.requireNonNull(sessionsMap.get(NOT_IN_A_BOARD)).add(session);
 
         // Generate event DRAWER_CONNECTED
         LOGGER.info("[" + NOT_IN_A_BOARD + "] New user connected to socket server !! (id:" + session.getId() + ").");
@@ -63,7 +65,7 @@ public class WebSocketServerEndPoint {
         LOGGER.info("[" + board + "] Received [" + message.getType() + "] from [" + user + "].");
 
         final JsonObject payload;
-        switch (MessageType.getEnum(message.getType())) {
+        switch (Objects.requireNonNull(MessageType.getEnum(message.getType()))) {
             case MSG_IDENTIFY:
                 // Generate event ASK_IDENTITY
                 payload = Json.createObjectBuilder()
@@ -124,9 +126,7 @@ public class WebSocketServerEndPoint {
                         .createObjectBuilder()
                         .add("pseudo", user)
                         .add("board", board);
-                final Iterator<String> keys = message.getPayload().keySet().iterator();
-                while (keys.hasNext()) {
-                    final String key = keys.next();
+                for (final String key : message.getPayload().keySet()) {
                     if (!key.equals("pseudo") && !key.equals("board")) {
                         payloadBuilder.add(key, message.getPayload().getString(key));
                     }
@@ -211,7 +211,7 @@ public class WebSocketServerEndPoint {
             EventManager.getInstance().fireEvent(new Event(EventType.ASK_LEAVE_BOARD, payload), board);
         } else {
             // Remove the session of the sessionMap if not in a board.
-            this.sessionsMap.get(NOT_IN_A_BOARD).remove(session);
+            Objects.requireNonNull(sessionsMap.get(NOT_IN_A_BOARD)).remove(session);
         }
 
 
@@ -247,7 +247,7 @@ public class WebSocketServerEndPoint {
         Session session = null;
         final Iterator<String> keys = sessionsMap.keySet().iterator();
         while (!found && keys.hasNext()) {
-            final Iterator<Session> sessions = sessionsMap.get(keys.next()).iterator();
+            final Iterator<Session> sessions = Objects.requireNonNull(sessionsMap.get(keys.next())).iterator();
             while (!found && sessions.hasNext()) {
                 final Session s = sessions.next();
                 if (s.isOpen() && pseudo.equals(s.getUserProperties().get("username"))) {
@@ -270,7 +270,6 @@ public class WebSocketServerEndPoint {
         // find recipient's session
         try {
             boolean recipientFound = false;
-            final Iterator<String> keys = sessionsMap.keySet().iterator();
             final Session session = getSession(recipient);
             if (session != null) {
                 session.getBasicRemote().sendObject(msg);
@@ -288,7 +287,7 @@ public class WebSocketServerEndPoint {
         } catch (final IOException | EncodeException e) {
             LOGGER.warning("SendMessageToUser [" + recipient + "] failed");
             LOGGER.warning(e.getMessage());
-            LOGGER.warning(e.getStackTrace().toString());
+            LOGGER.warning(Arrays.toString(e.getStackTrace()));
         }
     }
 
@@ -298,10 +297,10 @@ public class WebSocketServerEndPoint {
      * @param board String
      * @param msg   Message
      */
-    public static void sendMessageToBoard(final String board, final Message msg) {
+    private static void sendMessageToBoard(final String board, final Message msg) {
         try {
             if (sessionsMap.containsKey(board)) {
-                for (final Session s : sessionsMap.get(board)) {
+                for (final Session s : Objects.requireNonNull(sessionsMap.get(board))) {
                     if (s.isOpen() && board.equals(s.getUserProperties().get("board"))) {
                         s.getBasicRemote().sendObject(msg);
                     }
@@ -311,7 +310,7 @@ public class WebSocketServerEndPoint {
         } catch (final IOException | EncodeException e) {
             LOGGER.warning("SendMessageToBoard [" + board + "] failed");
             LOGGER.warning(e.getMessage());
-            LOGGER.warning(e.getStackTrace().toString());
+            LOGGER.warning(Arrays.toString(e.getStackTrace()));
         }
     }
 
@@ -321,7 +320,7 @@ public class WebSocketServerEndPoint {
      * @param session Session
      * @param msg     msg
      */
-    public static void sendMessageToSession(final Session session, final Message msg) {
+    private static void sendMessageToSession(final Session session, final Message msg) {
         try {
             if (session.isOpen()) {
                 session.getBasicRemote().sendObject(msg);
@@ -332,7 +331,7 @@ public class WebSocketServerEndPoint {
         } catch (final IOException | EncodeException e) {
             LOGGER.warning("SendMessageToSession [" + session.getId() + "] failed");
             LOGGER.warning(e.getMessage());
-            LOGGER.warning(e.getStackTrace().toString());
+            LOGGER.warning(Arrays.toString(e.getStackTrace()));
         }
     }
 
@@ -340,7 +339,7 @@ public class WebSocketServerEndPoint {
      * @param session Session
      * @param message Message
      */
-    public void handleMsgGetBoard(final Session session, final Message message) {
+    private void handleMsgGetBoard(final Session session, final Message message) {
         if (message.getPayload().containsKey("title")) {
             final PaperBoard paperboard = PaperBoardApplication.getPaperBoard(message.getPayload().getString("title"));
             final JsonObject payload = Json.createObjectBuilder()
@@ -360,7 +359,7 @@ public class WebSocketServerEndPoint {
      *
      * @param session Session that sent the message
      */
-    public void handleMsgGetAllBoards(final Session session) {
+    private void handleMsgGetAllBoards(final Session session) {
         final HashSet<PaperBoard> paperBoards = PaperBoardApplication.getPaperBoards();
         final Iterator<PaperBoard> iter = paperBoards.iterator();
         final JsonArrayBuilder dataList = Json.createArrayBuilder();
@@ -372,7 +371,6 @@ public class WebSocketServerEndPoint {
                                            "server",
                                            (String) session.getUserProperties().get("username"),
                                            payload);
-        ;
         sendMessageToSession(session, answer);
     }
 
@@ -382,7 +380,7 @@ public class WebSocketServerEndPoint {
      * @param session Session
      * @param message Message
      */
-    public void handleMsgCreateBoard(final Session session, final Message message) {
+    private void handleMsgCreateBoard(final Session session, final Message message) {
         // Check which values are in the payload
         final JsonObject payload = message.getPayload();
         final String title = payload.containsKey("title") ? message.getPayload().getString("title") : null;
@@ -424,21 +422,18 @@ public class WebSocketServerEndPoint {
      * @param e Event with type DRAWER_IDENTIFICATION
      * @throws UserAlreadyExistException is user with same pseudo exists
      */
-    public static void handleEventDrawerIdentification(final Event e) throws UserAlreadyExistException {
+    static void handleEventDrawerIdentification(final Event e) throws UserAlreadyExistException {
         final String sessionId = e.payload.getString("sessionId");
         final String pseudo = e.payload.getString("pseudo");
 
         // Check that the pseudo is not already identified
         Session session = null;
         boolean pseudoAlreadyInUse = false;
-        final Iterator<String> iter1 = sessionsMap.keySet().iterator();
-        while (iter1.hasNext()) {
-            final Iterator<Session> iter2 = sessionsMap.get(iter1.next()).iterator();
-            while (iter2.hasNext()) {
-                final Session s = iter2.next();
+        for (final String value : sessionsMap.keySet()) {
+            for (final Session s : Objects.requireNonNull(sessionsMap.get(value))) {
                 if (sessionId.equals(s.getId())) {
                     session = s;
-                } else if (s.isOpen() && pseudo.equals((String) s.getUserProperties().get("username"))) {
+                } else if (s.isOpen() && pseudo.equals(s.getUserProperties().get("username"))) {
                     pseudoAlreadyInUse = true;
                 }
             }
@@ -446,26 +441,18 @@ public class WebSocketServerEndPoint {
 
         if (!pseudoAlreadyInUse && session != null) {
             session.getUserProperties().put("username", pseudo);
-            // Generate event CHAT_MESSAGE
-            final JsonObject payload = Json.createBuilderFactory(null)
-                    .createObjectBuilder()
-                    .add("pseudo", pseudo)
-                    .build();
         } else {
             throw new UserAlreadyExistException("User with pseudo " + pseudo + " already exits");
         }
 
-        final JsonObject p = Json.createBuilderFactory(null)
-                .createObjectBuilder()
-                .add("pseudoAvailable", !pseudoAlreadyInUse)
-                .build();
+        final JsonObject p = Json.createBuilderFactory(null).createObjectBuilder().add("pseudoAvailable", true).build();
         final Message answer = new Message(MessageType.MSG_IDENTITY_ANSWER.str, "server", "Unknown Yet", p);
         try {
             session.getBasicRemote().sendObject(answer);
         } catch (final IOException | EncodeException ex) {
             LOGGER.warning("Error in Identifying method.");
             LOGGER.warning(ex.getMessage());
-            LOGGER.warning(ex.getStackTrace().toString());
+            LOGGER.warning(Arrays.toString(ex.getStackTrace()));
         }
     }
 
@@ -474,21 +461,21 @@ public class WebSocketServerEndPoint {
      *
      * @param event Event with type DRAWER_JOINED_BOARD
      */
-    public static void handleEventDrawerJoinedBoard(final Event event) {
+    static void handleEventDrawerJoinedBoard(final Event event) {
         final String pseudo = event.payload.getString("pseudo");
         final String board = event.payload.getString("board");
         final JsonArray userlist = event.payload.getJsonArray("userlist");
 
         final Session session = getSession(pseudo);
 
-        if (!session.equals(null)) {
+        if (session != null) {
             // Add the corresponding session to the set associated with it
-            sessionsMap.get(NOT_IN_A_BOARD).remove(session);
+            Objects.requireNonNull(sessionsMap.get(NOT_IN_A_BOARD)).remove(session);
             if (!sessionsMap.containsKey(board)) {
-                sessionsMap.put(board, new HashSet<Session>());
+                sessionsMap.put(board, new HashSet<>());
             }
-            if (!sessionsMap.get(board).contains(session)) {
-                sessionsMap.get(board).add(session);
+            if (!Objects.requireNonNull(sessionsMap.get(board)).contains(session)) {
+                Objects.requireNonNull(sessionsMap.get(board)).add(session);
                 session.getUserProperties().put("board", board);
             }
 
@@ -517,23 +504,24 @@ public class WebSocketServerEndPoint {
      *
      * @param event Event with type DRAWER_JOINED_BOARD
      */
-    public static void handleEventDrawerLeftBoard(final Event event) {
+    static void handleEventDrawerLeftBoard(final Event event) {
         final String pseudo = event.payload.getString("pseudo");
         final String board = event.payload.getString("board");
 
         final Session session = getSession(pseudo);
 
         if (!board.equals(NOT_IN_A_BOARD) && sessionsMap.containsKey(board)) {
-            sessionsMap.get(board).remove(session);
+            Objects.requireNonNull(sessionsMap.get(board)).remove(session);
         }
-        if (!sessionsMap.get(NOT_IN_A_BOARD).contains(session) && !event.payload.containsKey("isDisconnect")) {
-            sessionsMap.get(NOT_IN_A_BOARD).add(session);
+        if (!Objects.requireNonNull(sessionsMap.get(NOT_IN_A_BOARD)).contains(session) &&
+            !event.payload.containsKey("isDisconnect")) {
+            Objects.requireNonNull(sessionsMap.get(NOT_IN_A_BOARD)).add(session);
         }
 
         // Broadcast a message with the updated list of users connected to the board
         final JsonBuilderFactory factory = Json.createBuilderFactory(null);
         final JsonArrayBuilder boardConnectedUsers = factory.createArrayBuilder();
-        for (final Session s : sessionsMap.get(board)) {
+        for (final Session s : Objects.requireNonNull(sessionsMap.get(board))) {
             final String username = (String) s.getUserProperties().get("username");
             if (s.isOpen() && username != null) {
                 boardConnectedUsers.add(username);
@@ -560,7 +548,7 @@ public class WebSocketServerEndPoint {
      *
      * @param event Event with type CHAT_MESSAGE
      */
-    public static void handleEventChatMessage(final Event event) {
+    static void handleEventChatMessage(final Event event) {
         final String pseudo = event.payload.getString("pseudo");
         final String msg = event.payload.getString("msg");
         final Session session = getSession(pseudo);
@@ -583,7 +571,7 @@ public class WebSocketServerEndPoint {
      *
      * @param event Event with type OBJECT_CREATED
      */
-    public static void handleEventObjectCreated(final Event event) {
+    static void handleEventObjectCreated(final Event event) {
         final String pseudo = event.payload.getString("pseudo");
         final Session session = getSession(pseudo);
         final String board = (String) session.getUserProperties().get("board");
@@ -603,7 +591,7 @@ public class WebSocketServerEndPoint {
      *
      * @param event Event with type OBJECT_LOCKED
      */
-    public static void handleEventObjectLocked(final Event event) {
+    static void handleEventObjectLocked(final Event event) {
         final String pseudo = event.payload.getString("pseudo");
         final Session session = getSession(pseudo);
         final String board = (String) session.getUserProperties().get("board");
@@ -623,7 +611,7 @@ public class WebSocketServerEndPoint {
      *
      * @param event Event with type OBJECT_UNLOCKED
      */
-    public static void handleEventObjectUnlocked(final Event event) {
+    static void handleEventObjectUnlocked(final Event event) {
         final String pseudo = event.payload.getString("pseudo");
         final Session session = getSession(pseudo);
         final String board = (String) session.getUserProperties().get("board");
@@ -643,7 +631,7 @@ public class WebSocketServerEndPoint {
      *
      * @param event Event with type OBJECT_EDITED
      */
-    public static void handleEventObjectEdited(final Event event) {
+    static void handleEventObjectEdited(final Event event) {
         final String pseudo = event.payload.getString("pseudo");
         final Session session = getSession(pseudo);
         final String board = (String) session.getUserProperties().get("board");
@@ -663,7 +651,7 @@ public class WebSocketServerEndPoint {
      *
      * @param event Event with type OBJECT_DELETED
      */
-    public static void handleEventObjectDeleted(final Event event) {
+    static void handleEventObjectDeleted(final Event event) {
         final String pseudo = event.payload.getString("pseudo");
         final Session session = getSession(pseudo);
         final String board = (String) session.getUserProperties().get("board");

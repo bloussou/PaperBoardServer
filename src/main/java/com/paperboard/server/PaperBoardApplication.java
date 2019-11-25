@@ -22,11 +22,11 @@ public class PaperBoardApplication implements Subscriber {
     private final HashSet<PaperBoard> paperBoards = new HashSet<>();
     private static Logger LOGGER = Logger.getLogger(PaperBoardApplication.class.getName());
 
-    public PaperBoardApplication() {
+    private PaperBoardApplication() {
     }
 
 
-    public static PaperBoardApplication getInstance() {
+    private static PaperBoardApplication getInstance() {
         if (instance == null) {
             instance = new PaperBoardApplication();
             instance.registerToEvent(ASK_IDENTITY, DRAWER_DISCONNECTED);
@@ -57,11 +57,10 @@ public class PaperBoardApplication implements Subscriber {
      *                                         title in the set
      */
     public static void addPaperBoard(final PaperBoard paperBoard) throws PaperBoardAlreadyExistException {
-        final PaperBoardApplication app = PaperBoardApplication.getInstance();
-        if (app.getPaperBoards().contains(paperBoard)) {
+        if (getPaperBoards().contains(paperBoard)) {
             throw new PaperBoardAlreadyExistException(paperBoard);
         } else {
-            app.getPaperBoards().add(paperBoard);
+            getPaperBoards().add(paperBoard);
         }
     }
 
@@ -71,12 +70,12 @@ public class PaperBoardApplication implements Subscriber {
      * @param pseudo the user you want to add to the Set
      * @throws UserAlreadyExistException The error triggered if you try to add two users with the same pseudo in the set
      */
-    public static void addUser(final String pseudo, final Event e) throws UserAlreadyExistException {
+    private static void addUser(final String pseudo, final Event e) throws UserAlreadyExistException {
         final PaperBoardApplication app = PaperBoardApplication.getInstance();
         final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder()
                 .add("pseudo", e.payload.getString("pseudo"))
                 .add("sessionId", e.payload.getString("sessionId"));
-        if (app.getConnectedUsers().keySet().contains(pseudo)) {
+        if (app.getConnectedUsers().containsKey(pseudo)) {
             payloadBuilder.add("isAvailable", "false");
         } else {
             app.getConnectedUsers().put(pseudo, new User(pseudo));
@@ -86,7 +85,7 @@ public class PaperBoardApplication implements Subscriber {
         EventManager.getInstance().fireEvent(new Event(DRAWER_IDENTIFICATION, payload), null);
     }
 
-    public static void disconnectUser(final String pseudo) {
+    private static void disconnectUser(final String pseudo) {
         if (pseudo != null) {
             final PaperBoardApplication app = PaperBoardApplication.getInstance();
             app.getConnectedUsers().remove(pseudo);
@@ -95,9 +94,8 @@ public class PaperBoardApplication implements Subscriber {
 
     public static PaperBoard getPaperBoard(final String title) throws UserAlreadyExistException {
         final PaperBoard paperboard = new PaperBoard(title);
-        final PaperBoardApplication app = PaperBoardApplication.getInstance();
-        if (app.getPaperBoards().contains(paperboard)) {
-            for (final PaperBoard obj : app.getPaperBoards()) {
+        if (getPaperBoards().contains(paperboard)) {
+            for (final PaperBoard obj : getPaperBoards()) {
                 if (obj.equals(paperboard))
                     return obj;
             }
@@ -106,11 +104,11 @@ public class PaperBoardApplication implements Subscriber {
         throw new PaperBoardAlreadyExistException(paperboard);
     }
 
-    public static User getConnectedUser(final String pseudo) {
+    static User getConnectedUser(final String pseudo) {
         return instance.connectedUsers.get(pseudo);
     }
 
-    public HashMap<String, User> getConnectedUsers() {
+    private HashMap<String, User> getConnectedUsers() {
         return connectedUsers;
     }
 
@@ -120,12 +118,13 @@ public class PaperBoardApplication implements Subscriber {
 
     @Override
     public void updateFromEvent(final Event e) {
-        System.out.println("Coucou identifié");
         switch (e.type) {
             case ASK_IDENTITY:
+                assert e.payload != null;
                 addUser(e.payload.getString("pseudo"), e);
                 break;
             case DRAWER_DISCONNECTED:
+                assert e.payload != null;
                 disconnectUser(e.payload.containsKey("pseudo") ? e.payload.getString("pseudo") : null);
                 break;
             default:
