@@ -8,19 +8,23 @@ import javax.json.JsonObjectBuilder;
 public class Image extends Drawing {
     private Double height;
     private Double width;
-    final private String url;
+    final private String srcURI;
 
-    public Image(final User user, final Position position, final Double height, final Double width, final String url) {
+    public Image(final User user,
+                 final Position position,
+                 final Double height,
+                 final Double width,
+                 final String srcURI) {
         super(DrawingType.IMAGE.str, user, position);
         this.height = height;
         this.width  = width;
-        this.url    = url;
+        this.srcURI = srcURI;
     }
 
     @Override
     public JsonObjectBuilder encodeToJsonObjectBuilder() {
         final JsonObjectBuilder jsonBuilder = super.encodeToJsonObjectBuilder();
-        jsonBuilder.add("height", this.height.toString()).add("width", this.width.toString()).add("url", this.url);
+        jsonBuilder.add("height", this.height.toString()).add("width", this.width.toString()).add("url", this.srcURI);
         return jsonBuilder;
     }
 
@@ -60,7 +64,7 @@ public class Image extends Drawing {
         this.width = width;
     }
 
-    public String getUrl() {
-        return url;
+    public String getSrcURI() {
+        return srcURI;
     }
 }

@@ -15,7 +15,6 @@ import javax.json.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
@@ -123,7 +122,7 @@ public class PaperBoard implements Subscriber {
         if (drawers.contains(user)) {
             final String shape = e.payload.getString("shape");
             switch (shape) {
-                case "Circle":
+                case "circle":
                     final Circle circle = new Circle(user, new Position(positionX, positionY));
                     drawings.put(circle.getId(), circle);
                     final JsonObject payload = Json.createBuilderFactory(null)
@@ -140,6 +139,16 @@ public class PaperBoard implements Subscriber {
                             .add("lineColor", circle.getLineColor())
                             .build();
                     EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_CREATED, payload), board);
+                    break;
+                case "image":
+                    final Double width = Double.parseDouble(e.payload.getString("width"));
+                    final Double height = Double.parseDouble(e.payload.getString("height"));
+                    final String srcURI = e.payload.getString("srcURI");
+                    final Image image = new Image(user, new Position(positionX, positionY), width, height, srcURI);
+                    drawings.put(image.getId(), image);
+                    EventManager.getInstance()
+                            .fireEvent(new Event(EventType.OBJECT_CREATED, image.encodeToJsonObjectBuilder().build()),
+                                       board);
                     break;
                 default:
                     LOGGER.warning("This shape is not yet implemented" + shape);
@@ -233,10 +242,8 @@ public class PaperBoard implements Subscriber {
         final Drawing drawing = this.drawings.get(drawingId);
         final String drawingType = drawing.getType();
         final JsonObject payload = e.payload;
-        final Set<String> keys = payload.keySet();
 
         JsonObjectBuilder modifications = Json.createObjectBuilder();
-
         // Check that you can modify the drawing
         if (drawing.isLocked() && user.getPseudo().equals(drawing.getLockedBy())) {
             // Default modification
