@@ -1,11 +1,7 @@
 package com.paperboard.server;
 
-import com.paperboard.drawings.Drawing;
-import com.paperboard.drawings.DrawingType;
-import com.paperboard.drawings.Image;
-import com.paperboard.drawings.Position;
-import com.paperboard.drawings.shapes.Circle;
-import com.paperboard.drawings.shapes.HandWriting;
+import com.paperboard.drawings.*;
+import com.paperboard.drawings.shapes.*;
 import com.paperboard.server.events.Event;
 import com.paperboard.server.events.EventManager;
 import com.paperboard.server.events.EventType;
@@ -254,20 +250,24 @@ public class PaperBoard implements Subscriber {
                     modifications = handWriting.editDrawing(payload, board);
                     break;
                 case LINE:
-                    //TODO
+                    final Line line = (Line) drawing;
+                    modifications = line.editDrawing(payload, board);
                     break;
                 case RECTANGLE:
-                    //TODO
+                    final Rectangle rectangle = (Rectangle) drawing;
+                    modifications = rectangle.editDrawing(payload, board);
                     break;
                 case TRIANGLE:
-                    //TODO
+                    final Triangle triangle = (Triangle) drawing;
+                    modifications = triangle.editDrawing(payload, board);
                     break;
                 case IMAGE:
                     final Image image = (Image) drawing;
                     modifications = image.editDrawing(payload, board);
                     break;
                 case TEXT_BOX:
-                    //TODO
+                    final TextBox textBox = (TextBox) drawing;
+                    modifications = textBox.editDrawing(payload, board);
                     break;
                 default:
                     LOGGER.warning("This shape is not yet implemented for edition" + drawingType);
