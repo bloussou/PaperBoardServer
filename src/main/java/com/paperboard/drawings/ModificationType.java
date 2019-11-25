@@ -7,7 +7,7 @@ public enum ModificationType {
     X("X"),
     Y("Y"),
     LINE_STYLE("lineStyle"),
-    FILL_COLOR("fillColor"),,
+    FILL_COLOR("fillColor"),
     HEIGHT("height"),
     WIDTH("width"),
     TEXT("text"),

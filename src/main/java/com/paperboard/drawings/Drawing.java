@@ -3,6 +3,7 @@ package com.paperboard.drawings;
 import com.paperboard.server.User;
 
 import javax.json.Json;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -51,13 +52,27 @@ public abstract class Drawing {
 
     public JsonObjectBuilder encodeToJsonObjectBuilder() {
         final JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
-        jsonBuilder.add("id", this.id)
+        jsonBuilder.add("drawingId", this.id)
                 .add("isLocked", this.isLocked)
                 .add("lockedBy", this.lockedBy)
                 .add("type", this.type)
                 .add("position", this.position.encodeToJsonObjectBuilder())
                 .add("owner", this.owner.encodeToJsonObjectBuilder());
         return jsonBuilder;
+    }
+
+    public JsonObjectBuilder editDrawing(final JsonObject payload, final String board) {
+        final JsonObjectBuilder modifications = Json.createObjectBuilder();
+        modifications.add("pseudo", payload.getString("pseudo"))
+                .add("drawingId", payload.getString("drawingId"))
+                .add("board", board);
+        if (payload.containsKey("X") && payload.containsKey("Y")) {
+            final Double x = Double.parseDouble(payload.getString("X"));
+            final Double y = Double.parseDouble(payload.getString("Y"));
+            this.setPosition(new Position(x, y));
+            modifications.add(ModificationType.X.str, x.toString()).add(ModificationType.Y.str, y.toString());
+        }
+        return modifications;
     }
 
     public User getOwner() {

@@ -1,9 +1,11 @@
 package com.paperboard.drawings.shapes;
 
 import com.paperboard.drawings.Drawing;
+import com.paperboard.drawings.ModificationType;
 import com.paperboard.drawings.Position;
 import com.paperboard.server.User;
 
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 public abstract class Shape extends Drawing {
@@ -20,6 +22,31 @@ public abstract class Shape extends Drawing {
         final JsonObjectBuilder jsonBuilder = super.encodeToJsonObjectBuilder();
         jsonBuilder.add("lineColor", this.lineColor).add("lineStyle", this.lineStyle).add("lineWidth", this.lineWidth);
         return jsonBuilder;
+    }
+
+    @Override
+    public JsonObjectBuilder editDrawing(final JsonObject payload, final String board) {
+        final JsonObjectBuilder modifications = super.editDrawing(payload, board);
+        for (final String key : payload.keySet()) {
+            switch (ModificationType.getEnum(key)) {
+                case LINE_WIDTH:
+                    final Double lineWidth = Double.parseDouble(payload.getString(ModificationType.LINE_WIDTH.str));
+                    this.setLineWidth(lineWidth);
+                    modifications.add(ModificationType.LINE_WIDTH.str, lineWidth.toString());
+                    break;
+                case LINE_COLOR:
+                    final String lineColor = payload.getString(ModificationType.LINE_COLOR.str);
+                    this.setLineColor(lineColor);
+                    modifications.add(ModificationType.LINE_COLOR.str, lineColor);
+                    break;
+                case LINE_STYLE:
+                    final String lineStyle = payload.getString(ModificationType.LINE_STYLE.str);
+                    this.setLineStyle(lineStyle);
+                    modifications.add(ModificationType.LINE_STYLE.str, lineStyle);
+                    break;
+            }
+        }
+        return modifications;
     }
 
     public String getLineColor() {
