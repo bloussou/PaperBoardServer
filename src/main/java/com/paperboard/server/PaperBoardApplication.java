@@ -85,6 +85,11 @@ public class PaperBoardApplication implements Subscriber {
         EventManager.getInstance().fireEvent(new Event(DRAWER_IDENTIFICATION, payload), null);
     }
 
+    /**
+     * remove the user for a given pseudo
+     *
+     * @param pseudo String
+     */
     private static void disconnectUser(final String pseudo) {
         if (pseudo != null) {
             final PaperBoardApplication app = PaperBoardApplication.getInstance();
@@ -92,7 +97,14 @@ public class PaperBoardApplication implements Subscriber {
         }
     }
 
-    public static PaperBoard getPaperBoard(final String title) throws UserAlreadyExistException {
+    /**
+     * Get a Paperboard using its title
+     *
+     * @param title String
+     * @return PaperBoard
+     * @throws UserAlreadyExistException
+     */
+    public static PaperBoard getPaperBoard(final String title) {
         final PaperBoard paperboard = new PaperBoard(title);
         if (getPaperBoards().contains(paperboard)) {
             for (final PaperBoard obj : getPaperBoards()) {
@@ -100,8 +112,7 @@ public class PaperBoardApplication implements Subscriber {
                     return obj;
             }
         }
-        // TODO throw error
-        throw new PaperBoardAlreadyExistException(paperboard);
+        return null;
     }
 
     static User getConnectedUser(final String pseudo) {
