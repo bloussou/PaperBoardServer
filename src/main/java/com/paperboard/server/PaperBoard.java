@@ -34,6 +34,11 @@ public class PaperBoard implements Subscriber {
     private ConcurrentHashMap<String, Drawing> drawings = new ConcurrentHashMap<>();
     private String backgroundImage = "";
 
+    /**
+     * Constructor if only a title is given
+     *
+     * @param title String
+     */
     public PaperBoard(final String title) {
         this.id           = String.valueOf(idCounter.getAndIncrement());
         this.title        = title;
@@ -48,6 +53,13 @@ public class PaperBoard implements Subscriber {
                              EventType.ASK_DELETE_OBJECT);
     }
 
+    /**
+     * Constructor to instantiate a Paperboard with a backgroundColor or a backgroundImage
+     *
+     * @param title           String
+     * @param backgroundColor @Nullable String
+     * @param backgroundImage @Nullable String
+     */
     public PaperBoard(final String title,
                       final @Nullable String backgroundColor,
                       final @Nullable String backgroundImage) {
@@ -59,8 +71,17 @@ public class PaperBoard implements Subscriber {
         }
     }
 
+    /**
+     * Action when the EventType.ASK_JOIN_BOARD is received
+     * <p>
+     * send Event DRAWER_JOINED_BOARD at the end
+     *
+     * @param e Event
+     */
     private void handleAskJoinBoard(final Event e) {
-        final User user = PaperBoardApplication.getInstance().getConnectedUsers().get(e.payload.getString("pseudo"));
+        // Get the connected user
+        final User user = PaperBoardApplication.getConnectedUser(e.payload.getString("pseudo"));
+        // Add the user to the board
         this.drawers.add(user);
 
         // Broadcast a message with the updated list of users connected to the board
@@ -78,10 +99,18 @@ public class PaperBoard implements Subscriber {
         EventManager.getInstance().fireEvent(new Event(EventType.DRAWER_JOINED_BOARD, payload), this.title);
     }
 
+    /**
+     * Action when the EventType.ASK_LEAVE_BOARD is received
+     * <p>
+     * send Event DRAWER_LEFT_BOARD at the end
+     *
+     * @param e Event
+     */
     private void handleAskLeaveBoard(final Event e) {
         // Broadcast a message with the updated list of users connected to the board
-        final User user = PaperBoardApplication.getInstance().getConnectedUsers().get(e.payload.getString("pseudo"));
+        final User user = PaperBoardApplication.getConnectedUser(e.payload.getString("pseudo"));
         final String board = e.payload.getString("board");
+        // Remove the user from the list of drawers
         this.drawers.remove(user);
 
         // unlock object if the drawers has locked one
@@ -108,14 +137,25 @@ public class PaperBoard implements Subscriber {
         EventManager.getInstance().fireEvent(new Event(EventType.DRAWER_LEFT_BOARD, payloadFactory.build()), board);
     }
 
+    /**
+     * Action when the EventType.ASK_CREATE_OBJECT is received
+     * <p>
+     * send Event OBJECT_CREATED at the end
+     *
+     * @param e Event
+     */
     private void handleAskCreateObject(final Event e) {
-        final User user = PaperBoardApplication.getInstance().getConnectedUsers().get(e.payload.getString("pseudo"));
+        final User user = PaperBoardApplication.getConnectedUser(e.payload.getString("pseudo"));
         final String board = e.payload.getString("board");
         final Double positionX = Double.parseDouble(e.payload.getString("positionX"));
         final Double positionY = Double.parseDouble(e.payload.getString("positionY"));
+
+        // If drawers is not in this board nothing happen
         if (drawers.contains(user)) {
             final String shape = e.payload.getString("shape");
             final JsonObject description = e.payload.getJsonObject("description");
+
+            // For each type of object, create the object with the needed parameters according to the event
             switch (DrawingType.getEnum(shape)) {
                 case CIRCLE:
                     final Circle circle = new Circle(user, new Position(positionX, positionY));
@@ -194,20 +234,25 @@ public class PaperBoard implements Subscriber {
                 default:
                     LOGGER.warning("This shape is not yet implemented" + shape);
             }
-        } else {
-            // TODO throw error
         }
     }
 
+    /**
+     * Action when the EventType.ASK_LOCK_OBJECT is received
+     * <p>
+     * send Event OBJECT_LOCKED at the end
+     *
+     * @param e Event
+     */
     private void handleAskLockObject(final Event e) {
-        final User user = PaperBoardApplication.getInstance().getConnectedUsers().get(e.payload.getString("pseudo"));
+        final User user = PaperBoardApplication.getConnectedUser(e.payload.getString("pseudo"));
         final String board = this.title;
         final String drawingId = e.payload.getString("drawingId");
 
+        // Cannot lock multiple shape
         final Drawing drawing = this.drawings.get(drawingId);
         for (final String drawId : this.drawings.keySet()) {
             if (this.drawings.get(drawId).getLockedBy().equals(user.getPseudo())) {
-                //TODO throw error, ot possible to lock two paperboard
                 return;
             }
         }
@@ -222,8 +267,15 @@ public class PaperBoard implements Subscriber {
         }
     }
 
+    /**
+     * Action when the EventType.ASK_UNLOCK_OBJECT is received
+     * <p>
+     * send Event OBJECT_UNLOCKED at the end
+     *
+     * @param e Event
+     */
     private void handleAskUnlockObject(final Event e) {
-        final User user = PaperBoardApplication.getInstance().getConnectedUsers().get(e.payload.getString("pseudo"));
+        final User user = PaperBoardApplication.getConnectedUser(e.payload.getString("pseudo"));
         final String board = this.title;
         final String drawingId = e.payload.getString("drawingId");
 
@@ -237,11 +289,20 @@ public class PaperBoard implements Subscriber {
                     .build();
             EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_UNLOCKED, payload), board);
         }
-        return;
     }
 
+    /**
+     * Action when the EventType.ASK_DELETE_OBJECT is received
+     * <p>
+     * 1) if the creator (owner) of the shape is not connected the shape is deleted : event OBJECT_DELETED
+     * 2) if the creator (owner) want to delete one of its shape, this one is deleted : event OBJECT_DELETED
+     * 2) if a user want to delete the shape of a connected user, and alert is displayed in the frontend to ask him
+     * to agree or disagree : message MSG_DELETE_OBJECT
+     *
+     * @param e Event
+     */
     private void handleAskDeleteObject(final Event e) {
-        final User user = PaperBoardApplication.getInstance().getConnectedUsers().get(e.payload.getString("pseudo"));
+        final User user = PaperBoardApplication.getConnectedUser(e.payload.getString("pseudo"));
         final String board = this.title;
         final String drawingId = e.payload.getString("drawingId");
 
@@ -270,13 +331,19 @@ public class PaperBoard implements Subscriber {
                                             payload);
             WebSocketServerEndPoint.sendMessageToUser(msg);
         }
-
-
-        return;
     }
 
+    /**
+     * Action when the EventType.ASK_EDIT_OBJECT is received
+     * <p>
+     * send Event OBJECT_EDITED at the end
+     * <p>
+     * call drawing.editDrawing() on each drawing type. Modification contains only the needed parameters.
+     *
+     * @param e Event
+     */
     private void handleAskEditObject(final Event e) {
-        final User user = PaperBoardApplication.getInstance().getConnectedUsers().get(e.payload.getString("pseudo"));
+        final User user = PaperBoardApplication.getConnectedUser(e.payload.getString("pseudo"));
         final String board = this.title;
         final String drawingId = e.payload.getString("drawingId");
 
@@ -324,6 +391,39 @@ public class PaperBoard implements Subscriber {
         }
     }
 
+    /**
+     * Serialize paperboard in a JsonObject
+     *
+     * @return JsonObjectBuilder
+     */
+    public JsonObjectBuilder encodeToJsonObjectBuilder() {
+        final JsonObjectBuilder builder = Json.createObjectBuilder();
+        builder.add("backgroundColor", this.backgroundColor);
+        builder.add("backgroundImage", this.backgroundImage);
+        builder.add("creationDate", String.valueOf(this.creationDate));
+        builder.add("numberOfConnectedUser", this.drawers.size());
+        builder.add("title", this.title);
+        builder.add("backgroundColor", this.backgroundColor);
+
+        // Build list of drawers
+        final JsonArrayBuilder drawers = Json.createArrayBuilder();
+        for (final User user : this.drawers) {
+            drawers.add(user.encodeToJsonObjectBuilder());
+        }
+        builder.add("drawers", drawers);
+
+        // Build list of Drawings
+        final JsonObjectBuilder drawings = Json.createObjectBuilder();
+        final Iterator<String> drawingIds = this.drawings.keySet().iterator();
+        while (drawingIds.hasNext()) {
+            final Drawing d = this.drawings.get(drawingIds.next());
+            drawings.add(d.getId(), d.encodeToJsonObjectBuilder());
+        }
+        builder.add("drawings", drawings);
+
+        return builder;
+    }
+
     public String getTitle() {
         return title;
     }
@@ -335,34 +435,6 @@ public class PaperBoard implements Subscriber {
     @Override
     public String toString() {
         return this.title;
-    }
-
-    public JsonObjectBuilder encodeToJsonObjectBuilder() {
-        final JsonObjectBuilder builder = Json.createObjectBuilder();
-        builder.add("backgroundColor", this.backgroundColor);
-        builder.add("backgroundImage", this.backgroundImage);
-        builder.add("creationDate", String.valueOf(this.creationDate));
-        builder.add("numberOfConnectedUser", this.drawers.size());
-        builder.add("title", this.title);
-        builder.add("backgroundColor", this.backgroundColor);
-
-        // TODO Build list of drawers
-        final JsonArrayBuilder drawers = Json.createArrayBuilder();
-        for (final User user : this.drawers) {
-            drawers.add(user.encodeToJsonObjectBuilder());
-        }
-        builder.add("drawers", drawers);
-
-        // TODO Build list of Drawings
-        final JsonObjectBuilder drawings = Json.createObjectBuilder();
-        final Iterator<String> drawingIds = this.drawings.keySet().iterator();
-        while (drawingIds.hasNext()) {
-            final Drawing d = this.drawings.get(drawingIds.next());
-            drawings.add(d.getId(), d.encodeToJsonObjectBuilder());
-        }
-        builder.add("drawings", drawings);
-
-        return builder;
     }
 
     @Override

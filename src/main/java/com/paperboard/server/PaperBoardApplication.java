@@ -106,15 +106,8 @@ public class PaperBoardApplication implements Subscriber {
         throw new PaperBoardAlreadyExistException(paperboard);
     }
 
-    public static String getBackgroundImagePath(final String boardName) {
-        final PaperBoardApplication app = PaperBoardApplication.getInstance();
-        return "todo";
-//        return app.getBackgroundImage().get(boardName);
-    }
-
-    public static void addBackgroundImage(final String boardName, final String storePath) {
-        final PaperBoardApplication app = PaperBoardApplication.getInstance();
-//        app.getBackgroundImage().put(boardName, storePath);
+    public static User getConnectedUser(final String pseudo) {
+        return instance.connectedUsers.get(pseudo);
     }
 
     public HashMap<String, User> getConnectedUsers() {

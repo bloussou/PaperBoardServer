@@ -16,7 +16,7 @@ public class Line extends Shape {
 
     public Line(final User user, final Position position) {
         super(DrawingType.LINE.str, user, position);
-        this.positionEndPoint = new Position(position.getX() + 20.0, position.getY());
+        this.positionEndPoint = new Position(20.0, 0.0);
     }
 
     /**
