@@ -9,6 +9,9 @@ import org.glassfish.tyrus.server.Server;
 import javax.websocket.DeploymentException;
 import java.util.logging.Logger;
 
+/**
+ * Runnable websocket server, it's a singleton pattern with instance
+ */
 public class WebSocketServer implements Subscriber {
 
     private static WebSocketServer instance = null;
@@ -23,6 +26,11 @@ public class WebSocketServer implements Subscriber {
     }
 
 
+    /**
+     * Register to the following needed events
+     *
+     * @return WebSocketServer singleton instance
+     */
     public static WebSocketServer getInstance() {
         if (instance == null) {
             instance = new WebSocketServer();
@@ -39,21 +47,9 @@ public class WebSocketServer implements Subscriber {
         return instance;
     }
 
-    /*
-    public static void main(final String[] args) {
-        runServer();
-        try {
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            LOGGER.info("[IMPORTANT INFO] To stop the server properly press any key.");
-            reader.readLine();
-        } catch (final Exception e) {
-            throw new RuntimeException(e);
-        } finally {
-            stopServer();
-        }
-    }
-    */
-
+    /**
+     * Start the websocketServer
+     */
     public static void runServer() {
         LOGGER.info("---> Starting WebSocket Server !");
         try {
@@ -67,12 +63,20 @@ public class WebSocketServer implements Subscriber {
         }
     }
 
+    /**
+     * Stop the websocketServer
+     */
     public static void stopServer() {
         instance.unregisterFromAllEvent();
         server.stop();
         LOGGER.info("---> WebSocket Server stopped");
     }
 
+    /**
+     * See base class
+     *
+     * @param e Event
+     */
     @Override
     public void updateFromEvent(final Event e) {
         switch (e.type) {
@@ -103,6 +107,8 @@ public class WebSocketServer implements Subscriber {
             case OBJECT_DELETED:
                 WebSocketServerEndPoint.handleEventObjectDeleted(e);
                 break;
+            default:
+                LOGGER.warning("ERROR Unhandled event in WebsocketServer triggered");
         }
     }
 }

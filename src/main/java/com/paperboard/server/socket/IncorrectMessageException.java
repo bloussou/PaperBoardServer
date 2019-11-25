@@ -1,5 +1,8 @@
 package com.paperboard.server.socket;
 
+/**
+ * Exception thrown when json object of a message doesnt contain the good keys
+ */
 public class IncorrectMessageException extends IllegalArgumentException {
 
     public IncorrectMessageException() {

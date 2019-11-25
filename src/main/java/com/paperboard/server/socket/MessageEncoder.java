@@ -1,13 +1,15 @@
 package com.paperboard.server.socket;
 
-import javax.websocket.EncodeException;
 import javax.websocket.Encoder;
 import javax.websocket.EndpointConfig;
 
+/**
+ * MEthod to encode Message before sending
+ */
 public class MessageEncoder implements Encoder.Text<Message> {
 
     @Override
-    public String encode(final Message message) throws EncodeException {
+    public String encode(final Message message) {
         final String encodedMsg = message.toString();
         return encodedMsg;
     }

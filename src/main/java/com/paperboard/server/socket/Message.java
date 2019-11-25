@@ -6,6 +6,9 @@ import javax.json.JsonObject;
 import java.io.StringWriter;
 import java.util.Date;
 
+/**
+ * Message class send through socket to front end
+ */
 public class Message {
     private String type;
     private String from;
@@ -13,6 +16,15 @@ public class Message {
     private Date date;
     private JsonObject payload;
 
+    /**
+     * Constructor, checks the arguments
+     *
+     * @param type    String
+     * @param from    String
+     * @param to      String
+     * @param payload JsonObject
+     * @throws IncorrectMessageException
+     */
     public Message(final String type, final String from, final String to, final JsonObject payload) throws
             IncorrectMessageException {
 
@@ -27,10 +39,10 @@ public class Message {
                     "You must give the receiver name (server='server' and broadcast='broadcast'");
         }
 
-        this.type = type;
-        this.from = from;
-        this.to = to;
-        this.date = new Date();
+        this.type    = type;
+        this.from    = from;
+        this.to      = to;
+        this.date    = new Date();
         this.payload = payload;
     }
 
@@ -66,6 +78,11 @@ public class Message {
         this.payload = payload;
     }
 
+    /**
+     * Override to use Message in snedMessage of socketServer
+     *
+     * @return String
+     */
     @Override
     public String toString() {
         final JsonBuilderFactory factory = Json.createBuilderFactory(null);

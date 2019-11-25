@@ -6,7 +6,7 @@ package com.paperboard.server.events;
 public interface Subscriber {
 
     /**
-     * Method called when an event is throwed to all component or to a specific board.
+     * Method called when an event is thrown to all component or to a specific board.
      *
      * @param e Event
      */

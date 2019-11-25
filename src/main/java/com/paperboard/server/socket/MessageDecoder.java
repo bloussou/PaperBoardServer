@@ -2,7 +2,6 @@ package com.paperboard.server.socket;
 
 import javax.json.Json;
 import javax.json.JsonObject;
-import javax.websocket.DecodeException;
 import javax.websocket.Decoder;
 import javax.websocket.EndpointConfig;
 import java.io.StringReader;
@@ -16,7 +15,7 @@ public class MessageDecoder implements Decoder.Text<Message> {
      * Transform the input string into a Message
      */
     @Override
-    public Message decode(final String string) throws DecodeException {
+    public Message decode(final String string) {
         try {
             final JsonObject json = Json.createReader(new StringReader(string)).readObject();
             final String type = json.getString("type");
@@ -30,8 +29,10 @@ public class MessageDecoder implements Decoder.Text<Message> {
             LOGGER.warning(e.getMessage());
             return null;
         } catch (final Exception e) {
-            LOGGER.warning("SocketMessage parsing error : " + string + " is not a valid JSON object (It should not " +
-                    "contain other embedding than payload:{}).");
+            LOGGER.warning("SocketMessage parsing error : " +
+                           string +
+                           " is not a valid JSON object (It should not " +
+                           "contain other embedding than payload:{}).");
             return null;
         }
     }
@@ -46,9 +47,12 @@ public class MessageDecoder implements Decoder.Text<Message> {
             Json.createReader(new StringReader(string)).read();
             return true;
         } catch (final Exception ex) {
-            LOGGER.warning("SocketMessage cannot be decoded : " + string + " is not a valid JSON object (It should " +
-                    "respect JSON format with double quotes and it should not contain other embedding than payload:{}" +
-                    ".");
+            LOGGER.warning("SocketMessage cannot be decoded : " +
+                           string +
+                           " is not a valid JSON object (It should " +
+                           "respect JSON format with double quotes and it should not contain other embedding than " +
+                           "payload:{}" +
+                           ".");
             return false;
         }
     }

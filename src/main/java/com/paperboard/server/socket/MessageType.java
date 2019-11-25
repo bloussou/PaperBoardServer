@@ -1,5 +1,8 @@
 package com.paperboard.server.socket;
 
+/**
+ * Enum of the differents message types
+ */
 public enum MessageType {
 
     // ---- RECEIVED FROM CLIENTS
@@ -37,6 +40,12 @@ public enum MessageType {
         this.str = str;
     }
 
+    /**
+     * Check if the value is in the enum
+     *
+     * @param test the value you want to check
+     * @return boolean
+     */
     public static boolean contains(final String test) {
         for (final MessageType msgType : MessageType.values()) {
             if (msgType.str.equals(test)) {
@@ -46,6 +55,12 @@ public enum MessageType {
         return false;
     }
 
+    /**
+     * get the modification type of a specified string
+     *
+     * @param str the key you want to find
+     * @return ModificationType
+     */
     public static MessageType getEnum(final String str) {
         for (final MessageType msgType : MessageType.values()) {
             if (msgType.str.equals(str)) {
