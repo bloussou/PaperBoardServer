@@ -13,6 +13,8 @@ import reactor.util.annotation.Nullable;
 
 import javax.json.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
@@ -113,8 +115,9 @@ public class PaperBoard implements Subscriber {
         final Double positionY = Double.parseDouble(e.payload.getString("positionY"));
         if (drawers.contains(user)) {
             final String shape = e.payload.getString("shape");
-            switch (shape) {
-                case "circle":
+            final JsonObject description = e.payload.getJsonObject("description");
+            switch (DrawingType.getEnum(shape)) {
+                case CIRCLE:
                     final Circle circle = new Circle(user, new Position(positionX, positionY));
                     drawings.put(circle.getId(), circle);
                     final JsonObject payloadCircle = circle.encodeToJsonObjectBuilder()
@@ -122,18 +125,71 @@ public class PaperBoard implements Subscriber {
                             .build();
                     EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_CREATED, payloadCircle), board);
                     break;
-                case "image":
-                    final JsonObject description = e.payload.getJsonObject("description");
-                    final Double width = Double.parseDouble(description.getString("width"));
-                    final Double height = Double.parseDouble(description.getString("height"));
+                case IMAGE:
+                    final Double width = Double.parseDouble(description.getString(ModificationType.WIDTH.str));
+                    final Double height = Double.parseDouble(description.getString(ModificationType.HEIGHT.str));
                     final String srcURI = description.getString("srcURI");
                     final Image image = new Image(user, new Position(positionX, positionY), width, height, srcURI);
                     drawings.put(image.getId(), image);
-
                     final JsonObject payloadImage = image.encodeToJsonObjectBuilder()
                             .add("pseudo", user.getPseudo())
                             .build();
                     EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_CREATED, payloadImage), board);
+                    break;
+                case HANDWRITING:
+                    final ArrayList<Double> pathX = new ArrayList<>(Arrays.asList(description.getJsonArray(
+                            ModificationType.PATH_X.str)
+                                                                                          .stream()
+                                                                                          .map(x -> Double.parseDouble(x.toString()))
+                                                                                          .toArray(Double[]::new)));
+                    final ArrayList<Double> pathY = new ArrayList<>(Arrays.asList(description.getJsonArray(
+                            ModificationType.PATH_Y.str)
+                                                                                          .stream()
+                                                                                          .map(x -> Double.parseDouble(x.toString()))
+                                                                                          .toArray(Double[]::new)));
+                    final HandWriting handWriting = new HandWriting(user,
+                                                                    new Position(positionX, positionY),
+                                                                    pathX,
+                                                                    pathY);
+                    drawings.put(handWriting.getId(), handWriting);
+                    final JsonObject payloadHAndWriting = handWriting.encodeToJsonObjectBuilder()
+                            .add("pseudo", user.getPseudo())
+                            .build();
+                    EventManager.getInstance()
+                            .fireEvent(new Event(EventType.OBJECT_CREATED, payloadHAndWriting), board);
+                    break;
+                case RECTANGLE:
+                    final Rectangle rectangle = new Rectangle(user, new Position(positionX, positionY));
+                    drawings.put(rectangle.getId(), rectangle);
+                    final JsonObject payloadRectangle = rectangle.encodeToJsonObjectBuilder()
+                            .add("pseudo", user.getPseudo())
+                            .build();
+                    EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_CREATED, payloadRectangle), board);
+                    break;
+                case TEXT_BOX:
+                    final String text = description.getString(ModificationType.TEXT.str);
+                    final TextBox textBox = new TextBox(user, new Position(positionX, positionY), text);
+                    drawings.put(textBox.getId(), textBox);
+                    final JsonObject payloadTextBox = textBox.encodeToJsonObjectBuilder()
+                            .add("pseudo", user.getPseudo())
+                            .build();
+                    EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_CREATED, payloadTextBox), board);
+                    break;
+                case TRIANGLE:
+                    final Triangle triangle = new Triangle(user, new Position(positionX, positionY));
+                    drawings.put(triangle.getId(), triangle);
+                    final JsonObject payloadTriangle = triangle.encodeToJsonObjectBuilder()
+                            .add("pseudo", user.getPseudo())
+                            .build();
+                    EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_CREATED, payloadTriangle), board);
+                    break;
+                case LINE:
+                    final Line line = new Line(user, new Position(positionX, positionY));
+                    drawings.put(line.getId(), line);
+                    final JsonObject payloadLine = line.encodeToJsonObjectBuilder()
+                            .add("pseudo", user.getPseudo())
+                            .build();
+                    EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_CREATED, payloadLine), board);
                     break;
                 default:
                     LOGGER.warning("This shape is not yet implemented" + shape);

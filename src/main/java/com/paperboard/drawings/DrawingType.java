@@ -10,7 +10,8 @@ public enum DrawingType {
     TEXT_BOX("text"),
     IMAGE("image"),
     TRIANGLE("triangle"),
-    LINE("line");
+    LINE("line"),
+    NULL("");
 
     public final String str;
 
@@ -24,6 +25,6 @@ public enum DrawingType {
                 return drawingType;
             }
         }
-        return null;
+        return NULL;
     }
 }
