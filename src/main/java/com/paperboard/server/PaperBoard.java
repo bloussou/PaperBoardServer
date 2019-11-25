@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 
 import static com.paperboard.drawings.DrawingType.CIRCLE;
 
+
 public class PaperBoard implements Subscriber {
 
     final private static AtomicLong idCounter = new AtomicLong(0);
@@ -34,16 +35,17 @@ public class PaperBoard implements Subscriber {
     private String backgroundImage = "";
 
     public PaperBoard(final String title) {
-        this.id = String.valueOf(idCounter.getAndIncrement());
-        this.title = title;
+        this.id           = String.valueOf(idCounter.getAndIncrement());
+        this.title        = title;
         this.creationDate = LocalDateTime.now();
-        this.registerToEvent(EventType.ASK_JOIN_BOARD, title);
-        this.registerToEvent(EventType.ASK_CREATE_OBJECT, title);
-        this.registerToEvent(EventType.ASK_LEAVE_BOARD, title);
-        this.registerToEvent(EventType.ASK_LOCK_OBJECT, title);
-        this.registerToEvent(EventType.ASK_UNLOCK_OBJECT, title);
-        this.registerToEvent(EventType.ASK_EDIT_OBJECT, title);
-        this.registerToEvent(EventType.ASK_DELETE_OBJECT, title);
+        this.registerToEvent(title,
+                             EventType.ASK_JOIN_BOARD,
+                             EventType.ASK_CREATE_OBJECT,
+                             EventType.ASK_LEAVE_BOARD,
+                             EventType.ASK_LOCK_OBJECT,
+                             EventType.ASK_UNLOCK_OBJECT,
+                             EventType.ASK_EDIT_OBJECT,
+                             EventType.ASK_DELETE_OBJECT);
     }
 
     public PaperBoard(final String title,
@@ -55,14 +57,6 @@ public class PaperBoard implements Subscriber {
         } else if (backgroundColor != null) {
             this.backgroundColor = backgroundColor;
         }
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public ConcurrentHashMap<String, Drawing> getDrawings() {
-        return drawings;
     }
 
     private void handleAskJoinBoard(final Event e) {
@@ -148,10 +142,10 @@ public class PaperBoard implements Subscriber {
                     final Image image = new Image(user, new Position(positionX, positionY), width, height, srcURI);
                     drawings.put(image.getId(), image);
 
-                    final JsonObject payloadImage = image.encodeToJsonObjectBuilder().add("pseudo", user.getPseudo()).build();
-                    EventManager.getInstance()
-                            .fireEvent(new Event(EventType.OBJECT_CREATED, payloadImage),
-                                    board);
+                    final JsonObject payloadImage = image.encodeToJsonObjectBuilder()
+                            .add("pseudo", user.getPseudo())
+                            .build();
+                    EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_CREATED, payloadImage), board);
                     break;
                 default:
                     LOGGER.warning("This shape is not yet implemented" + shape);
@@ -227,9 +221,9 @@ public class PaperBoard implements Subscriber {
                     .add("type", drawing.getType())
                     .build();
             final Message msg = new Message(MessageType.MSG_DELETE_OBJECT.str,
-                    user.getPseudo(),
-                    drawing.getOwner().getPseudo(),
-                    payload);
+                                            user.getPseudo(),
+                                            drawing.getOwner().getPseudo(),
+                                            payload);
             WebSocketServerEndPoint.sendMessageToUser(msg);
         }
 
@@ -284,6 +278,14 @@ public class PaperBoard implements Subscriber {
             }
             EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_EDITED, modifications.build()), board);
         }
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public ConcurrentHashMap<String, Drawing> getDrawings() {
+        return drawings;
     }
 
     @Override

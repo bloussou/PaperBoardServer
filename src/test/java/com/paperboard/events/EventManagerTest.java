@@ -30,7 +30,7 @@ public class EventManagerTest implements Subscriber {
 
         public SubscriberTest(final String board, final EventType... e) {
             for (final EventType eventType : e) {
-                registerToEvent(eventType, board);
+                registerToEvent(board, eventType);
             }
 
         }

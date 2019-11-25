@@ -17,6 +17,4 @@ public class IncorrectMessageException extends IllegalArgumentException {
     public IncorrectMessageException(final String errorMsg, final Throwable err) {
         super("Incorrect arguments for a new WebSocketMessage !" + errorMsg, err);
     }
-
-
 }

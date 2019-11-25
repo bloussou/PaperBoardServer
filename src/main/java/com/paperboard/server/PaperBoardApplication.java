@@ -29,8 +29,7 @@ public class PaperBoardApplication implements Subscriber {
     public static PaperBoardApplication getInstance() {
         if (instance == null) {
             instance = new PaperBoardApplication();
-            instance.registerToEvent(ASK_IDENTITY);
-            instance.registerToEvent(DRAWER_DISCONNECTED);
+            instance.registerToEvent(ASK_IDENTITY, DRAWER_DISCONNECTED);
         }
         return instance;
     }

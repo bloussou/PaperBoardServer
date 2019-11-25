@@ -26,15 +26,15 @@ public class WebSocketServer implements Subscriber {
     public static WebSocketServer getInstance() {
         if (instance == null) {
             instance = new WebSocketServer();
-            instance.registerToEvent(EventType.DRAWER_IDENTIFICATION);
-            instance.registerToEvent(EventType.DRAWER_JOINED_BOARD);
-            instance.registerToEvent(EventType.DRAWER_LEFT_BOARD);
-            instance.registerToEvent(EventType.CHAT_MESSAGE);
-            instance.registerToEvent(EventType.OBJECT_CREATED);
-            instance.registerToEvent(EventType.OBJECT_LOCKED);
-            instance.registerToEvent(EventType.OBJECT_UNLOCKED);
-            instance.registerToEvent(EventType.OBJECT_EDITED);
-            instance.registerToEvent(EventType.OBJECT_DELETED);
+            instance.registerToEvent(EventType.DRAWER_IDENTIFICATION,
+                                     EventType.DRAWER_JOINED_BOARD,
+                                     EventType.DRAWER_LEFT_BOARD,
+                                     EventType.CHAT_MESSAGE,
+                                     EventType.OBJECT_CREATED,
+                                     EventType.OBJECT_LOCKED,
+                                     EventType.OBJECT_UNLOCKED,
+                                     EventType.OBJECT_EDITED,
+                                     EventType.OBJECT_DELETED);
         }
         return instance;
     }
@@ -58,7 +58,7 @@ public class WebSocketServer implements Subscriber {
         LOGGER.info("---> Starting WebSocket Server !");
         try {
             final int port = SOCKET_PORT == null ? Integer.parseInt(SOCKET_PORT_DEFAULT.trim()) :
-                    Integer.parseInt(SOCKET_PORT.trim());
+                             Integer.parseInt(SOCKET_PORT.trim());
             server = new Server(HOSTNAME, port, SOCKET_API, WebSocketServerEndPoint.class);
             server.start();
             getInstance();

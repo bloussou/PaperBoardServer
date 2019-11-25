@@ -15,20 +15,25 @@ public interface Subscriber {
     /**
      * Register to an Event without specifying any board.
      *
-     * @param e Event
+     * @param eventTypes EventType
      */
-    default void registerToEvent(final EventType e) {
-        EventManager.getInstance().addSubscriber(this, e, null);
+    default void registerToEvent(final EventType... eventTypes) {
+        for (final EventType e : eventTypes) {
+            EventManager.getInstance().addSubscriber(this, e, null);
+        }
+
     }
 
     /**
      * Register for an Event and a  specific board
      *
-     * @param e             Event
+     * @param events        Varargs of EventType
      * @param specificBoard Title of the board (unique)
      */
-    default void registerToEvent(final EventType e, final String specificBoard) {
-        EventManager.getInstance().addSubscriber(this, e, specificBoard);
+    default void registerToEvent(final String specificBoard, final EventType... events) {
+        for (final EventType e : events) {
+            EventManager.getInstance().addSubscriber(this, e, specificBoard);
+        }
     }
 
     /**
