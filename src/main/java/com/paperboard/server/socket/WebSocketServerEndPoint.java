@@ -1,8 +1,8 @@
 package com.paperboard.server.socket;
 
-import com.paperboard.Error.PaperBoardAlreadyExistException;
 import com.paperboard.server.PaperBoard;
 import com.paperboard.server.PaperBoardApplication;
+import com.paperboard.server.error.PaperBoardAlreadyExistException;
 import com.paperboard.server.events.Event;
 import com.paperboard.server.events.EventManager;
 import com.paperboard.server.events.EventType;
@@ -21,8 +21,8 @@ import java.util.logging.Logger;
 public class WebSocketServerEndPoint {
 
     public static String NOT_IN_A_BOARD = "-Not In a Board-";
-    private static ConcurrentReferenceHashMap<String, HashSet<Session>> sessionsMap =
-            new ConcurrentReferenceHashMap<>();
+    private static ConcurrentReferenceHashMap<String, HashSet<Session>> sessionsMap
+            = new ConcurrentReferenceHashMap<>();
     private static final Logger LOGGER = Logger.getLogger(WebSocketServerEndPoint.class.getName());
 
     @OnOpen
@@ -84,7 +84,7 @@ public class WebSocketServerEndPoint {
                         .build();
                 EventManager.getInstance()
                         .fireEvent(new Event(EventType.ASK_JOIN_BOARD, payload),
-                                message.getPayload().getString("board"));
+                                   message.getPayload().getString("board"));
                 break;
             case MSG_LEAVE_BOARD:
                 // Generate event ASK_LEAVE_BOARD
@@ -203,7 +203,13 @@ public class WebSocketServerEndPoint {
             payloadBuilder.add("sessionId", session.getId());
         }
         final JsonObject payload = payloadBuilder.build();
-        LOGGER.info("[" + NOT_IN_A_BOARD + "] user [" + pseudo + "] disconnected. (Close reason: " + closeReason.getReasonPhrase() + ")");
+        LOGGER.info("[" +
+                    NOT_IN_A_BOARD +
+                    "] user [" +
+                    pseudo +
+                    "] disconnected. (Close reason: " +
+                    closeReason.getReasonPhrase() +
+                    ")");
         EventManager.getInstance().fireEvent(new Event(EventType.DRAWER_DISCONNECTED, payload), null);
     }
 
@@ -219,7 +225,7 @@ public class WebSocketServerEndPoint {
                 final Session s = sessions.next();
                 if (s.isOpen() && pseudo.equals((String) s.getUserProperties().get("username"))) {
                     session = s;
-                    found = true;
+                    found   = true;
                 }
             }
         }
@@ -240,7 +246,12 @@ public class WebSocketServerEndPoint {
                 LOGGER.info("Server sent [" + msg.getType() + "] to User [" + recipient + "].");
             }
             if (!recipientFound) {
-                LOGGER.warning("[User-" + msg.getFrom() + "] wanted to send message to " + recipient + " But no use " + "was found with this name.");
+                LOGGER.warning("[User-" +
+                               msg.getFrom() +
+                               "] wanted to send message to " +
+                               recipient +
+                               " But no use " +
+                               "was found with this name.");
             }
         } catch (final IOException | EncodeException e) {
             LOGGER.warning("SendMessageToUser [" + recipient + "] failed");
@@ -285,8 +296,13 @@ public class WebSocketServerEndPoint {
     public void handleMsgGetBoard(final Session session, final Message message) {
         if (message.getPayload().containsKey("title")) {
             final PaperBoard paperboard = PaperBoardApplication.getPaperBoard(message.getPayload().getString("title"));
-            final JsonObject payload = Json.createObjectBuilder().add("paperboard", paperboard.encodeToJsonObjectBuilder()).build();
-            final Message answer = new Message(MessageType.MSG_ANSWER_GET_BOARD.str, "server", (String) session.getUserProperties().get("username"), payload);
+            final JsonObject payload = Json.createObjectBuilder()
+                    .add("paperboard", paperboard.encodeToJsonObjectBuilder())
+                    .build();
+            final Message answer = new Message(MessageType.MSG_ANSWER_GET_BOARD.str,
+                                               "server",
+                                               (String) session.getUserProperties().get("username"),
+                                               payload);
             ;
             sendMessageToSession(session, answer);
         }
@@ -300,27 +316,43 @@ public class WebSocketServerEndPoint {
             dataList.add(iter.next().encodeToJsonObjectBuilder());
         }
         final JsonObject payload = Json.createObjectBuilder().add("paperboards", dataList).build();
-        final Message answer = new Message(MessageType.MSG_ANSWER_GET_ALL_BOARDS.str, "server", (String) session.getUserProperties().get("username"), payload);
+        final Message answer = new Message(MessageType.MSG_ANSWER_GET_ALL_BOARDS.str,
+                                           "server",
+                                           (String) session.getUserProperties().get("username"),
+                                           payload);
         ;
         sendMessageToSession(session, answer);
     }
 
     public void handleMsgCreateBoard(final Session session, final Message message) {
         final String title = message.getPayload().containsKey("title") ? message.getPayload().getString("title") : null;
-        final String backgroundColor = message.getPayload().containsKey("backgroundColor") ? message.getPayload().getString("backgroundColor") : null;
-        final String backgroundImage = message.getPayload().containsKey("backgroundImage") ? message.getPayload().getString("backgroundImage") : null;
+        final String backgroundColor = message.getPayload().containsKey("backgroundColor") ?
+                                       message.getPayload().getString("backgroundColor") : null;
+        final String backgroundImage = message.getPayload().containsKey("backgroundImage") ?
+                                       message.getPayload().getString("backgroundImage") : null;
 
         if (title != null) {
             final PaperBoard paperBoard = new PaperBoard(title, backgroundColor, backgroundImage);
             try {
                 PaperBoardApplication.addPaperBoard(paperBoard);
                 final JsonObject payload = Json.createObjectBuilder().add("created", true).build();
-                final Message answer = new Message(MessageType.MSG_ANSWER_CREATE_BOARD.str, "server", (String) session.getUserProperties().get("username"), payload);
+                final Message answer = new Message(MessageType.MSG_ANSWER_CREATE_BOARD.str,
+                                                   "server",
+                                                   (String) session.getUserProperties().get("username"),
+                                                   payload);
                 sendMessageToSession(session, answer);
             } catch (final PaperBoardAlreadyExistException e) {
-                LOGGER.warning("Someone tried to create paperboard [" + message.getPayload().getString("title") + "] but it already exists.");
-                final JsonObject payload = Json.createObjectBuilder().add("created", false).add("reason", "Already Exists").build();
-                final Message answer = new Message(MessageType.MSG_ANSWER_CREATE_BOARD.str, "server", (String) session.getUserProperties().get("username"), payload);
+                LOGGER.warning("Someone tried to create paperboard [" +
+                               message.getPayload().getString("title") +
+                               "] but it already exists.");
+                final JsonObject payload = Json.createObjectBuilder()
+                        .add("created", false)
+                        .add("reason", "Already Exists")
+                        .build();
+                final Message answer = new Message(MessageType.MSG_ANSWER_CREATE_BOARD.str,
+                                                   "server",
+                                                   (String) session.getUserProperties().get("username"),
+                                                   payload);
                 sendMessageToSession(session, answer);
             }
         }
@@ -396,9 +428,9 @@ public class WebSocketServerEndPoint {
                     .build();
 
             final Message broadcast = new Message(MessageType.MSG_DRAWER_JOINED_BOARD.str,
-                    "server",
-                    "all board members",
-                    payload);
+                                                  "server",
+                                                  "all board members",
+                                                  payload);
             sendMessageToBoard(board, broadcast);
         } else {
             LOGGER.warning("Drawer joined the board" + board + " but no corresponding socket session was found...");
@@ -436,9 +468,9 @@ public class WebSocketServerEndPoint {
 
         LOGGER.info("[Board-" + board + "] " + pseudo + " left the board (" + boardConnectedUsers.toString() + ".");
         final Message broadcast = new Message(MessageType.MSG_DRAWER_LEFT_BOARD.str,
-                "server",
-                "all board members",
-                payload);
+                                              "server",
+                                              "all board members",
+                                              payload);
         sendMessageToBoard(board, broadcast);
         sendMessageToSession(session, broadcast);
     }
@@ -467,9 +499,9 @@ public class WebSocketServerEndPoint {
 
         final JsonObject payload = event.payload;
         final Message broadcast = new Message(MessageType.MSG_OBJECT_CREATED.str,
-                "server",
-                "all board members",
-                payload);
+                                              "server",
+                                              "all board members",
+                                              payload);
         if (!board.equals(NOT_IN_A_BOARD)) {
             sendMessageToBoard(board, broadcast);
         }
@@ -482,9 +514,9 @@ public class WebSocketServerEndPoint {
 
         final JsonObject payload = event.payload;
         final Message broadcast = new Message(MessageType.MSG_OBJECT_LOCKED.str,
-                "server",
-                "all board members",
-                payload);
+                                              "server",
+                                              "all board members",
+                                              payload);
         if (!board.equals(NOT_IN_A_BOARD)) {
             sendMessageToBoard(board, broadcast);
         }
@@ -497,9 +529,9 @@ public class WebSocketServerEndPoint {
 
         final JsonObject payload = event.payload;
         final Message broadcast = new Message(MessageType.MSG_OBJECT_UNLOCKED.str,
-                "server",
-                "all board members",
-                payload);
+                                              "server",
+                                              "all board members",
+                                              payload);
         if (!board.equals(NOT_IN_A_BOARD)) {
             sendMessageToBoard(board, broadcast);
         }
@@ -512,9 +544,9 @@ public class WebSocketServerEndPoint {
 
         final JsonObject payload = event.payload;
         final Message broadcast = new Message(MessageType.MSG_OBJECT_EDITED.str,
-                "server",
-                "all board members",
-                payload);
+                                              "server",
+                                              "all board members",
+                                              payload);
         if (!board.equals(NOT_IN_A_BOARD)) {
             sendMessageToBoard(board, broadcast);
         }
@@ -527,9 +559,9 @@ public class WebSocketServerEndPoint {
 
         final JsonObject payload = event.payload;
         final Message broadcast = new Message(MessageType.MSG_OBJECT_DELETED.str,
-                "server",
-                "all board members",
-                payload);
+                                              "server",
+                                              "all board members",
+                                              payload);
         if (!board.equals(NOT_IN_A_BOARD)) {
             sendMessageToBoard(board, broadcast);
         }

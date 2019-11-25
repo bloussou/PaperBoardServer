@@ -1,7 +1,7 @@
 package com.paperboard.server;
 
-import com.paperboard.Error.PaperBoardAlreadyExistException;
-import com.paperboard.Error.UserAlreadyExistException;
+import com.paperboard.server.error.PaperBoardAlreadyExistException;
+import com.paperboard.server.error.UserAlreadyExistException;
 import com.paperboard.server.events.Event;
 import com.paperboard.server.events.EventManager;
 import com.paperboard.server.events.Subscriber;
