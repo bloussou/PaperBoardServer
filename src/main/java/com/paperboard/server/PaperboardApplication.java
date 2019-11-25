@@ -1,6 +1,6 @@
 package com.paperboard.server;
 
-import com.paperboard.server.error.PaperBoardAlreadyExistException;
+import com.paperboard.server.error.PaperboardAlreadyExistException;
 import com.paperboard.server.error.UserAlreadyExistException;
 import com.paperboard.server.events.Event;
 import com.paperboard.server.events.EventManager;
@@ -16,26 +16,26 @@ import java.util.logging.Logger;
 
 import static com.paperboard.server.events.EventType.*;
 
-public class PaperBoardApplication implements Subscriber {
-    private static PaperBoardApplication instance = null;
+public class PaperboardApplication implements Subscriber {
+    private static PaperboardApplication instance = null;
     private final HashMap<String, User> connectedUsers = new HashMap<>();
-    private final HashSet<PaperBoard> paperBoards = new HashSet<>();
-    private static Logger LOGGER = Logger.getLogger(PaperBoardApplication.class.getName());
+    private final HashSet<Paperboard> paperboards = new HashSet<>();
+    private static Logger LOGGER = Logger.getLogger(PaperboardApplication.class.getName());
 
-    private PaperBoardApplication() {
+    private PaperboardApplication() {
     }
 
 
-    private static PaperBoardApplication getInstance() {
+    private static PaperboardApplication getInstance() {
         if (instance == null) {
-            instance = new PaperBoardApplication();
+            instance = new PaperboardApplication();
             instance.registerToEvent(ASK_IDENTITY, DRAWER_DISCONNECTED);
         }
         return instance;
     }
 
     public static void main(final String[] args) {
-        PaperBoardApplication.getInstance();
+        PaperboardApplication.getInstance();
         WebSocketServer.runServer();
         try {
             LOGGER.info("[IMPORTANT INFO] ... Server running until it crashes ...");
@@ -52,15 +52,15 @@ public class PaperBoardApplication implements Subscriber {
     /**
      * Method to add a paperboard to the set of paperboards
      *
-     * @param paperBoard the paperboard you want to add to the Set
-     * @throws PaperBoardAlreadyExistException The error triggered if you try to add two paperboards with the same
+     * @param paperboard the paperboard you want to add to the Set
+     * @throws PaperboardAlreadyExistException The error triggered if you try to add two paperboards with the same
      *                                         title in the set
      */
-    public static void addPaperBoard(final PaperBoard paperBoard) throws PaperBoardAlreadyExistException {
-        if (getPaperBoards().contains(paperBoard)) {
-            throw new PaperBoardAlreadyExistException(paperBoard);
+    public static void addPaperboard(final Paperboard paperboard) throws PaperboardAlreadyExistException {
+        if (getPaperboards().contains(paperboard)) {
+            throw new PaperboardAlreadyExistException(paperboard);
         } else {
-            getPaperBoards().add(paperBoard);
+            getPaperboards().add(paperboard);
         }
     }
 
@@ -71,7 +71,7 @@ public class PaperBoardApplication implements Subscriber {
      * @throws UserAlreadyExistException The error triggered if you try to add two users with the same pseudo in the set
      */
     private static void addUser(final String pseudo, final Event e) throws UserAlreadyExistException {
-        final PaperBoardApplication app = PaperBoardApplication.getInstance();
+        final PaperboardApplication app = PaperboardApplication.getInstance();
         final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder()
                 .add("pseudo", e.payload.getString("pseudo"))
                 .add("sessionId", e.payload.getString("sessionId"));
@@ -92,7 +92,7 @@ public class PaperBoardApplication implements Subscriber {
      */
     private static void disconnectUser(final String pseudo) {
         if (pseudo != null) {
-            final PaperBoardApplication app = PaperBoardApplication.getInstance();
+            final PaperboardApplication app = PaperboardApplication.getInstance();
             app.getConnectedUsers().remove(pseudo);
         }
     }
@@ -101,13 +101,13 @@ public class PaperBoardApplication implements Subscriber {
      * Get a Paperboard using its title
      *
      * @param title String
-     * @return PaperBoard
+     * @return Paperboard
      * @throws UserAlreadyExistException
      */
-    public static PaperBoard getPaperBoard(final String title) {
-        final PaperBoard paperboard = new PaperBoard(title);
-        if (getPaperBoards().contains(paperboard)) {
-            for (final PaperBoard obj : getPaperBoards()) {
+    public static Paperboard getPaperboard(final String title) {
+        final Paperboard paperboard = new Paperboard(title);
+        if (getPaperboards().contains(paperboard)) {
+            for (final Paperboard obj : getPaperboards()) {
                 if (obj.equals(paperboard))
                     return obj;
             }
@@ -123,8 +123,8 @@ public class PaperBoardApplication implements Subscriber {
         return connectedUsers;
     }
 
-    public static HashSet<PaperBoard> getPaperBoards() {
-        return instance.paperBoards;
+    public static HashSet<Paperboard> getPaperboards() {
+        return instance.paperboards;
     }
 
     @Override

@@ -1,5 +1,5 @@
-# PaperBoardServer
-Interactive paperBoard
+# PaperboardServer
+Interactive paperboard
 
 ## Route HTTP
 - get pseudo availability

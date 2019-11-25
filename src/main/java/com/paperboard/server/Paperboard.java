@@ -21,13 +21,13 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
 
-public class PaperBoard implements Subscriber {
+public class Paperboard implements Subscriber {
 
     final private static AtomicLong idCounter = new AtomicLong(0);
     final private String id;
     final private String title;
     final private LocalDateTime creationDate;
-    final private static Logger LOGGER = Logger.getLogger(PaperBoard.class.getName());
+    final private static Logger LOGGER = Logger.getLogger(Paperboard.class.getName());
     private String backgroundColor = "";
     private java.util.Set<User> drawers = new HashSet<>();
     private ConcurrentHashMap<String, Drawing> drawings = new ConcurrentHashMap<>();
@@ -38,7 +38,7 @@ public class PaperBoard implements Subscriber {
      *
      * @param title String
      */
-    PaperBoard(final String title) {
+    Paperboard(final String title) {
         this.id           = String.valueOf(idCounter.getAndIncrement());
         this.title        = title;
         this.creationDate = LocalDateTime.now();
@@ -59,7 +59,7 @@ public class PaperBoard implements Subscriber {
      * @param backgroundColor @Nullable String
      * @param backgroundImage @Nullable String
      */
-    public PaperBoard(final String title,
+    public Paperboard(final String title,
                       final @Nullable String backgroundColor,
                       final @Nullable String backgroundImage) {
         this(title);
@@ -79,7 +79,7 @@ public class PaperBoard implements Subscriber {
      */
     private void handleAskJoinBoard(final Event e) {
         // Get the connected user
-        final User user = PaperBoardApplication.getConnectedUser(e.payload.getString("pseudo"));
+        final User user = PaperboardApplication.getConnectedUser(e.payload.getString("pseudo"));
         // Add the user to the board
         this.drawers.add(user);
 
@@ -107,7 +107,7 @@ public class PaperBoard implements Subscriber {
      */
     private void handleAskLeaveBoard(final Event e) {
         // Broadcast a message with the updated list of users connected to the board
-        final User user = PaperBoardApplication.getConnectedUser(e.payload.getString("pseudo"));
+        final User user = PaperboardApplication.getConnectedUser(e.payload.getString("pseudo"));
         final String board = e.payload.getString("board");
         // Remove the user from the list of drawers
         this.drawers.remove(user);
@@ -144,7 +144,7 @@ public class PaperBoard implements Subscriber {
      * @param e Event
      */
     private void handleAskCreateObject(final Event e) {
-        final User user = PaperBoardApplication.getConnectedUser(e.payload.getString("pseudo"));
+        final User user = PaperboardApplication.getConnectedUser(e.payload.getString("pseudo"));
         final String board = e.payload.getString("board");
         final Double positionX = Double.parseDouble(e.payload.getString("positionX"));
         final Double positionY = Double.parseDouble(e.payload.getString("positionY"));
@@ -244,7 +244,7 @@ public class PaperBoard implements Subscriber {
      * @param e Event
      */
     private void handleAskLockObject(final Event e) {
-        final User user = PaperBoardApplication.getConnectedUser(e.payload.getString("pseudo"));
+        final User user = PaperboardApplication.getConnectedUser(e.payload.getString("pseudo"));
         final String board = this.title;
         final String drawingId = e.payload.getString("drawingId");
 
@@ -274,7 +274,7 @@ public class PaperBoard implements Subscriber {
      * @param e Event
      */
     private void handleAskUnlockObject(final Event e) {
-        final User user = PaperBoardApplication.getConnectedUser(e.payload.getString("pseudo"));
+        final User user = PaperboardApplication.getConnectedUser(e.payload.getString("pseudo"));
         final String board = this.title;
         final String drawingId = e.payload.getString("drawingId");
 
@@ -301,7 +301,7 @@ public class PaperBoard implements Subscriber {
      * @param e Event
      */
     private void handleAskDeleteObject(final Event e) {
-        final User user = PaperBoardApplication.getConnectedUser(e.payload.getString("pseudo"));
+        final User user = PaperboardApplication.getConnectedUser(e.payload.getString("pseudo"));
         final String board = this.title;
         final String drawingId = e.payload.getString("drawingId");
 
@@ -342,7 +342,7 @@ public class PaperBoard implements Subscriber {
      * @param e Event
      */
     private void handleAskEditObject(final Event e) {
-        final User user = PaperBoardApplication.getConnectedUser(e.payload.getString("pseudo"));
+        final User user = PaperboardApplication.getConnectedUser(e.payload.getString("pseudo"));
         final String board = this.title;
         final String drawingId = e.payload.getString("drawingId");
 
@@ -443,8 +443,8 @@ public class PaperBoard implements Subscriber {
         if ((obj == null) || (obj.getClass() != this.getClass())) {
             return false;
         }
-        final PaperBoard paperBoard = (PaperBoard) obj;
-        return this.getTitle().equals(paperBoard.getTitle());
+        final Paperboard paperboard = (Paperboard) obj;
+        return this.getTitle().equals(paperboard.getTitle());
     }
 
     @Override

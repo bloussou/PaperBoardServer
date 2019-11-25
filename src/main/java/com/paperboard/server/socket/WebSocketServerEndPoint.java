@@ -1,8 +1,8 @@
 package com.paperboard.server.socket;
 
-import com.paperboard.server.PaperBoard;
-import com.paperboard.server.PaperBoardApplication;
-import com.paperboard.server.error.PaperBoardAlreadyExistException;
+import com.paperboard.server.Paperboard;
+import com.paperboard.server.PaperboardApplication;
+import com.paperboard.server.error.PaperboardAlreadyExistException;
 import com.paperboard.server.error.UserAlreadyExistException;
 import com.paperboard.server.events.Event;
 import com.paperboard.server.events.EventManager;
@@ -341,7 +341,7 @@ public class WebSocketServerEndPoint {
      */
     private void handleMsgGetBoard(final Session session, final Message message) {
         if (message.getPayload().containsKey("title")) {
-            final PaperBoard paperboard = PaperBoardApplication.getPaperBoard(message.getPayload().getString("title"));
+            final Paperboard paperboard = PaperboardApplication.getPaperboard(message.getPayload().getString("title"));
             final JsonObject payload = Json.createObjectBuilder()
                     .add("paperboard", paperboard.encodeToJsonObjectBuilder())
                     .build();
@@ -360,8 +360,8 @@ public class WebSocketServerEndPoint {
      * @param session Session that sent the message
      */
     private void handleMsgGetAllBoards(final Session session) {
-        final HashSet<PaperBoard> paperBoards = PaperBoardApplication.getPaperBoards();
-        final Iterator<PaperBoard> iter = paperBoards.iterator();
+        final HashSet<Paperboard> paperboards = PaperboardApplication.getPaperboards();
+        final Iterator<Paperboard> iter = paperboards.iterator();
         final JsonArrayBuilder dataList = Json.createArrayBuilder();
         while (iter.hasNext()) {
             dataList.add(iter.next().encodeToJsonObjectBuilder());
@@ -390,16 +390,16 @@ public class WebSocketServerEndPoint {
                                        null;
 
         if (title != null) {
-            final PaperBoard paperBoard = new PaperBoard(title, backgroundColor, backgroundImage);
+            final Paperboard paperboard = new Paperboard(title, backgroundColor, backgroundImage);
             try {
-                PaperBoardApplication.addPaperBoard(paperBoard);
+                PaperboardApplication.addPaperboard(paperboard);
                 final JsonObject payloadAnswer = Json.createObjectBuilder().add("created", true).build();
                 final Message answer = new Message(MessageType.MSG_ANSWER_CREATE_BOARD.str,
                                                    "server",
                                                    (String) session.getUserProperties().get("username"),
                                                    payloadAnswer);
                 sendMessageToSession(session, answer);
-            } catch (final PaperBoardAlreadyExistException e) {
+            } catch (final PaperboardAlreadyExistException e) {
                 LOGGER.warning("Someone tried to create paperboard [" +
                                message.getPayload().getString("title") +
                                "] but it already exists.");
