@@ -2,6 +2,7 @@ package com.paperboard.server;
 
 import com.paperboard.drawings.Drawing;
 import com.paperboard.drawings.DrawingType;
+import com.paperboard.drawings.Image;
 import com.paperboard.drawings.Position;
 import com.paperboard.drawings.shapes.Circle;
 import com.paperboard.server.events.Event;
@@ -247,71 +248,27 @@ public class PaperBoard implements Subscriber {
                     final Circle circle = (Circle) drawing;
                     modifications = circle.editDrawing(payload, board);
                     break;
-
-//            if (payload.containsKey("X") && payload.containsKey("Y")) {
-//                final Double x = Double.parseDouble(payload.getString("X"));
-//                final Double y = Double.parseDouble(payload.getString("Y"));
-//                drawing.setPosition(new Position(x, y));
-//                modifications.add("X", x.toString()).add("Y", y.toString());
-//            }
-//            switch (DrawingType.getEnum(drawingType)) {
-//                case CIRCLE:
-//                    final Circle circle = (Circle) drawing;
-//                    for (final String key : keys) {
-//                        switch (ModificationType.getEnum(key)) {
-//                            case LINE_WIDTH:
-//                                final Double lineWidth
-//                                        = Double.parseDouble(payload.getString(ModificationType.LINE_WIDTH.str));
-//                                circle.setLineWidth(lineWidth);
-//                                modifications.add(ModificationType.LINE_WIDTH.str, lineWidth.toString());
-//                                break;
-//                            case LINE_COLOR:
-//                                final String lineColor = payload.getString(ModificationType.LINE_COLOR.str);
-//                                circle.setLineColor(lineColor);
-//                                modifications.add(ModificationType.LINE_COLOR.str, lineColor);
-//                                break;
-//                            case RADIUS:
-//                                final Double radius
-//                                        = Double.parseDouble(payload.getString(ModificationType.RADIUS.str));
-//                                circle.setRadius(radius);
-//                                modifications.add(ModificationType.RADIUS.str, radius.toString());
-//                                break;
-//                            case FILL_COLOR:
-//                                final String fillColor = payload.getString(ModificationType.FILL_COLOR.str);
-//                                circle.setFillColor(fillColor);
-//                                modifications.add(ModificationType.FILL_COLOR.str, fillColor);
-//                                break;
-//                            case LINE_STYLE:
-//                                final String lineStyle = payload.getString(ModificationType.LINE_STYLE.str);
-//                                circle.setLineStyle(lineStyle);
-//                                modifications.add(ModificationType.LINE_STYLE.str, lineStyle);
-//                                break;
-//                            default:
-//                                LOGGER.warning("This modification is not yet implemented for edition" + key);
-//                        }
-//
-//                    }
-//                    break;
-//                case HANDWRITING:
-//                    //TODO
-//                    break;
-//                case LINE:
-//                    //TODO
-//                    break;
-//                case RECTANGLE:
-//                    //TODO
-//                    break;
-//                case TRIANGLE:
-//                    //TODO
-//                    break;
-//                case IMAGE:
-//                    //TODO
-//                    break;
-//                case TEXT_BOX:
-//                    //TODO
-//                    break;
-//                default:
-//                    LOGGER.warning("This shape is not yet implemented for edition" + drawingType);
+                case HANDWRITING:
+                    //TODO
+                    break;
+                case LINE:
+                    //TODO
+                    break;
+                case RECTANGLE:
+                    //TODO
+                    break;
+                case TRIANGLE:
+                    //TODO
+                    break;
+                case IMAGE:
+                    final Image image = (Image) drawing;
+                    modifications = image.editDrawing(payload, board);
+                    break;
+                case TEXT_BOX:
+                    //TODO
+                    break;
+                default:
+                    LOGGER.warning("This shape is not yet implemented for edition" + drawingType);
             }
             EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_EDITED, modifications.build()), board);
         }

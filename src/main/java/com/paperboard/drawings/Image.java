@@ -2,6 +2,7 @@ package com.paperboard.drawings;
 
 import com.paperboard.server.User;
 
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 public class Image extends Drawing {
@@ -21,6 +22,26 @@ public class Image extends Drawing {
         final JsonObjectBuilder jsonBuilder = super.encodeToJsonObjectBuilder();
         jsonBuilder.add("height", this.height.toString()).add("width", this.width.toString()).add("url", this.url);
         return jsonBuilder;
+    }
+
+    @Override
+    public JsonObjectBuilder editDrawing(final JsonObject payload, final String board) {
+        final JsonObjectBuilder modifications = super.editDrawing(payload, board);
+        for (final String key : payload.keySet()) {
+            switch (ModificationType.getEnum(key)) {
+                case HEIGHT:
+                    final Double height = Double.parseDouble(payload.getString(ModificationType.HEIGHT.str));
+                    this.setHeight(height);
+                    modifications.add(ModificationType.HEIGHT.str, height.toString());
+                    break;
+                case WIDTH:
+                    final Double width = Double.parseDouble(payload.getString(ModificationType.WIDTH.str));
+                    this.setWidth(width);
+                    modifications.add(ModificationType.WIDTH.str, width);
+                    break;
+            }
+        }
+        return modifications;
     }
 
     public Double getHeight() {
