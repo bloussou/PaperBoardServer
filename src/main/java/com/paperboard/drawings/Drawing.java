@@ -7,6 +7,14 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Abstract class to define all the drawings :
+ * owner : creator of the class
+ * isLocked : is the shape locked by sb
+ * lockedBy : the pseudo of the user that has locked the drawing
+ * type : DrawingType of the drawing
+ * position : Position of the top left corner of the shape in the jscanvas
+ */
 public abstract class Drawing {
     private static AtomicLong idCounter = new AtomicLong(0);
     private final User owner;
@@ -25,10 +33,12 @@ public abstract class Drawing {
         this.position = position;
     }
 
-    public void setPosition(final Position position) {
-        this.position = position;
-    }
-
+    /**
+     * Synchronized method to lock the drawing by setting isLocked and lockedBy
+     *
+     * @param user
+     * @return boolean, true the user manages to lock the shape
+     */
     public boolean lockDrawing(final User user) {
         synchronized (this) {
             if (!this.isLocked) {
@@ -41,6 +51,12 @@ public abstract class Drawing {
         }
     }
 
+    /**
+     * Unlock the drawing by setting isLocked and lockedBy to default values
+     *
+     * @param user
+     * @return
+     */
     public boolean unlockDrawing(final User user) {
         if (user.getPseudo().equals(this.lockedBy) && this.isLocked) {
             isLocked = false;
@@ -50,6 +66,11 @@ public abstract class Drawing {
         return false;
     }
 
+    /**
+     * Json description of a drawing
+     *
+     * @return JsonObjectBuilder
+     */
     public JsonObjectBuilder encodeToJsonObjectBuilder() {
         final JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
         jsonBuilder.add("drawingId", this.id)
@@ -61,8 +82,16 @@ public abstract class Drawing {
         return jsonBuilder;
     }
 
+    /**
+     * Return JsonObjectBuilder containing only keys corresponding to requested editions in payload
+     *
+     * @param payload the modification payload to apply
+     * @param board   String title of the board
+     * @return JsonObjectBuilder
+     */
     public JsonObjectBuilder editDrawing(final JsonObject payload, final String board) {
         final JsonObjectBuilder modifications = Json.createObjectBuilder();
+        // Add the needed keys to modifications to identify the payload
         modifications.add("pseudo", payload.getString("pseudo"))
                 .add("drawingId", payload.getString("drawingId"))
                 .add("board", board);
@@ -73,6 +102,10 @@ public abstract class Drawing {
             modifications.add(ModificationType.X.str, x.toString()).add(ModificationType.Y.str, y.toString());
         }
         return modifications;
+    }
+
+    public void setPosition(final Position position) {
+        this.position = position;
     }
 
     public User getOwner() {

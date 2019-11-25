@@ -8,6 +8,9 @@ import com.paperboard.server.User;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
+/**
+ * Rectangle class to describe jscanvas Rectangle
+ */
 public class Rectangle extends Shape {
     private Double width = 50.0;
     private String fillColor = "transparent";
@@ -17,6 +20,11 @@ public class Rectangle extends Shape {
         super(DrawingType.RECTANGLE.str, user, position);
     }
 
+    /**
+     * See Base class
+     *
+     * @return JsonObjectBuilder
+     */
     @Override
     public JsonObjectBuilder encodeToJsonObjectBuilder() {
         final JsonObjectBuilder jsonBuilder = super.encodeToJsonObjectBuilder();
@@ -26,6 +34,13 @@ public class Rectangle extends Shape {
         return jsonBuilder;
     }
 
+    /**
+     * See base class
+     *
+     * @param payload the modification payload to apply
+     * @param board   String title of the board
+     * @return JsonObjectBuilder
+     */
     @Override
     public JsonObjectBuilder editDrawing(final JsonObject payload, final String board) {
         final JsonObjectBuilder modifications = super.editDrawing(payload, board);

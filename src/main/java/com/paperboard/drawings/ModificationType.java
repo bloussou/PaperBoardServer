@@ -1,5 +1,9 @@
 package com.paperboard.drawings;
 
+/**
+ * List of the accepted key for modification in payloads
+ * NULL is an empty string returned if the enum doesn't contain a value
+ */
 public enum ModificationType {
     LINE_WIDTH("lineWidth"),
     LINE_COLOR("lineColor"),
@@ -27,6 +31,12 @@ public enum ModificationType {
         this.str = str;
     }
 
+    /**
+     * Check if the value is in the enum
+     *
+     * @param test the value you want to check
+     * @return boolean
+     */
     public static boolean contains(final String test) {
         for (final ModificationType modificationType : ModificationType.values()) {
             if (modificationType.str.equals(test)) {
@@ -36,6 +46,12 @@ public enum ModificationType {
         return false;
     }
 
+    /**
+     * get the modification type of a specified string
+     *
+     * @param str the key you want to find
+     * @return ModificationType
+     */
     public static ModificationType getEnum(final String str) {
         for (final ModificationType modificationType : ModificationType.values()) {
             if (modificationType.str.equals(str)) {

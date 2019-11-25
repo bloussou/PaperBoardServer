@@ -5,6 +5,10 @@ import com.paperboard.server.User;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
+/**
+ * Image object
+ * srcURI : stringified image
+ */
 public class Image extends Drawing {
     private Double height;
     private Double width;
@@ -17,17 +21,31 @@ public class Image extends Drawing {
                  final String srcURI) {
         super(DrawingType.IMAGE.str, user, position);
         this.height = height;
-        this.width = width;
+        this.width  = width;
         this.srcURI = srcURI;
     }
 
+    /**
+     * See base class
+     *
+     * @return
+     */
     @Override
     public JsonObjectBuilder encodeToJsonObjectBuilder() {
         final JsonObjectBuilder jsonBuilder = super.encodeToJsonObjectBuilder();
-        jsonBuilder.add("height", this.height.toString()).add("width", this.width.toString()).add("srcURI", this.srcURI);
+        jsonBuilder.add("height", this.height.toString())
+                .add("width", this.width.toString())
+                .add("srcURI", this.srcURI);
         return jsonBuilder;
     }
 
+    /**
+     * See base class
+     *
+     * @param payload the modification payload to apply
+     * @param board   String title of the board
+     * @return
+     */
     @Override
     public JsonObjectBuilder editDrawing(final JsonObject payload, final String board) {
         final JsonObjectBuilder modifications = super.editDrawing(payload, board);

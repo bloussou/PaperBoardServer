@@ -8,6 +8,9 @@ import com.paperboard.server.User;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
+/**
+ * Abstract class extending Drawing for object with lines or border
+ */
 public abstract class Shape extends Drawing {
     private String lineColor = "red";
     private Double lineWidth = 10.0;
@@ -17,6 +20,11 @@ public abstract class Shape extends Drawing {
         super(type, user, position);
     }
 
+    /**
+     * See base class
+     *
+     * @return JsonObjectBuilder
+     */
     @Override
     public JsonObjectBuilder encodeToJsonObjectBuilder() {
         final JsonObjectBuilder jsonBuilder = super.encodeToJsonObjectBuilder();
@@ -24,6 +32,13 @@ public abstract class Shape extends Drawing {
         return jsonBuilder;
     }
 
+    /**
+     * See base class
+     *
+     * @param payload the modification payload to apply
+     * @param board   String title of the board
+     * @return JsonObjectBuilder
+     */
     @Override
     public JsonObjectBuilder editDrawing(final JsonObject payload, final String board) {
         final JsonObjectBuilder modifications = super.editDrawing(payload, board);

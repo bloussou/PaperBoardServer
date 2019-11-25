@@ -5,6 +5,9 @@ import com.paperboard.server.User;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
+/**
+ * Text class to describe text element of js canvas
+ */
 public class TextBox extends Drawing {
     private String text;
     private Double textSize = 10.0;
@@ -15,6 +18,11 @@ public class TextBox extends Drawing {
         this.text = text;
     }
 
+    /**
+     * See base class
+     *
+     * @return JsonObjectBuilder
+     */
     @Override
     public JsonObjectBuilder encodeToJsonObjectBuilder() {
         final JsonObjectBuilder jsonBuilder = super.encodeToJsonObjectBuilder();
@@ -22,6 +30,13 @@ public class TextBox extends Drawing {
         return jsonBuilder;
     }
 
+    /**
+     * See base class
+     *
+     * @param payload the modification payload to apply
+     * @param board   String title of the board
+     * @return JsonObjectBuilder
+     */
     @Override
     public JsonObjectBuilder editDrawing(final JsonObject payload, final String board) {
         final JsonObjectBuilder modifications = super.editDrawing(payload, board);

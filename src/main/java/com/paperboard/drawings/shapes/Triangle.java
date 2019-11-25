@@ -8,6 +8,9 @@ import com.paperboard.server.User;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
+/**
+ * Triangle class to describe jscanvas triangle
+ */
 public class Triangle extends Shape {
     private Position positionBottomLeft;
     private Position positionBottomRight;
@@ -19,6 +22,11 @@ public class Triangle extends Shape {
         this.positionBottomRight = new Position(position.getX() + 20.0, position.getY() - 20.0);
     }
 
+    /**
+     * See Base class
+     *
+     * @return JsonObjectBuilder
+     */
     @Override
     public JsonObjectBuilder encodeToJsonObjectBuilder() {
         final JsonObjectBuilder jsonBuilder = super.encodeToJsonObjectBuilder();
@@ -28,6 +36,13 @@ public class Triangle extends Shape {
         return jsonBuilder;
     }
 
+    /**
+     * See base class
+     *
+     * @param payload the modification payload to apply
+     * @param board   String title of the board
+     * @return JsonObjectBuilder
+     */
     @Override
     public JsonObjectBuilder editDrawing(final JsonObject payload, final String board) {
         final JsonObjectBuilder modifications = super.editDrawing(payload, board);

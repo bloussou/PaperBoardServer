@@ -11,6 +11,10 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import java.util.ArrayList;
 
+/**
+ * HandWriting class for jscanvas HandWriting
+ * pathX and pathY have same length and describe point by point the handWriting shape
+ */
 public class HandWriting extends Shape {
     private ArrayList<Double> pathX;
     private ArrayList<Double> pathY;
@@ -24,6 +28,12 @@ public class HandWriting extends Shape {
         this.pathY = pathY;
     }
 
+    /**
+     * Util class to build a JsonArrayBuilder from an ArrayList<Double>
+     *
+     * @param path ArrayList<Double>
+     * @return JsonArrayBuilder
+     */
     private JsonArrayBuilder ArrayListToAJsonArrayBuilder(final ArrayList<Double> path) {
         final JsonArrayBuilder pathJson = Json.createBuilderFactory(null).createArrayBuilder();
         for (final Double u : path) {
@@ -32,6 +42,11 @@ public class HandWriting extends Shape {
         return pathJson;
     }
 
+    /**
+     * See Base class
+     *
+     * @return JsonObjectBuilder
+     */
     @Override
     public JsonObjectBuilder encodeToJsonObjectBuilder() {
         final JsonObjectBuilder jsonBuilder = super.encodeToJsonObjectBuilder();
@@ -40,6 +55,13 @@ public class HandWriting extends Shape {
         return jsonBuilder;
     }
 
+    /**
+     * See base class
+     *
+     * @param payload the modification payload to apply
+     * @param board   String title of the board
+     * @return JsonObjectBuilder
+     */
     @Override
     public JsonObjectBuilder editDrawing(final JsonObject payload, final String board) {
         final JsonObjectBuilder modifications = super.editDrawing(payload, board);

@@ -8,6 +8,9 @@ import com.paperboard.server.User;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
+/**
+ * Line class to describe jscanvas Line
+ */
 public class Line extends Shape {
     private Position positionEndPoint;
 
@@ -16,6 +19,11 @@ public class Line extends Shape {
         this.positionEndPoint = new Position(position.getX() + 20.0, position.getY());
     }
 
+    /**
+     * See Base class
+     *
+     * @return JsonObjectBuilder
+     */
     @Override
     public JsonObjectBuilder encodeToJsonObjectBuilder() {
         final JsonObjectBuilder jsonBuilder = super.encodeToJsonObjectBuilder();
@@ -23,6 +31,13 @@ public class Line extends Shape {
         return jsonBuilder;
     }
 
+    /**
+     * See base class
+     *
+     * @param payload the modification payload to apply
+     * @param board   String title of the board
+     * @return JsonObjectBuilder
+     */
     @Override
     public JsonObjectBuilder editDrawing(final JsonObject payload, final String board) {
         final JsonObjectBuilder modifications = super.editDrawing(payload, board);
