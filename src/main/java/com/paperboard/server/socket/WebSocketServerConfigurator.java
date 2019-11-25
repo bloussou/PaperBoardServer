@@ -10,13 +10,14 @@ public class WebSocketServerConfigurator extends ServerEndpointConfig.Configurat
 
     private static final String[] ALLOWED_METHODS = {"GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"};
     private static final String[] ALLOWED_ORIGINS = {"http://localhost:3000",
-            "chrome-extension" + "://fgponpodhbmadfljofbimhhlengambbn", "https://paperboard-just-draw-it.herokuapp.com"};
+            "chrome-extension" + "://fgponpodhbmadfljofbimhhlengambbn",
+            "https://paperboard-just-draw-it.herokuapp.com"};
 
     @Override
     public boolean checkOrigin(final String originHeaderValue) {
         boolean allowed = false;
-        for (int i = 0; i < ALLOWED_ORIGINS.length; i++) {
-            if (originHeaderValue.equals(ALLOWED_ORIGINS[i])) {
+        for (final String allowedOrigin : ALLOWED_ORIGINS) {
+            if (originHeaderValue.equals(allowedOrigin)) {
                 allowed = true;
                 break;
             }

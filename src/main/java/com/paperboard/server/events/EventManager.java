@@ -41,7 +41,7 @@ public class EventManager {
      * @param type          EventType
      * @param specificBoard Nullable String specifying a board
      */
-    public void addSubscriber(final Subscriber s, final EventType type, @Nullable final String specificBoard) {
+    void addSubscriber(final Subscriber s, final EventType type, @Nullable final String specificBoard) {
         if (!subscribers.containsKey(s)) {
             subscribers.put(s, new ArrayList<>());
         }
@@ -60,10 +60,8 @@ public class EventManager {
      *
      * @param s Subscriber
      */
-    public void removeSubscriber(final Subscriber s) {
-        if (subscribers.containsKey(s)) {
-            subscribers.remove(s);
-        }
+    void removeSubscriber(final Subscriber s) {
+        subscribers.remove(s);
     }
 
     /**
@@ -100,10 +98,10 @@ public class EventManager {
  * Subscription class
  */
 class Subscription {
-    public final EventType eventType;
+    final EventType eventType;
     public final String board;
 
-    public Subscription(final EventType eventType, final String board) {
+    Subscription(final EventType eventType, final String board) {
         this.eventType = eventType;
         this.board     = board;
     }

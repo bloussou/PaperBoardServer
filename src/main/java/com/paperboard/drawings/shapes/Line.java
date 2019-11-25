@@ -42,14 +42,12 @@ public class Line extends Shape {
     public JsonObjectBuilder editDrawing(final JsonObject payload, final String board) {
         final JsonObjectBuilder modifications = super.editDrawing(payload, board);
         for (final String key : payload.keySet()) {
-            switch (ModificationType.getEnum(key)) {
-                case POSITION_END_POINT:
-                    final JsonObject positionGet = payload.getJsonObject(key);
-                    final Position position = new Position(Double.parseDouble(positionGet.getString("x")),
-                                                           Double.parseDouble(positionGet.getString("y")));
-                    this.setPositionEndPoint(position);
-                    modifications.add(key, position.encodeToJsonObjectBuilder());
-                    break;
+            if (key.equals(ModificationType.POSITION_END_POINT.str)) {
+                final JsonObject positionGet = payload.getJsonObject(key);
+                final Position position = new Position(Double.parseDouble(positionGet.getString("x")),
+                                                       Double.parseDouble(positionGet.getString("y")));
+                this.setPositionEndPoint(position);
+                modifications.add(key, position.encodeToJsonObjectBuilder());
             }
         }
         return modifications;

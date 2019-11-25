@@ -10,8 +10,7 @@ public class MessageEncoder implements Encoder.Text<Message> {
 
     @Override
     public String encode(final Message message) {
-        final String encodedMsg = message.toString();
-        return encodedMsg;
+        return message.toString();
     }
 
     @Override

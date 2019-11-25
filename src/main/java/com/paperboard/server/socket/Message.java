@@ -31,10 +31,10 @@ public class Message {
         if (!MessageType.contains(type)) {
             throw new IncorrectMessageException("Message type [" + type + "] is not allowed.");
         }
-        if (from == null || from == "") {
+        if ((from == null) || (from.equals(""))) {
             throw new IncorrectMessageException("You must give the sender name");
         }
-        if (to == null || to == "") {
+        if (to == null || to.equals("")) {
             throw new IncorrectMessageException(
                     "You must give the receiver name (server='server' and broadcast='broadcast'");
         }

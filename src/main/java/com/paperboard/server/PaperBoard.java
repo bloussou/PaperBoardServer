@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
@@ -39,7 +38,7 @@ public class PaperBoard implements Subscriber {
      *
      * @param title String
      */
-    public PaperBoard(final String title) {
+    PaperBoard(final String title) {
         this.id           = String.valueOf(idCounter.getAndIncrement());
         this.title        = title;
         this.creationDate = LocalDateTime.now();
@@ -169,7 +168,7 @@ public class PaperBoard implements Subscriber {
                     final Double width = Double.parseDouble(description.getString(ModificationType.WIDTH.str));
                     final Double height = Double.parseDouble(description.getString(ModificationType.HEIGHT.str));
                     final String srcURI = description.getString("srcURI");
-                    final Image image = new Image(user, new Position(positionX, positionY), width, height, srcURI);
+                    final Image image = new Image(user, new Position(positionX, positionY), height, width, srcURI);
                     drawings.put(image.getId(), image);
                     final JsonObject payloadImage = image.encodeToJsonObjectBuilder()
                             .add("pseudo", user.getPseudo())
@@ -414,9 +413,8 @@ public class PaperBoard implements Subscriber {
 
         // Build list of Drawings
         final JsonObjectBuilder drawings = Json.createObjectBuilder();
-        final Iterator<String> drawingIds = this.drawings.keySet().iterator();
-        while (drawingIds.hasNext()) {
-            final Drawing d = this.drawings.get(drawingIds.next());
+        for (final String s : this.drawings.keySet()) {
+            final Drawing d = this.drawings.get(s);
             drawings.add(d.getId(), d.encodeToJsonObjectBuilder());
         }
         builder.add("drawings", drawings);

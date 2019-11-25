@@ -28,7 +28,7 @@ public class Image extends Drawing {
     /**
      * See base class
      *
-     * @return
+     * @return JsonObjectBuilder
      */
     @Override
     public JsonObjectBuilder encodeToJsonObjectBuilder() {
@@ -44,7 +44,7 @@ public class Image extends Drawing {
      *
      * @param payload the modification payload to apply
      * @param board   String title of the board
-     * @return
+     * @return JsonObjectBuilder
      */
     @Override
     public JsonObjectBuilder editDrawing(final JsonObject payload, final String board) {
@@ -57,7 +57,7 @@ public class Image extends Drawing {
                     modifications.add(key, height.toString());
                     break;
                 case WIDTH:
-                    final Double width = Double.parseDouble(payload.getString(key));
+                    final double width = Double.parseDouble(payload.getString(key));
                     this.setWidth(width);
                     modifications.add(key, width);
                     break;

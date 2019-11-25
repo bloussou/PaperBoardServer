@@ -31,7 +31,7 @@ public class WebSocketServer implements Subscriber {
      *
      * @return WebSocketServer singleton instance
      */
-    public static WebSocketServer getInstance() {
+    private static WebSocketServer getInstance() {
         if (instance == null) {
             instance = new WebSocketServer();
             instance.registerToEvent(EventType.DRAWER_IDENTIFICATION,

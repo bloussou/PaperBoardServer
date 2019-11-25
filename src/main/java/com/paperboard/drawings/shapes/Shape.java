@@ -16,7 +16,7 @@ public abstract class Shape extends Drawing {
     private Double lineWidth = 10.0;
     private String lineStyle = "normal";
 
-    public Shape(final String type, final User user, final Position position) {
+    Shape(final String type, final User user, final Position position) {
         super(type, user, position);
     }
 

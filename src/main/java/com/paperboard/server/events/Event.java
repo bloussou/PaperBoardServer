@@ -13,9 +13,9 @@ import java.util.logging.Logger;
 public class Event {
     private static final Logger LOGGER = Logger.getLogger(Event.class.getName());
     final public EventType type;
-    final public StackTraceElement source;
+    private final StackTraceElement source;
     final public JsonObject payload;
-    public Date firedAt;
+    Date firedAt;
 
     /**
      * Constructor for Event assign and log if there is an error in the payload.
@@ -41,7 +41,7 @@ public class Event {
     /**
      * Method to check the correctness of the payload for each EventType
      *
-     * @param payload
+     * @param payload JsonObject
      * @return boolean
      */
     public boolean checkPayload(final JsonObject payload) {
@@ -125,7 +125,7 @@ public class Event {
      * Iterate on payload keys to check that every key except "pseudo", "drawingId" and "board" are in
      * ModificationType enum.
      *
-     * @param payload
+     * @param payload JsonObject
      * @return boolean
      */
     public static boolean checkPayloadContains_ModificationType(final JsonObject payload) {
