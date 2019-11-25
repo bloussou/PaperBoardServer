@@ -1,7 +1,16 @@
 package com.paperboard.drawings;
 
+/**
+ * Enum of the different types of drawings
+ */
 public enum DrawingType {
-    CIRCLE("circle"), HANDWRITING("hand writing"), RECTANGLE("rectangle"), TEXT_BOX("text"), IMAGE("image");
+    CIRCLE("circle"),
+    HANDWRITING("hand writing"),
+    RECTANGLE("rectangle"),
+    TEXT_BOX("text"),
+    IMAGE("image"),
+    TRIANGLE("triangle"),
+    LINE("line");
 
     public final String str;
 

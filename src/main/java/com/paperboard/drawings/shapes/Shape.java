@@ -1,10 +1,12 @@
-package com.paperboard.drawings;
+package com.paperboard.drawings.shapes;
 
+import com.paperboard.drawings.Drawing;
+import com.paperboard.drawings.Position;
 import com.paperboard.server.User;
 
 import javax.json.JsonObjectBuilder;
 
-public class Shape extends Drawing {
+public abstract class Shape extends Drawing {
     private String lineColor = "red";
     private Double lineWidth = 10.0;
     private String lineStyle = "normal";
@@ -15,15 +17,9 @@ public class Shape extends Drawing {
 
     @Override
     public JsonObjectBuilder encodeToJsonObjectBuilder() {
-        return null;
-    }
-
-    public Shape(final String type, final User user) {
-        super(type, user);
-    }
-
-    @Override
-    public void resize() {
+        final JsonObjectBuilder jsonBuilder = super.encodeToJsonObjectBuilder();
+        jsonBuilder.add("lineColor", this.lineColor).add("lineStyle", this.lineStyle).add("lineWidth", this.lineWidth);
+        return jsonBuilder;
     }
 
     public String getLineColor() {

@@ -1,6 +1,10 @@
 package com.paperboard.server;
 
-import com.paperboard.drawings.*;
+import com.paperboard.drawings.Drawing;
+import com.paperboard.drawings.DrawingType;
+import com.paperboard.drawings.ModificationType;
+import com.paperboard.drawings.Position;
+import com.paperboard.drawings.shapes.Circle;
 import com.paperboard.server.events.Event;
 import com.paperboard.server.events.EventManager;
 import com.paperboard.server.events.EventType;
@@ -133,6 +137,8 @@ public class PaperBoard implements Subscriber {
                             .add("X", circle.getPosition().getX().toString())
                             .add("Y", circle.getPosition().getY().toString())
                             .add("radius", circle.getRadius().toString())
+                            .add("fillColor", circle.getFillColor())
+                            .add("lineStyle", circle.getLineStyle())
                             .add("lineWidth", circle.getLineWidth().toString())
                             .add("lineColor", circle.getLineColor())
                             .build();

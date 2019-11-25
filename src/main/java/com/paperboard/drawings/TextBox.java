@@ -9,13 +9,8 @@ public class TextBox extends Drawing {
     private Double textSize;
     private String textColor;
 
-    public TextBox(final User user) {
-        super(DrawingType.TEXT_BOX.str, user);
-    }
-
-    @Override
-    public void resize() {
-
+    public TextBox(final User user, final Position position) {
+        super(DrawingType.TEXT_BOX.str, user, position);
     }
 
     @Override
