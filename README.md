@@ -162,8 +162,11 @@ internal event are fired (see EventType enum) and handled in WebsocketServer bec
 Simplified sequence diagram, miss "get" messages.
 
 
-![Sequence Diagram](./readme_assets/sequenceDiagram.png)
+![Sequence Diagram](./readme_assets/EventLogic.png)
 
-Internal event diagram
+- The red envelop symbolize webSocketServerEndPointClass.
+- Blue squares are classes that register to event
+- Outside arrows are socket messages
+- inside arrows are events
 
 
