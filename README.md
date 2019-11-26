@@ -1,16 +1,54 @@
-# PaperboardServer
+# Just Draw It server app
 Interactive paperboard websocket server. 
-
 
 POOA group java5 : Ludovic Descateaux, Brieuc Loussouarn
 
-// TODO Finish the setup tuto
+This app is a drawing collaborative app. You can chat and create a design in live remotely and see what other drawers
+ are doing. 
+
+## User experience
+1. Simply authenticate with your favorite pseudo
+    * 2 users can't have the same pseudo : Find yours !
+    * if you get disconnected the pseudo become free again
+2. Create or join a board
+    * 2 boards can't have the same title
+    * When creating you cn choose a background image or a background color for your board
+3. Choose a drawing
+    * different drawings are available :
+        * Hand Writing
+        * Line
+        * Rectangle
+        * Circle
+        * Import icon
+4. Edit a shape
+    * Select a shape by clicking on it
+    * Use the right panel to choose your options
+    
+   // PICTURE
+   
+    * Click on the drawing
+4. Chat and see drawers
+    * See who is connected
+    * Use the chat to communicate with them
+5. Take a picture
+6. Leave the board
+7. Be the member of a new one
+
+
+
+
+
+  
+
+
 ## Install and run
 - clone or pull the repo
-- download the maven dependencies written in the pom.xml file
+- download the maven dependencies written in the pom.xml file (mvn install)
 - start the server with run
 - setup your jdk to 11.0.4
 - Run the app in your IDE, should listen socket request on localhost:8025
+- WARNING : if your frontend is not listening on port between 3000 and 3010 you need to add the port to the CORS list
+ in WebSocketServerConfigurator.java
 
 ## Run the tests
 Use your IDE to run the different junit test and understand what they are doing.
