@@ -26,7 +26,7 @@ public class PaperboardApplication implements Subscriber {
     }
 
 
-    private static PaperboardApplication getInstance() {
+    public static PaperboardApplication getInstance() {
         if (instance == null) {
             instance = new PaperboardApplication();
             instance.registerToEvent(ASK_IDENTITY, DRAWER_DISCONNECTED);
@@ -70,13 +70,14 @@ public class PaperboardApplication implements Subscriber {
      * @param pseudo the user you want to add to the Set
      * @throws UserAlreadyExistException The error triggered if you try to add two users with the same pseudo in the set
      */
-    private static void addUser(final String pseudo, final Event e) throws UserAlreadyExistException {
+    static void addUser(final String pseudo, final Event e) throws UserAlreadyExistException {
         final PaperboardApplication app = PaperboardApplication.getInstance();
         final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder()
                 .add("pseudo", e.payload.getString("pseudo"))
                 .add("sessionId", e.payload.getString("sessionId"));
         if (app.getConnectedUsers().containsKey(pseudo)) {
             payloadBuilder.add("isAvailable", "false");
+            throw new UserAlreadyExistException("User with pseudo " + pseudo + "already exists");
         } else {
             app.getConnectedUsers().put(pseudo, new User(pseudo));
             payloadBuilder.add("isAvailable", "true");
@@ -90,7 +91,7 @@ public class PaperboardApplication implements Subscriber {
      *
      * @param pseudo String
      */
-    private static void disconnectUser(final String pseudo) {
+    static void disconnectUser(final String pseudo) {
         if (pseudo != null) {
             final PaperboardApplication app = PaperboardApplication.getInstance();
             app.getConnectedUsers().remove(pseudo);
@@ -119,8 +120,8 @@ public class PaperboardApplication implements Subscriber {
         return instance.connectedUsers.get(pseudo);
     }
 
-    private HashMap<String, User> getConnectedUsers() {
-        return connectedUsers;
+    static HashMap<String, User> getConnectedUsers() {
+        return instance.connectedUsers;
     }
 
     public static HashSet<Paperboard> getPaperboards() {
