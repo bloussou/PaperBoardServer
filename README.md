@@ -1,5 +1,11 @@
 # PaperboardServer
-Interactive paperboard
+Interactive paperboard websocket server. 
+
+# Installation 
+- clone the repo
+- download the maven dependencies written in the pom.xml file
+- start the server with run
+- setup your jdk to 11.0.4
 
 ## Route HTTP
 - get pseudo availability

@@ -7,7 +7,6 @@ import com.paperboard.server.error.UserAlreadyExistException;
 import com.paperboard.server.events.Event;
 import com.paperboard.server.events.EventManager;
 import com.paperboard.server.events.EventType;
-import org.springframework.util.ConcurrentReferenceHashMap;
 
 import javax.json.*;
 import javax.websocket.*;
@@ -17,6 +16,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 /**
@@ -27,8 +27,7 @@ import java.util.logging.Logger;
 public class WebSocketServerEndPoint {
 
     private static String NOT_IN_A_BOARD = "-Not In a Board-";
-    private static ConcurrentReferenceHashMap<String, HashSet<Session>> sessionsMap
-            = new ConcurrentReferenceHashMap<>();
+    private static ConcurrentHashMap<String, HashSet<Session>> sessionsMap = new ConcurrentHashMap<>();
     private static final Logger LOGGER = Logger.getLogger(WebSocketServerEndPoint.class.getName());
 
     @OnOpen
