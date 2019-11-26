@@ -1,10 +1,18 @@
-# Just Draw It server app
-Interactive paperboard websocket server. 
+# Just Draw It ! - Server App
+Date: 2019 Nov.
 
-POOA group java5 : Ludovic Descateaux, Brieuc Loussouarn
+Authors : ludovic Descateaux (@mad171) & brieuc loussouarn (@bloussou)
 
-This app is a drawing collaborative app. You can chat and create a design in live remotely and see what other drawers
- are doing. 
+JustDrawIt-Paperboard is a project to pave the basis for a collaborative drawing application. It enable users to create a new Paperboard or join a new Paperboard and sketch it online with many other users.
+
+- [Just Draw It ! - Client App](#just-draw-it----client-app)
+  - [User experience](#user-experience)
+  - [Setup and Run !](#setup-and-run)
+  - [Repository Description](#repository-description)
+  - [Architecture and Technical Choices](#architecture-and-technical-choices)
+    - [Class Diagram](#class-diagram)
+    - [Dependencies](#dependencies)
+    - [Workflow and Internal Logic](#workflow-and-internal-logic)
 
 ## User experience
 1. Simply authenticate with your favorite pseudo
@@ -62,7 +70,7 @@ This app is a drawing collaborative app. You can chat and create a design in liv
     * Join a new Paperboard
     
 
-## Install and run
+## Setup and Run !
 Remote backend is hosted on heroku app at https://just-draw-it.herokuapp.com. WARNING : this is a free hosting of the
 app with really poor performances. It will crash a lot when drawing handwriting and also icon and image size is
 limited to 1.2kb.
@@ -79,9 +87,7 @@ WARNING : if your frontend is not listening on port between 3000 and 3010 you ne
 ## Run the tests
 Use your IDE to run the different junit test and understand what they are doing.
 
-## Project description
-
-### Folders and packages 
+## Repository Description
 
 * **src** : Folder containing the code
     * **main/java/com.paperboard/** :  *Package of the application Paperboard*
@@ -108,12 +114,12 @@ Use your IDE to run the different junit test and understand what they are doing.
             * User : User Class
 - **test/java** : contains the junit test
     
-### Architecture & Tech choices
+## Architecture and Technical Choices
 
 This app is a full websocket app with Tyrus. It has several patterns as Singleton and Observer. It is an object
  oriented program.
 
-#### Class Diagram
+### Class Diagram
 
 *drawings* package :
 
@@ -134,12 +140,9 @@ You should have a look to the override methods `editDrawing` and `encodeToJsonOb
 
 ![Drawing package](./readme_assets/package_server_splitted.png)
 
-In this diagram you can see the observer pattern detailed bellow.
+In this diagram you can see the observer with the Subscriber interface.
 
-#### Observer Pattern
-// LUDO
-
-#### Dependencies
+### Dependencies
 See ./pom.xml
 - java 11
 - io.projectreactor : have @Nullable
@@ -148,7 +151,7 @@ See ./pom.xml
 - org.glassfish.tyrus : websocket server
 - javax.json : dependencies to deal with json
 
-#### Workflow
+### Workflow and Internal Logic
 
 As you can see in the enum MessageType, we have design a set of message to be sure to always use the same string.
 
