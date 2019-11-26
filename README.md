@@ -1,31 +1,31 @@
 # PaperboardServer
 Interactive paperboard websocket server. 
 
+
 POOA group java5 : Ludovic Descateaux, Brieuc Loussouarn
 
+// TODO Finish the setup tuto
 ## Install and run
-- clone the repo
+- clone or pull the repo
 - download the maven dependencies written in the pom.xml file
 - start the server with run
 - setup your jdk to 11.0.4
 - Run the app in your IDE, should listen socket request on localhost:8025
-
-## BEFORE USE before november 26th
-DO `git pull`
 
 ## Run the tests
 Use your IDE to run the different junit test and understand what they are doing.
 
 ## Project description
 
+
 ### Folders and packages 
 
 * **src** : Folder containing the code
-    * **main/java/com.paperboard** :  package paperboard
-        * *drawings* : Package containing all the drawings class and a subpackage shape
-            * Drawing : Abstract class, all the drawings extends this class
-            * *shapes* : Package containing the shapes (object with line, you can set the color, change line style
-             and line width)
+    * **main/java/com.paperboard/** :  *Package of the application Paperboard*
+        * **drawings/** : *Package for Drawing Objects*
+            * **Drawing.java** : Abstract class, all the drawings extend this class
+            * **shapes/** : *Package containing the shapes (object with line, you can set the color, change line style
+             and line width)*
                 * Shape : Abstract class, all the shapes extends this class
                 * ...
             * DrawingType : enum of the different possible shapes
@@ -47,6 +47,7 @@ Use your IDE to run the different junit test and understand what they are doing.
     
 ### Architecture and Design
 
+// TODO Petit Laïus sur l'architecture globale.
 #### Class Diagram
 
 *drawings* package :
