@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
@@ -77,7 +78,7 @@ public class Paperboard implements Subscriber {
      *
      * @param e Event
      */
-    private void handleAskJoinBoard(final Event e) {
+    void handleAskJoinBoard(final Event e) {
         // Get the connected user
         final User user = PaperboardApplication.getConnectedUser(e.payload.getString("pseudo"));
         // Add the user to the board
@@ -428,6 +429,10 @@ public class Paperboard implements Subscriber {
 
     public ConcurrentHashMap<String, Drawing> getDrawings() {
         return drawings;
+    }
+
+    public Set<User> getDrawers() {
+        return drawers;
     }
 
     @Override

@@ -6,6 +6,7 @@ import com.paperboard.server.error.UserAlreadyExistException;
 import com.paperboard.server.events.Event;
 import com.paperboard.server.events.EventType;
 import com.paperboard.server.events.Subscriber;
+import org.junit.Before;
 import org.junit.Test;
 
 import javax.json.Json;
@@ -15,12 +16,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 public class PaperboardApplicationTest {
+
+    @Before
+    public void before() {
+        PaperboardApplication.getInstance();
+        PaperboardApplication.getConnectedUsers().clear();
+        PaperboardApplication.getPaperboards().clear();
+    }
+
     @Test
     public void addPaperboardTest() {
         final Paperboard paperboard1 = new Paperboard("board");
         final Paperboard paperboard3 = new Paperboard("board3");
-        PaperboardApplication.getInstance();
-        PaperboardApplication.getPaperboards().clear();
         PaperboardApplication.addPaperboard(paperboard1);
         PaperboardApplication.addPaperboard(paperboard3);
         assertEquals(PaperboardApplication.getPaperboards().size(), 2);
@@ -30,8 +37,6 @@ public class PaperboardApplicationTest {
     public void testPaperboardAlreadyExistException() {
         final Paperboard paperboard1 = new Paperboard("board");
         final Paperboard paperboard3 = new Paperboard("board");
-        PaperboardApplication.getInstance();
-        PaperboardApplication.getPaperboards().clear();
         PaperboardApplication.addPaperboard(paperboard1);
         PaperboardApplication.addPaperboard(paperboard3);
     }
@@ -49,8 +54,6 @@ public class PaperboardApplicationTest {
                 .add("sessionId", "sessionId")
                 .build();
         final Event event2 = new Event(EventType.ASK_IDENTITY, payload2);
-        PaperboardApplication.getInstance();
-        PaperboardApplication.getConnectedUsers().clear();
 
         PaperboardApplication.addUser("pseudo", event1);
         PaperboardApplication.addUser("pseudo1", event2);
@@ -68,8 +71,6 @@ public class PaperboardApplicationTest {
                 .add("sessionId", "sessionId")
                 .build();
         final Event event = new Event(EventType.ASK_IDENTITY, payload);
-        PaperboardApplication.getInstance();
-        PaperboardApplication.getConnectedUsers().clear();
 
         // Add 2 users with the same pseudo
         PaperboardApplication.addUser("pseudo", event);
@@ -84,8 +85,6 @@ public class PaperboardApplicationTest {
                 .add("sessionId", "sessionId")
                 .build();
         final Event event = new Event(EventType.ASK_IDENTITY, payload);
-        PaperboardApplication.getInstance();
-        PaperboardApplication.getConnectedUsers().clear();
 
         // Connect the user
         PaperboardApplication.addUser("pseudo", event);
@@ -100,8 +99,6 @@ public class PaperboardApplicationTest {
     public void testGetPaperboard() {
         final Paperboard paperboard1 = new Paperboard("board");
         final Paperboard paperboard3 = new Paperboard("board3");
-        PaperboardApplication.getInstance();
-        PaperboardApplication.getPaperboards().clear();
         PaperboardApplication.addPaperboard(paperboard1);
         PaperboardApplication.addPaperboard(paperboard3);
 
@@ -125,8 +122,6 @@ public class PaperboardApplicationTest {
                 .add("sessionId", "sessionId")
                 .build();
         final Event event2 = new Event(EventType.ASK_IDENTITY, payload2);
-        PaperboardApplication.getInstance();
-        PaperboardApplication.getConnectedUsers().clear();
         PaperboardApplication.addUser("pseudo", event1);
         PaperboardApplication.addUser("pseudo1", event2);
 
