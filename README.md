@@ -81,8 +81,10 @@ limited to 1.2kb.
 - setup your jdk to 11.0.4
 - Run the app in your IDE, should listen socket request on localhost:8025
 
-WARNING : if your frontend is not listening on port between 3000 and 3010 you need to add the port to the CORS list
+WARNING : 
+- if your frontend is not listening on port between 3000 and 3010 you need to add the port to the CORS list
  in `WebSocketServerConfigurator.java`.
+ - start the server before the client
 
 ## Run the tests
 Use your IDE to run the different junit test and understand what they are doing.
