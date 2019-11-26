@@ -70,14 +70,13 @@ public class PaperboardApplication implements Subscriber {
      * @param pseudo the user you want to add to the Set
      * @throws UserAlreadyExistException The error triggered if you try to add two users with the same pseudo in the set
      */
-    static void addUser(final String pseudo, final Event e) throws UserAlreadyExistException {
+    static void addUser(final String pseudo, final Event e) {
         final PaperboardApplication app = PaperboardApplication.getInstance();
         final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder()
                 .add("pseudo", e.payload.getString("pseudo"))
                 .add("sessionId", e.payload.getString("sessionId"));
         if (app.getConnectedUsers().containsKey(pseudo)) {
             payloadBuilder.add("isAvailable", "false");
-            throw new UserAlreadyExistException("User with pseudo " + pseudo + "already exists");
         } else {
             app.getConnectedUsers().put(pseudo, new User(pseudo));
             payloadBuilder.add("isAvailable", "true");

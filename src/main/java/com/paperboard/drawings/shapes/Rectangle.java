@@ -28,9 +28,7 @@ public class Rectangle extends Shape {
     @Override
     public JsonObjectBuilder encodeToJsonObjectBuilder() {
         final JsonObjectBuilder jsonBuilder = super.encodeToJsonObjectBuilder();
-        jsonBuilder.add("positionBottomLeft", this.width.toString())
-                .add("positionBottomRight", this.height.toString())
-                .add("backgroundColor", this.fillColor);
+        jsonBuilder.add("width", this.width).add("height", this.height).add("fillColor", this.fillColor);
         return jsonBuilder;
     }
 
