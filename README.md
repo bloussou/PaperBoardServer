@@ -107,13 +107,3 @@ See ./pom.xml
 - org.glassfish.tyrus : websocket server
 - javax.json : dependencies to deal with json
 
-
-
-## Socket
-- join room
-- draw
-- edit
-- Delete
-- move ?
-- leave
-
