@@ -16,16 +16,12 @@ import java.util.ArrayList;
  * pathX and pathY have same length and describe point by point the handWriting shape
  */
 public class HandWriting extends Shape {
-    private ArrayList<Double> pathX;
-    private ArrayList<Double> pathY;
+    private ArrayList<Double> pathX = new ArrayList<>();
+    private ArrayList<Double> pathY = new ArrayList<>();
 
     public HandWriting(final User user,
-                       final Position position,
-                       final java.util.ArrayList<Double> pathX,
-                       final java.util.ArrayList<Double> pathY) {
+                       final Position position) {
         super(DrawingType.HANDWRITING.str, user, position);
-        this.pathX = pathX;
-        this.pathY = pathY;
     }
 
     /**

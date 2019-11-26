@@ -13,14 +13,11 @@ import reactor.util.annotation.Nullable;
 
 import javax.json.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
-
 
 public class Paperboard implements Subscriber {
 
@@ -40,17 +37,17 @@ public class Paperboard implements Subscriber {
      * @param title String
      */
     Paperboard(final String title) {
-        this.id           = String.valueOf(idCounter.getAndIncrement());
-        this.title        = title;
+        this.id = String.valueOf(idCounter.getAndIncrement());
+        this.title = title;
         this.creationDate = LocalDateTime.now();
         this.registerToEvent(title,
-                             EventType.ASK_JOIN_BOARD,
-                             EventType.ASK_CREATE_OBJECT,
-                             EventType.ASK_LEAVE_BOARD,
-                             EventType.ASK_LOCK_OBJECT,
-                             EventType.ASK_UNLOCK_OBJECT,
-                             EventType.ASK_EDIT_OBJECT,
-                             EventType.ASK_DELETE_OBJECT);
+                EventType.ASK_JOIN_BOARD,
+                EventType.ASK_CREATE_OBJECT,
+                EventType.ASK_LEAVE_BOARD,
+                EventType.ASK_LOCK_OBJECT,
+                EventType.ASK_UNLOCK_OBJECT,
+                EventType.ASK_EDIT_OBJECT,
+                EventType.ASK_DELETE_OBJECT);
     }
 
     /**
@@ -177,26 +174,13 @@ public class Paperboard implements Subscriber {
                     EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_CREATED, payloadImage), board);
                     break;
                 case HANDWRITING:
-                    final ArrayList<Double> pathX = new ArrayList<>(Arrays.asList(description.getJsonArray(
-                            ModificationType.PATH_X.str)
-                                                                                          .stream()
-                                                                                          .map(x -> Double.parseDouble(x.toString()))
-                                                                                          .toArray(Double[]::new)));
-                    final ArrayList<Double> pathY = new ArrayList<>(Arrays.asList(description.getJsonArray(
-                            ModificationType.PATH_Y.str)
-                                                                                          .stream()
-                                                                                          .map(x -> Double.parseDouble(x.toString()))
-                                                                                          .toArray(Double[]::new)));
-                    final HandWriting handWriting = new HandWriting(user,
-                                                                    new Position(positionX, positionY),
-                                                                    pathX,
-                                                                    pathY);
-                    drawings.put(handWriting.getId(), handWriting);
-                    final JsonObject payloadHAndWriting = handWriting.encodeToJsonObjectBuilder()
+                    final HandWriting handwriting = new HandWriting(user,
+                            new Position(positionX, positionY));
+                    drawings.put(handwriting.getId(), handwriting);
+                    final JsonObject payloadHandwriting = handwriting.encodeToJsonObjectBuilder()
                             .add("pseudo", user.getPseudo())
                             .build();
-                    EventManager.getInstance()
-                            .fireEvent(new Event(EventType.OBJECT_CREATED, payloadHAndWriting), board);
+                    EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_CREATED, payloadHandwriting), board);
                     break;
                 case RECTANGLE:
                     final Rectangle rectangle = new Rectangle(user, new Position(positionX, positionY));
@@ -232,7 +216,7 @@ public class Paperboard implements Subscriber {
                     EventManager.getInstance().fireEvent(new Event(EventType.OBJECT_CREATED, payloadLine), board);
                     break;
                 default:
-                    LOGGER.warning("This shape is not yet implemented" + shape);
+                    LOGGER.warning("This shape is not yet implemented " + shape);
             }
         }
     }
@@ -326,9 +310,9 @@ public class Paperboard implements Subscriber {
                     .add("type", drawing.getType())
                     .build();
             final Message msg = new Message(MessageType.MSG_DELETE_OBJECT.str,
-                                            user.getPseudo(),
-                                            drawing.getOwner().getPseudo(),
-                                            payload);
+                    user.getPseudo(),
+                    drawing.getOwner().getPseudo(),
+                    payload);
             WebSocketServerEndPoint.sendMessageToUser(msg);
         }
     }

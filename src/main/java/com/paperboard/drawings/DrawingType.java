@@ -5,7 +5,7 @@ package com.paperboard.drawings;
  */
 public enum DrawingType {
     CIRCLE("circle"),
-    HANDWRITING("hand writing"),
+    HANDWRITING("handwriting"),
     RECTANGLE("rectangle"),
     TEXT_BOX("text"),
     IMAGE("image"),
