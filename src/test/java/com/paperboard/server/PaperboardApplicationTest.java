@@ -2,7 +2,6 @@ package com.paperboard.server;
 
 import com.paperboard.drawings.ModificationType;
 import com.paperboard.server.error.PaperboardAlreadyExistException;
-import com.paperboard.server.error.UserAlreadyExistException;
 import com.paperboard.server.events.Event;
 import com.paperboard.server.events.EventType;
 import com.paperboard.server.events.Subscriber;
@@ -61,20 +60,6 @@ public class PaperboardApplicationTest {
         // Check DRAWER_IDENTIFICATION is sent 2 times
         assertEquals(2, subscriberTest.drawerIdentificationCounter);
         assertEquals(2, PaperboardApplication.getConnectedUsers().size());
-    }
-
-    @Test(expected = UserAlreadyExistException.class)
-    public void testUserAlreadyExistException() {
-        final JsonObject payload = Json.createObjectBuilder()
-                .add(ModificationType.RADIUS.str, "12.0")
-                .add("pseudo", "pseudo")
-                .add("sessionId", "sessionId")
-                .build();
-        final Event event = new Event(EventType.ASK_IDENTITY, payload);
-
-        // Add 2 users with the same pseudo
-        PaperboardApplication.addUser("pseudo", event);
-        PaperboardApplication.addUser("pseudo", event);
     }
 
     @Test
