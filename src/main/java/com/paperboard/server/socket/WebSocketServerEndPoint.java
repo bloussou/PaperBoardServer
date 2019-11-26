@@ -129,6 +129,8 @@ public class WebSocketServerEndPoint {
                 for (final String key : message.getPayload().keySet()) {
                     if (key.equals("positionEndPoint")) {
                         payloadBuilder.add("positionEndPoint", Json.createObjectBuilder(message.getPayload().getJsonObject("positionEndPoint")));
+                    } else if (key.equals("pathX") || key.equals("pathY")) {
+                        payloadBuilder.add(key, Json.createArrayBuilder(message.getPayload().getJsonArray(key)));
                     } else if (!key.equals("pseudo") && !key.equals("board")) {
                         payloadBuilder.add(key, message.getPayload().getString(key));
                     }
